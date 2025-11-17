@@ -1,0 +1,24 @@
+^C:\USERS\USER\WORKSPACES\VSCODE\DATABASECODEGENERATOR\BUILD\CMAKEFILES\384A4E6F3E4EE3A2C90D69FFD8C0D25F\QT6_QMLPLUGINS_IMPORTS_DATABASECODEGENERATOR.CMAKE.RULE
+setlocal
+cd C:\Users\User\Workspaces\VSCode\DatabaseCodeGenerator
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+call C:\Users\User\Workspaces\VSCode\DatabaseCodeGenerator\build\.qt\bin\qt_setup_tool_path.bat D:/Qt/6.7.0/msvc2019_64/./bin/qmlimportscanner.exe @C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/.qt_plugins/Qt6_QmlPlugins_Imports_DatabaseCodeGenerator.rsp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\USER\WORKSPACES\VSCODE\DATABASECODEGENERATOR\BUILD\CMAKEFILES\0D8C8BF00AA795605C0CEDDEB2598CBB\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator -BC:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/DatabaseCodeGenerator.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

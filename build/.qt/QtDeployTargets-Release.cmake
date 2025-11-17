@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_DatabaseCodeGenerator_FILE C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/Release/DatabaseCodeGenerator.exe)
+set(__QT_DEPLOY_TARGET_DatabaseCodeGenerator_RUNTIME_DLLS D:/Qt/6.7.0/msvc2019_64/bin/Qt6QuickControls2.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6Quick.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6QmlModels.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6Qml.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6Network.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6OpenGL.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6Gui.dll;D:/Qt/6.7.0/msvc2019_64/bin/Qt6Core.dll)

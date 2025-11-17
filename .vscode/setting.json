@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.qml": "qml"
+    },
+    "cmake.configureOnOpen": false,
+    "Qt: Default Installation": "D:\\Qt\\6.7.0\\msvc2019_64"
+}
