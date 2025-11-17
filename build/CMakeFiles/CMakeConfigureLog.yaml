@@ -24,7 +24,7 @@ events:
       The output was:
       0
       MSBuild version 17.9.8+b34f75857 for .NET Framework
-      Build started 11/17/2025 8:27:07 PM.
+      Build started 11/17/2025 8:35:55 PM.
       
       Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\4.0.3\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -62,7 +62,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:00.91
+      Time Elapsed 00:00:00.81
       
       
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -81,8 +81,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-6956sn"
-      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-6956sn"
+      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-xg7tpz"
+      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-xg7tpz"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -92,49 +92,49 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-6956sn'
+        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-xg7tpz'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_5d25d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_58a1a.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.9.8+b34f75857 for .NET Framework
-        Build started 11/17/2025 8:27:08 PM.
+        Build started 11/17/2025 8:35:56 PM.
         
-        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\cmTC_5d25d.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\cmTC_58a1a.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_5d25d.dir\\Debug\\".
+          Creating directory "cmTC_58a1a.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\".
-          Creating directory "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\".
+          Creating directory "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\unsuccessfulbuild".
+          Creating "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\unsuccessfulbuild".
         VcpkgTripletSelection:
           Using triplet "x64-windows" from "C:\\devtools\\vcpkg\\installed\\x64-windows\\"
           Using normalized configuration "Debug"
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_5d25d.dir\\Debug\\\\" /Fd"cmTC_5d25d.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.0\\Modules\\CMakeCXXCompilerABI.cpp"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_58a1a.dir\\Debug\\\\" /Fd"cmTC_58a1a.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.0\\Modules\\CMakeCXXCompilerABI.cpp"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_5d25d.dir\\Debug\\\\" /Fd"cmTC_5d25d.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.0\\Modules\\CMakeCXXCompilerABI.cpp"
+          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_58a1a.dir\\Debug\\\\" /Fd"cmTC_58a1a.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.0\\Modules\\CMakeCXXCompilerABI.cpp"
           CMakeCXXCompilerABI.cpp
         Link:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\cmTC_5d25d.exe" /INCREMENTAL /ILK:"cmTC_5d25d.dir\\Debug\\cmTC_5d25d.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-6956sn/Debug/cmTC_5d25d.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-6956sn/Debug/cmTC_5d25d.lib" /MACHINE:X64  /machine:x64 cmTC_5d25d.dir\\Debug\\CMakeCXXCompilerABI.obj
-          cmTC_5d25d.vcxproj -> C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\cmTC_5d25d.exe
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\cmTC_58a1a.exe" /INCREMENTAL /ILK:"cmTC_58a1a.dir\\Debug\\cmTC_58a1a.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-xg7tpz/Debug/cmTC_58a1a.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-xg7tpz/Debug/cmTC_58a1a.lib" /MACHINE:X64  /machine:x64 cmTC_58a1a.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_58a1a.vcxproj -> C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\cmTC_58a1a.exe
         AppLocalFromInstalled:
-          pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\cmTC_5d25d.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\cmTC_5d25d.write.1u.tlog" "cmTC_5d25d.dir\\Debug\\vcpkg.applocal.log"
+          pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\cmTC_58a1a.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\cmTC_58a1a.write.1u.tlog" "cmTC_58a1a.dir\\Debug\\vcpkg.applocal.log"
           'pwsh.exe' is not recognized as an internal or external command,
           operable program or batch file.
-          The command "pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\cmTC_5d25d.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\cmTC_5d25d.write.1u.tlog" "cmTC_5d25d.dir\\Debug\\vcpkg.applocal.log"" exited with code 9009.
-          "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\Debug\\cmTC_5d25d.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\cmTC_5d25d.write.1u.tlog" "cmTC_5d25d.dir\\Debug\\vcpkg.applocal.log"
+          The command "pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\cmTC_58a1a.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\cmTC_58a1a.write.1u.tlog" "cmTC_58a1a.dir\\Debug\\vcpkg.applocal.log"" exited with code 9009.
+          "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\Debug\\cmTC_58a1a.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\cmTC_58a1a.write.1u.tlog" "cmTC_58a1a.dir\\Debug\\vcpkg.applocal.log"
         FinalizeBuildStatus:
-          Deleting file "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\unsuccessfulbuild".
-          Touching "cmTC_5d25d.dir\\Debug\\cmTC_5d25d.tlog\\cmTC_5d25d.lastbuildstate".
-        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-6956sn\\cmTC_5d25d.vcxproj" (default targets).
+          Deleting file "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\unsuccessfulbuild".
+          Touching "cmTC_58a1a.dir\\Debug\\cmTC_58a1a.tlog\\cmTC_58a1a.lastbuildstate".
+        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-xg7tpz\\cmTC_58a1a.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.88
+        Time Elapsed 00:00:00.82
         
       exitCode: 0
   -
@@ -180,8 +180,8 @@ events:
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-eff5xw"
-      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-eff5xw"
+      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-t7ncq5"
+      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-t7ncq5"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -191,34 +191,34 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-eff5xw'
+        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-t7ncq5'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_1fcdc.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_6c449.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.9.8+b34f75857 for .NET Framework
-        Build started 11/17/2025 8:27:09 PM.
+        Build started 11/17/2025 8:35:57 PM.
         
-        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_1fcdc.dir\\Debug\\".
+          Creating directory "cmTC_6c449.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\Debug\\".
-          Creating directory "cmTC_1fcdc.dir\\Debug\\cmTC_1fcdc.tlog\\".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\Debug\\".
+          Creating directory "cmTC_6c449.dir\\Debug\\cmTC_6c449.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_1fcdc.dir\\Debug\\cmTC_1fcdc.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_1fcdc.dir\\Debug\\cmTC_1fcdc.tlog\\unsuccessfulbuild".
+          Creating "cmTC_6c449.dir\\Debug\\cmTC_6c449.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_6c449.dir\\Debug\\cmTC_6c449.tlog\\unsuccessfulbuild".
         ComputeStdModulesCompileInputs:
           Reading library manifest file 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\modules.json' which provides data for library 'microsoft/STL'.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.ixx' from library 'microsoft/STL' to be built with this project.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.compat.ixx' from library 'microsoft/STL' to be built with this project.
         MakeDirsForCl:
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.dir\\Debug\\microsoft\\STL".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.dir\\Debug\\microsoft\\STL".
         SetModuleDependencies:
-          Creating directory "cmTC_1fcdc.dir\\Debug\\cmTC_1fcdc_MD.tlog\\".
+          Creating directory "cmTC_6c449.dir\\Debug\\cmTC_6c449_MD.tlog\\".
         VcpkgTripletSelection:
           Using triplet "x64-windows" from "C:\\devtools\\vcpkg\\installed\\x64-windows\\"
           Using normalized configuration "Debug"
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_1fcdc.dir\\Debug\\\\" /Fd"cmTC_1fcdc.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\src.cxx"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_6c449.dir\\Debug\\\\" /Fd"cmTC_6c449.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\src.cxx"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
           /std:c++latest is provided as a preview of language features from the latest C++
@@ -226,21 +226,21 @@ events:
           However, note that these features are provided as-is without support, and subject
           to changes or removal as the working draft evolves. See
           https://go.microsoft.com/fwlink/?linkid=2045807 for details.
-          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_1fcdc.dir\\Debug\\\\" /Fd"cmTC_1fcdc.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\src.cxx"
+          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_6c449.dir\\Debug\\\\" /Fd"cmTC_6c449.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\src.cxx"
           src.cxx
-        C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\src.cxx(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.vcxproj]
-        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.vcxproj" (default targets) -- FAILED.
+        C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\src.cxx(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.vcxproj]
+        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.vcxproj" (default target) (1) ->
+        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.vcxproj" (default target) (1) ->
         (ClCompile target) -> 
-          C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\src.cxx(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eff5xw\\cmTC_1fcdc.vcxproj]
+          C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\src.cxx(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t7ncq5\\cmTC_6c449.vcxproj]
         
             0 Warning(s)
             1 Error(s)
         
-        Time Elapsed 00:00:00.47
+        Time Elapsed 00:00:00.33
         
       exitCode: 1
   -
@@ -257,8 +257,8 @@ events:
     checks:
       - "Looking for pthread_create in pthreads"
     directories:
-      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-5cb1vj"
-      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-5cb1vj"
+      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-veo7xk"
+      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-veo7xk"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -268,34 +268,34 @@ events:
       variable: "CMAKE_HAVE_PTHREADS_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-5cb1vj'
+        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-veo7xk'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_8d9c0.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_90b5e.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.9.8+b34f75857 for .NET Framework
-        Build started 11/17/2025 8:27:10 PM.
+        Build started 11/17/2025 8:35:57 PM.
         
-        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_8d9c0.dir\\Debug\\".
+          Creating directory "cmTC_90b5e.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\Debug\\".
-          Creating directory "cmTC_8d9c0.dir\\Debug\\cmTC_8d9c0.tlog\\".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\Debug\\".
+          Creating directory "cmTC_90b5e.dir\\Debug\\cmTC_90b5e.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_8d9c0.dir\\Debug\\cmTC_8d9c0.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_8d9c0.dir\\Debug\\cmTC_8d9c0.tlog\\unsuccessfulbuild".
+          Creating "cmTC_90b5e.dir\\Debug\\cmTC_90b5e.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_90b5e.dir\\Debug\\cmTC_90b5e.tlog\\unsuccessfulbuild".
         ComputeStdModulesCompileInputs:
           Reading library manifest file 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\modules.json' which provides data for library 'microsoft/STL'.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.ixx' from library 'microsoft/STL' to be built with this project.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.compat.ixx' from library 'microsoft/STL' to be built with this project.
         MakeDirsForCl:
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.dir\\Debug\\microsoft\\STL".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.dir\\Debug\\microsoft\\STL".
         SetModuleDependencies:
-          Creating directory "cmTC_8d9c0.dir\\Debug\\cmTC_8d9c0_MD.tlog\\".
+          Creating directory "cmTC_90b5e.dir\\Debug\\cmTC_90b5e_MD.tlog\\".
         VcpkgTripletSelection:
           Using triplet "x64-windows" from "C:\\devtools\\vcpkg\\installed\\x64-windows\\"
           Using normalized configuration "Debug"
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_8d9c0.dir\\Debug\\\\" /Fd"cmTC_8d9c0.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\CheckFunctionExists.cxx"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_90b5e.dir\\Debug\\\\" /Fd"cmTC_90b5e.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\CheckFunctionExists.cxx"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
           /std:c++latest is provided as a preview of language features from the latest C++
@@ -303,18 +303,18 @@ events:
           However, note that these features are provided as-is without support, and subject
           to changes or removal as the working draft evolves. See
           https://go.microsoft.com/fwlink/?linkid=2045807 for details.
-          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_8d9c0.dir\\Debug\\\\" /Fd"cmTC_8d9c0.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\CheckFunctionExists.cxx"
+          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_90b5e.dir\\Debug\\\\" /Fd"cmTC_90b5e.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\CheckFunctionExists.cxx"
           CheckFunctionExists.cxx
         Link:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\Debug\\cmTC_8d9c0.exe" /INCREMENTAL /ILK:"cmTC_8d9c0.dir\\Debug\\cmTC_8d9c0.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-5cb1vj/Debug/cmTC_8d9c0.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-5cb1vj/Debug/cmTC_8d9c0.lib" /MACHINE:X64  /machine:x64 cmTC_8d9c0.dir\\Debug\\CheckFunctionExists.obj
-        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.vcxproj]
-        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.vcxproj" (default targets) -- FAILED.
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\Debug\\cmTC_90b5e.exe" /INCREMENTAL /ILK:"cmTC_90b5e.dir\\Debug\\cmTC_90b5e.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-veo7xk/Debug/cmTC_90b5e.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-veo7xk/Debug/cmTC_90b5e.lib" /MACHINE:X64  /machine:x64 cmTC_90b5e.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.vcxproj]
+        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.vcxproj" (default target) (1) ->
+        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.vcxproj" (default target) (1) ->
         (Link target) -> 
-          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5cb1vj\\cmTC_8d9c0.vcxproj]
+          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-veo7xk\\cmTC_90b5e.vcxproj]
         
             0 Warning(s)
             1 Error(s)
@@ -336,8 +336,8 @@ events:
     checks:
       - "Looking for pthread_create in pthread"
     directories:
-      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-418o10"
-      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-418o10"
+      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-f2qtmn"
+      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-f2qtmn"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -347,34 +347,34 @@ events:
       variable: "CMAKE_HAVE_PTHREAD_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-418o10'
+        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-f2qtmn'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_2325b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_338e9.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.9.8+b34f75857 for .NET Framework
-        Build started 11/17/2025 8:27:10 PM.
+        Build started 11/17/2025 8:35:58 PM.
         
-        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_2325b.dir\\Debug\\".
+          Creating directory "cmTC_338e9.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\Debug\\".
-          Creating directory "cmTC_2325b.dir\\Debug\\cmTC_2325b.tlog\\".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\Debug\\".
+          Creating directory "cmTC_338e9.dir\\Debug\\cmTC_338e9.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_2325b.dir\\Debug\\cmTC_2325b.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_2325b.dir\\Debug\\cmTC_2325b.tlog\\unsuccessfulbuild".
+          Creating "cmTC_338e9.dir\\Debug\\cmTC_338e9.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_338e9.dir\\Debug\\cmTC_338e9.tlog\\unsuccessfulbuild".
         ComputeStdModulesCompileInputs:
           Reading library manifest file 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\modules.json' which provides data for library 'microsoft/STL'.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.ixx' from library 'microsoft/STL' to be built with this project.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.compat.ixx' from library 'microsoft/STL' to be built with this project.
         MakeDirsForCl:
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.dir\\Debug\\microsoft\\STL".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.dir\\Debug\\microsoft\\STL".
         SetModuleDependencies:
-          Creating directory "cmTC_2325b.dir\\Debug\\cmTC_2325b_MD.tlog\\".
+          Creating directory "cmTC_338e9.dir\\Debug\\cmTC_338e9_MD.tlog\\".
         VcpkgTripletSelection:
           Using triplet "x64-windows" from "C:\\devtools\\vcpkg\\installed\\x64-windows\\"
           Using normalized configuration "Debug"
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_2325b.dir\\Debug\\\\" /Fd"cmTC_2325b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\CheckFunctionExists.cxx"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_338e9.dir\\Debug\\\\" /Fd"cmTC_338e9.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\CheckFunctionExists.cxx"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
           /std:c++latest is provided as a preview of language features from the latest C++
@@ -382,23 +382,23 @@ events:
           However, note that these features are provided as-is without support, and subject
           to changes or removal as the working draft evolves. See
           https://go.microsoft.com/fwlink/?linkid=2045807 for details.
-          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_2325b.dir\\Debug\\\\" /Fd"cmTC_2325b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\CheckFunctionExists.cxx"
+          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_338e9.dir\\Debug\\\\" /Fd"cmTC_338e9.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\CheckFunctionExists.cxx"
           CheckFunctionExists.cxx
         Link:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\Debug\\cmTC_2325b.exe" /INCREMENTAL /ILK:"cmTC_2325b.dir\\Debug\\cmTC_2325b.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-418o10/Debug/cmTC_2325b.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-418o10/Debug/cmTC_2325b.lib" /MACHINE:X64  /machine:x64 cmTC_2325b.dir\\Debug\\CheckFunctionExists.obj
-        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.vcxproj]
-        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.vcxproj" (default targets) -- FAILED.
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\Debug\\cmTC_338e9.exe" /INCREMENTAL /ILK:"cmTC_338e9.dir\\Debug\\cmTC_338e9.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-f2qtmn/Debug/cmTC_338e9.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-f2qtmn/Debug/cmTC_338e9.lib" /MACHINE:X64  /machine:x64 cmTC_338e9.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.vcxproj]
+        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.vcxproj" (default target) (1) ->
+        "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.vcxproj" (default target) (1) ->
         (Link target) -> 
-          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-418o10\\cmTC_2325b.vcxproj]
+          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-f2qtmn\\cmTC_338e9.vcxproj]
         
             0 Warning(s)
             1 Error(s)
         
-        Time Elapsed 00:00:00.39
+        Time Elapsed 00:00:00.38
         
       exitCode: 1
   -
@@ -416,8 +416,8 @@ events:
     checks:
       - "Performing Test HAVE_STDATOMIC"
     directories:
-      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-lefiva"
-      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-lefiva"
+      source: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-nsud54"
+      binary: "C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-nsud54"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -427,34 +427,34 @@ events:
       variable: "HAVE_STDATOMIC"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-lefiva'
+        Change Dir: 'C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-nsud54'
         
-        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_d9eab.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_4905b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.9.8+b34f75857 for .NET Framework
-        Build started 11/17/2025 8:27:11 PM.
+        Build started 11/17/2025 8:35:58 PM.
         
-        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\cmTC_d9eab.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\cmTC_4905b.vcxproj" on node 1 (default targets).
         PrepareForBuild:
-          Creating directory "cmTC_d9eab.dir\\Debug\\".
+          Creating directory "cmTC_4905b.dir\\Debug\\".
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\".
-          Creating directory "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\".
+          Creating directory "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\unsuccessfulbuild".
+          Creating "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\unsuccessfulbuild".
         ComputeStdModulesCompileInputs:
           Reading library manifest file 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\modules.json' which provides data for library 'microsoft/STL'.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.ixx' from library 'microsoft/STL' to be built with this project.
           Adding module source 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\modules\\std.compat.ixx' from library 'microsoft/STL' to be built with this project.
         MakeDirsForCl:
-          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\cmTC_d9eab.dir\\Debug\\microsoft\\STL".
+          Creating directory "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\cmTC_4905b.dir\\Debug\\microsoft\\STL".
         SetModuleDependencies:
-          Creating directory "cmTC_d9eab.dir\\Debug\\cmTC_d9eab_MD.tlog\\".
+          Creating directory "cmTC_4905b.dir\\Debug\\cmTC_4905b_MD.tlog\\".
         VcpkgTripletSelection:
           Using triplet "x64-windows" from "C:\\devtools\\vcpkg\\installed\\x64-windows\\"
           Using normalized configuration "Debug"
         ClCompile:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D HAVE_STDATOMIC /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_d9eab.dir\\Debug\\\\" /Fd"cmTC_d9eab.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\src.cxx"
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\CL.exe /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D HAVE_STDATOMIC /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_4905b.dir\\Debug\\\\" /Fd"cmTC_4905b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\src.cxx"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
           /std:c++latest is provided as a preview of language features from the latest C++
@@ -462,27 +462,27 @@ events:
           However, note that these features are provided as-is without support, and subject
           to changes or removal as the working draft evolves. See
           https://go.microsoft.com/fwlink/?linkid=2045807 for details.
-          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D HAVE_STDATOMIC /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_d9eab.dir\\Debug\\\\" /Fd"cmTC_d9eab.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\src.cxx"
+          cl /c /I"C:\\devtools\\vcpkg\\installed\\x64-windows\\include" /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D HAVE_STDATOMIC /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++latest /Fo"cmTC_4905b.dir\\Debug\\\\" /Fd"cmTC_4905b.dir\\Debug\\vc143.pdb" /external:W1 /Gd /TP /errorReport:queue "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\src.cxx"
           src.cxx
         Link:
-          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\cmTC_d9eab.exe" /INCREMENTAL /ILK:"cmTC_d9eab.dir\\Debug\\cmTC_d9eab.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-lefiva/Debug/cmTC_d9eab.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-lefiva/Debug/cmTC_d9eab.lib" /MACHINE:X64  /machine:x64 cmTC_d9eab.dir\\Debug\\src.obj
-          cmTC_d9eab.vcxproj -> C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\cmTC_d9eab.exe
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\cmTC_4905b.exe" /INCREMENTAL /ILK:"cmTC_4905b.dir\\Debug\\cmTC_4905b.ilk" /NOLOGO /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib" /LIBPATH:"C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\manual-link" kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\lib\\*.lib" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-nsud54/Debug/cmTC_4905b.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/CMakeScratch/TryCompile-nsud54/Debug/cmTC_4905b.lib" /MACHINE:X64  /machine:x64 cmTC_4905b.dir\\Debug\\src.obj
+          cmTC_4905b.vcxproj -> C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\cmTC_4905b.exe
         AppLocalFromInstalled:
-          pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\cmTC_d9eab.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\cmTC_d9eab.write.1u.tlog" "cmTC_d9eab.dir\\Debug\\vcpkg.applocal.log"
+          pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\cmTC_4905b.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\cmTC_4905b.write.1u.tlog" "cmTC_4905b.dir\\Debug\\vcpkg.applocal.log"
           'pwsh.exe' is not recognized as an internal or external command,
           operable program or batch file.
-          The command "pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\cmTC_d9eab.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\cmTC_d9eab.write.1u.tlog" "cmTC_d9eab.dir\\Debug\\vcpkg.applocal.log"" exited with code 9009.
-          "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\Debug\\cmTC_d9eab.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\cmTC_d9eab.write.1u.tlog" "cmTC_d9eab.dir\\Debug\\vcpkg.applocal.log"
+          The command "pwsh.exe -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\cmTC_4905b.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\cmTC_4905b.write.1u.tlog" "cmTC_4905b.dir\\Debug\\vcpkg.applocal.log"" exited with code 9009.
+          "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -ExecutionPolicy Bypass -noprofile -File "C:\\devtools\\vcpkg\\scripts\\buildsystems\\msbuild\\applocal.ps1" "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\Debug\\cmTC_4905b.exe" "C:\\devtools\\vcpkg\\installed\\x64-windows\\debug\\bin" "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\cmTC_4905b.write.1u.tlog" "cmTC_4905b.dir\\Debug\\vcpkg.applocal.log"
         FinalizeBuildStatus:
-          Deleting file "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\unsuccessfulbuild".
-          Touching "cmTC_d9eab.dir\\Debug\\cmTC_d9eab.tlog\\cmTC_d9eab.lastbuildstate".
-        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-lefiva\\cmTC_d9eab.vcxproj" (default targets).
+          Deleting file "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\unsuccessfulbuild".
+          Touching "cmTC_4905b.dir\\Debug\\cmTC_4905b.tlog\\cmTC_4905b.lastbuildstate".
+        Done Building Project "C:\\Users\\User\\Workspaces\\VSCode\\DatabaseCodeGenerator\\build\\CMakeFiles\\CMakeScratch\\TryCompile-nsud54\\cmTC_4905b.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:01.01
+        Time Elapsed 00:00:00.96
         
       exitCode: 0
 ...
