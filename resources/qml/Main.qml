@@ -10,6 +10,7 @@ Window {
 
     DatabaseTable {
         id: databaseTable
-        anchors.centerIn: parent
+        x: 100  // initial position of x
+        y: 100  // initial position of y
     }
 }

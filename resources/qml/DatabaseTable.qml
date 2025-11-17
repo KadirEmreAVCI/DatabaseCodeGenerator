@@ -21,6 +21,13 @@ Rectangle {
         }
         height: 40
         antialiasing: true
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: root
+            drag.axis: Drag.XAndYAxis
+            cursorShape: Qt.OpenHandCursor
+        }
     }
 
     // Separator between header and content
