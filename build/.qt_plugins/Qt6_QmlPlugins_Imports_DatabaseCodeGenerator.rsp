@@ -1,9 +1,0 @@
--rootPath
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator
--cmake-output
--output-file
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/.qt_plugins/Qt6_QmlPlugins_Imports_DatabaseCodeGenerator.cmake
--importPath
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build
--importPath
-D:/Qt/6.7.0/msvc2019_64/./qml

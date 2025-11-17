@@ -1,4 +1,0 @@
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/DatabaseCodeGenerator.dir
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/DatabaseCodeGenerator_qmlimportscan.dir
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/User/Workspaces/VSCode/DatabaseCodeGenerator/build/CMakeFiles/ZERO_CHECK.dir
