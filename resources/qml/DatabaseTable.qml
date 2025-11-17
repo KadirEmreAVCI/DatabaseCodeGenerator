@@ -10,8 +10,18 @@ Rectangle {
     radius: 10
     color: "transparent"
 
+    // Constrain inside parent
+    onXChanged: {
+        if (x < 0) x = 0
+        if (x + width > parent.width) x = parent.width - width
+    }
+    onYChanged: {
+        if (y < 0) y = 0
+        if (y + height > parent.height) y = parent.height - height
+    }
+
     Rectangle {
-        id: table_name_bar
+        id: table_header
         color: "gray"
         anchors {
             top: parent.top
@@ -22,6 +32,7 @@ Rectangle {
         height: 40
         antialiasing: true
 
+        // Dragging functionality by holding the header
         MouseArea {
             anchors.fill: parent
             drag.target: root
@@ -34,7 +45,7 @@ Rectangle {
     Rectangle {
         id: separator
         anchors {
-            top: table_name_bar.bottom
+            top: table_header.bottom
             left: parent.left
             right: parent.right
         }
