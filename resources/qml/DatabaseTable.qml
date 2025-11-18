@@ -31,12 +31,19 @@ Rectangle {
             font.pointSize: 14
         }
 
-        // Dragging functionality by holding the header
         MouseArea {
             anchors.fill: parent
             drag.target: root
             drag.axis: Drag.XAndYAxis
             cursorShape: Qt.OpenHandCursor
+
+            onPressed: {
+                zoomArea.tableBeingDragged = true
+            }
+
+            onReleased: {
+                zoomArea.tableBeingDragged = false
+            }
         }
     }
 
