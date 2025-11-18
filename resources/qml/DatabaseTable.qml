@@ -9,10 +9,12 @@ Rectangle {
     border.width: 3
     radius: 10
     color: "transparent"
+    
+    property string tableName: "Default Table"
 
     Rectangle {
         id: table_header
-        color: "gray"
+        color: "#cfe8ff"
         anchors {
             top: parent.top
             left: parent.left
@@ -21,6 +23,13 @@ Rectangle {
         }
         height: 40
         antialiasing: true
+
+        Text {
+            anchors.centerIn: parent
+            text: root.tableName
+            font.bold: true
+            font.pointSize: 14
+        }
 
         // Dragging functionality by holding the header
         MouseArea {

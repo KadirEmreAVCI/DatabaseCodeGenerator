@@ -49,8 +49,7 @@ Window {
             id: databaseTable
             x: 100
             y: 100
-            // your own MouseArea / DragHandler inside this still works,
-            // ZoomableCanvas doesn't block it
+            tableName: "My Table"
         }
     }
 }
