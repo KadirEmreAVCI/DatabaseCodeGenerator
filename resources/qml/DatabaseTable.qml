@@ -2,8 +2,8 @@ import QtQuick
 
 Rectangle {
     id: root
-    width: 400
-    height: 300
+    width: 300
+    height: 400
     visible: true
     border.color: "black"
     border.width: 3
