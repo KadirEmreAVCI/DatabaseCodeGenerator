@@ -10,16 +10,6 @@ Rectangle {
     radius: 10
     color: "transparent"
 
-    // Constrain inside parent
-    onXChanged: {
-        if (x < 0) x = 0
-        if (x + width > parent.width) x = parent.width - width
-    }
-    onYChanged: {
-        if (y < 0) y = 0
-        if (y + height > parent.height) y = parent.height - height
-    }
-
     Rectangle {
         id: table_header
         color: "gray"
