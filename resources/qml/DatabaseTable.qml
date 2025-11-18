@@ -1,4 +1,6 @@
+// DatabaseTable.qml
 import QtQuick
+import QtQuick.Layouts
 
 Rectangle {
     id: root
@@ -9,9 +11,11 @@ Rectangle {
     border.width: 3
     radius: 10
     color: "transparent"
-    
+
+    // Exposed property: can be set from Main.qml
     property string tableName: "Default Table"
 
+    // Header
     Rectangle {
         id: table_header
         color: "#cfe8ff"
@@ -31,19 +35,12 @@ Rectangle {
             font.pointSize: 14
         }
 
+        // Drag whole table by holding the header
         MouseArea {
             anchors.fill: parent
             drag.target: root
             drag.axis: Drag.XAndYAxis
-            cursorShape: Qt.OpenHandCursor
-
-            onPressed: {
-                zoomArea.tableBeingDragged = true
-            }
-
-            onReleased: {
-                zoomArea.tableBeingDragged = false
-            }
+            cursorShape: Qt.DragMoveCursor
         }
     }
 
@@ -59,11 +56,12 @@ Rectangle {
         color: root.border.color
     }
 
+    // Content area for columns
     Rectangle {
         id: table_content
         color: "white"
         anchors {
-            top: separator.bottom   // bottom of separator
+            top: separator.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
@@ -72,5 +70,29 @@ Rectangle {
             bottomMargin: root.border.width
         }
         antialiasing: true
+        clip: true
+
+        Column {
+            id: columnList
+            anchors.fill: parent
+            anchors.margins: 4
+            spacing: 4
+
+            // Example column items (you can replace with dynamic ones later)
+            DatabaseColumnItem {
+                text: "id (INTEGER)"
+                iconSource: "qrc:/icons/key.png"   // adjust to your actual icon path
+            }
+
+            DatabaseColumnItem {
+                text: "username (TEXT)"
+                iconSource: "qrc:/icons/text.png"
+            }
+
+            DatabaseColumnItem {
+                text: "created_at (DATETIME)"
+                iconSource: "qrc:/icons/clock.png"
+            }
+        }
     }
 }
