@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
+    z: 10
 
     width: parent ? parent.width : 260
     implicitHeight: 32
@@ -89,8 +90,6 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
 
-                // no drag.target here → no manual movement
-
                 onPressed: {
                     root.color = pressedColor
                 }
@@ -99,34 +98,6 @@ Rectangle {
                 }
             }
         }
-    }
-
-    // Hover + click background logic for full row
-    MouseArea {
-        id: clickArea
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton
-        propagateComposedEvents: true   // let dragArea still receive events
-
-        onEntered: {
-            if (!dragArea.pressed)
-                root.color = hoverColor
-        }
-        onExited: {
-            if (!dragArea.pressed)
-                root.color = baseColor
-        }
-        onPressed: {
-            // only treat as press if not using the drag handle
-            if (!dragArea.containsMouse)
-                root.color = pressedColor
-        }
-        onReleased: {
-            if (!dragArea.pressed)
-                root.color = containsMouse ? hoverColor : baseColor
-        }
-        onClicked: root.clicked()
     }
 
     Component.onCompleted: root.color = baseColor

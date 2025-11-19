@@ -34,14 +34,6 @@ Rectangle {
             font.bold: true
             font.pointSize: 14
         }
-
-        // Drag whole table by holding the header
-        MouseArea {
-            anchors.fill: parent
-            drag.target: root
-            drag.axis: Drag.XAndYAxis
-            cursorShape: Qt.DragMoveCursor
-        }
     }
 
     // Separator between header and content
@@ -54,6 +46,14 @@ Rectangle {
         }
         height: root.border.width
         color: root.border.color
+    }
+
+    // Drag whole table by holding the table
+    MouseArea {
+        anchors.fill: parent
+        drag.target: root
+        drag.axis: Drag.XAndYAxis
+        cursorShape: Qt.DragMoveCursor
     }
 
     // Content area for columns
@@ -95,4 +95,6 @@ Rectangle {
             }
         }
     }
+
+    
 }

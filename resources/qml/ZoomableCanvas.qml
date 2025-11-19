@@ -9,9 +9,6 @@ Item {
     property real minZoom: 0.3
     property real maxZoom: 3.0
 
-    // used to temporarily disable panning while a table is dragged
-    property bool tableBeingDragged: false
-
     // internal: starting position for panning
     property real panStartX: 0
     property real panStartY: 0
@@ -67,7 +64,7 @@ Item {
         acceptedButtons: Qt.LeftButton
 
         onActiveChanged: {
-            if (active && !root.tableBeingDragged) {
+            if (active) {
                 // remember where content was when pan started
                 root.panStartX = content.x;
                 root.panStartY = content.y;
@@ -75,7 +72,7 @@ Item {
         }
 
         onTranslationChanged: {
-            if (!root.tableBeingDragged && active) {
+            if (active) {
                 // translation is read-only; we just use it
                 content.x = root.panStartX + translation.x;
                 content.y = root.panStartY + translation.y;

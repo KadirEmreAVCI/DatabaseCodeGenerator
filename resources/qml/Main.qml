@@ -9,7 +9,6 @@ Window {
     height: 600
     title: ""
 
-    // === Everything inside here will zoom & pan ===
     Canvas {
         id: dotGrid
         anchors.fill: parent
@@ -50,6 +49,13 @@ Window {
             x: 100
             y: 100
             tableName: "My Table"
+        }
+
+        DatabaseTable {
+            id: databaseTable2
+            x: 400
+            y: 100
+            tableName: "My Table 2"
         }
     }
 }
