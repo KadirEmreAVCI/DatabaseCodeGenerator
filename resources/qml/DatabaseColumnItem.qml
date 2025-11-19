@@ -4,18 +4,14 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    z: 10
 
     width: parent ? parent.width : 260
     implicitHeight: 32
     radius: 3
 
-    // Main background color (theme this if you like)
-    property color baseColor: "#ffffff"
-
-    // Automatic hover/pressed variations
-    property color hoverColor: Qt.lighter(baseColor, 1.06)   // ~6% lighter
-    property color pressedColor: Qt.darker(baseColor, 1.12)  // ~12% darker
+    property color baseColor: "red"
+    property color hoverColor: Qt.lighter(baseColor)   
+    property color pressedColor: Qt.darker(baseColor)  
 
     border.color: "#dddddd"
     border.width: 1
@@ -24,21 +20,26 @@ Rectangle {
     property alias text: column_name.text
     property alias iconSource: column_icon.source
 
-    signal clicked()
+    MouseArea {
+        id: dragArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
 
-    // Drag attached properties (for future ListView-based reordering)
-    // These do NOT move the item by themselves.
-    Drag.active: dragArea.pressed
-    Drag.hotSpot.x: width - 10        // near the drag handle
-    Drag.hotSpot.y: height / 2
+        onPressed: {
+            root.color = pressedColor
+        }
+        onReleased: {
+            root.color = containsMouse ? hoverColor : baseColor
+        }
+    }
 
     RowLayout {
-        id: row
+        id: database_column_layout
         anchors.fill: parent
         anchors.margins: 4
         spacing: 6
 
-        // (1) Column icon (left)
         Image {
             id: column_icon
             Layout.alignment: Qt.AlignVCenter
@@ -47,7 +48,6 @@ Rectangle {
             fillMode: Image.PreserveAspectFit
         }
 
-        // (2) Column name text (middle)
         Text {
             id: column_name
             Layout.fillWidth: true
@@ -57,17 +57,15 @@ Rectangle {
             color: "#202020"
         }
 
-        // (3) Drag handle (right)
         Rectangle {
-            id: drag_handle
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: 20
             Layout.preferredHeight: parent.height - 4
             radius: 2
             color: "transparent"
 
-            // three centered dots
             Column {
+                id: three_centered_dots
                 anchors.centerIn: parent
                 spacing: 3
 
@@ -81,24 +79,8 @@ Rectangle {
                     }
                 }
             }
-
-            // This MouseArea *starts* the drag (for future reordering),
-            // but does not move the item by itself.
-            MouseArea {
-                id: dragArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-
-                onPressed: {
-                    root.color = pressedColor
-                }
-                onReleased: {
-                    root.color = containsMouse ? hoverColor : baseColor
-                }
-            }
+            
         }
     }
-
     Component.onCompleted: root.color = baseColor
 }
