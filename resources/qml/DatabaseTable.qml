@@ -72,29 +72,28 @@ Rectangle {
         antialiasing: true
         clip: true
 
-        Column {
+        // Model for the columns (same 3 example items as before)
+        ListModel {
+            id: columnsModel
+            ListElement { name: "id (INTEGER)";        icon: "qrc:/icons/key.png" }
+            ListElement { name: "username (TEXT)";     icon: "qrc:/icons/text.png" }
+            ListElement { name: "created_at (DATETIME)"; icon: "qrc:/icons/clock.png" }
+        }
+
+        ListView {
             id: columnList
             anchors.fill: parent
             anchors.margins: 4
             spacing: 4
+            clip: true
 
-            // Example column items (you can replace with dynamic ones later)
-            DatabaseColumnItem {
-                text: "id (INTEGER)"
-                iconSource: "qrc:/icons/key.png"   // adjust to your actual icon path
-            }
+            model: columnsModel
 
-            DatabaseColumnItem {
-                text: "username (TEXT)"
-                iconSource: "qrc:/icons/text.png"
-            }
-
-            DatabaseColumnItem {
-                text: "created_at (DATETIME)"
-                iconSource: "qrc:/icons/clock.png"
+            delegate: DatabaseColumnItem {
+                width: columnList.width
+                text: name
+                iconSource: icon
             }
         }
     }
-
-    
 }
