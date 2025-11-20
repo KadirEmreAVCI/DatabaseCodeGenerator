@@ -27,7 +27,10 @@ Rectangle {
             drag.target: held ? content : undefined
             drag.axis: Drag.YAxis
 
-            onPressAndHold: held = true
+            onPressAndHold: {
+                if (model.enabled)
+                    held = true
+            }
             onReleased: held = false
 
             Rectangle {
@@ -73,6 +76,7 @@ Rectangle {
                         fill: parent
                         margins: 2
                     }
+                    opacity: model.enabled ? 1.0 : 0.4
 
                     // bind model roles
                     text: model.text
@@ -87,9 +91,13 @@ Rectangle {
                 }
 
                 onEntered: (drag) => {
-                    visualModel.items.move(
-                        drag.source.DelegateModel.itemsIndex,
-                        dragArea.DelegateModel.itemsIndex)
+                    // Only reorder *into* items that are enabled
+                    if (model.enabled) {
+                        visualModel.items.move(
+                            drag.source.DelegateModel.itemsIndex,
+                            dragArea.DelegateModel.itemsIndex
+                        )
+                    }
                 }
             }
         }
@@ -97,9 +105,9 @@ Rectangle {
 
     ListModel {
         id: dbColumnModel
-        ListElement { text: "aaa"; iconSource: "cat.png" }
-        ListElement { text: "bbb"; iconSource: "dog.png" }
-        ListElement { text: "ccc"; iconSource: "pig.png" }
+        ListElement { text: "aaa"; iconSource: "cat.png"; enabled: false }
+        ListElement { text: "bbb"; iconSource: "dog.png"; enabled: true }
+        ListElement { text: "ccc"; iconSource: "pig.png"; enabled: true }
     }
 
     DelegateModel {
