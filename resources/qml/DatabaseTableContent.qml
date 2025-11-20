@@ -5,7 +5,9 @@ import QtQml.Models
 Rectangle {
     id: root
     width: 300
-    height: 400
+    // height = list items + spacing + add button + a tiny bottom margin
+    implicitHeight: addButton.y + addButton.height + 2
+
     color: "white"
     border.color: "gray"
     border.width: 1
@@ -78,8 +80,10 @@ Rectangle {
                         fill: parent
                         margins: 2
                     }
+
                     opacity: model.enabled ? 1.0 : 0.4
 
+                    // bind model roles
                     text: model.text
                     iconSource: model.iconSource
                 }
@@ -108,6 +112,7 @@ Rectangle {
         ListElement { text: "aaa"; iconSource: "cat.png"; enabled: false }
         ListElement { text: "bbb"; iconSource: "dog.png"; enabled: true }
         ListElement { text: "ccc"; iconSource: "pig.png"; enabled: true }
+        ListElement { text: "ddd"; iconSource: "bird.png"; enabled: true }
     }
 
     DelegateModel {
@@ -116,7 +121,7 @@ Rectangle {
         delegate: dragDelegate
     }
 
-    // 🔹 Main list
+    // List items
     ListView {
         id: view
 
@@ -124,23 +129,30 @@ Rectangle {
             left: parent.left
             right: parent.right
             top: parent.top
-            margins: 2
+            leftMargin: 2
+            rightMargin: 2
+            topMargin: 2
         }
 
-        height: parent.height - addButton.height - 8  // leave space for button
+        // make the list just as tall as its contents
+        height: contentHeight
+
         model: visualModel
         spacing: 4
         cacheBuffer: 50
     }
 
+    // Add button directly below the last item
     Rectangle {
         id: addButton
         height: 36
         anchors {
             left: parent.left
             right: parent.right
-            bottom: parent.bottom
-            margins: 6
+            top: view.bottom
+            topMargin: 4
+            leftMargin: 6
+            rightMargin: 6
         }
         radius: 6
         color: "#5AB0FF"

@@ -5,7 +5,6 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     width: 300
-    height: 400
     visible: true
     border.color: "black"
     border.width: 3
@@ -14,6 +13,13 @@ Rectangle {
 
     // Exposed property: can be set from Main.qml
     property string tableName: "Default Table"
+
+    // 🔹 Total height = top border + header + separator + content + bottom border
+    implicitHeight: root.border.width               // top margin
+                    + table_header.height
+                    + separator.height
+                    + table_content.height
+                    + root.border.width             // bottom margin
 
     // Header
     Rectangle {
@@ -50,7 +56,7 @@ Rectangle {
 
     // Drag the whole table by holding the HEADER
     MouseArea {
-        anchors.fill: table_header   // <- only header is draggable now
+        anchors.fill: table_header
         drag.target: root
         drag.axis: Drag.XAndYAxis
         cursorShape: Qt.DragMoveCursor
@@ -64,18 +70,22 @@ Rectangle {
             top: separator.bottom
             left: parent.left
             right: parent.right
-            bottom: parent.bottom
             leftMargin: root.border.width
             rightMargin: root.border.width
-            bottomMargin: root.border.width
         }
         antialiasing: true
         clip: true
 
-        // ⬇️ Use the new DatabaseTableContent instead of inline ListView
+        // 🔹 Height comes from DatabaseTableContent
+        height: tableContent.implicitHeight
+
         DatabaseTableContent {
             id: tableContent
-            anchors.fill: parent
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
         }
     }
 }
