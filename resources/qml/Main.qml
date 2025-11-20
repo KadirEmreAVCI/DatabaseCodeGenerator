@@ -22,17 +22,29 @@ Window {
         backgroundColor: "#f3f3f3"
     }
 
-    DatabaseTable {
-        id: table1
-        x: 100
-        y: 100
-        tableName: "Users"
-    }
+    ZoomableCanvas {
+        id: zoomLayer
+        anchors.fill: parent
 
-    DatabaseTable {
-        id: table2
-        x: 450
-        y: 150
-        tableName: "Orders"
+        // optional zoom limits
+        minZoom: 0.4
+        maxZoom: 2.5
+        zoom: 1.0
+
+        // All visual items you want to zoom/pan go here:
+
+        DatabaseTable {
+            id: table1
+            x: 100
+            y: 100
+            tableName: "Users"
+        }
+
+        DatabaseTable {
+            id: table2
+            x: 450
+            y: 150
+            tableName: "Orders"
+        }
     }
 }
