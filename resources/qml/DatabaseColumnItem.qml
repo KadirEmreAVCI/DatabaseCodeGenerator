@@ -13,8 +13,8 @@ Rectangle {
     border.width: 1
 
     // Public API
-    property alias text: column_name.text
-    property alias iconSource: column_icon.source
+    property string columnName: ""
+    property string columnType: ""
 
     RowLayout {
         id: database_column_layout
@@ -31,12 +31,12 @@ Rectangle {
         }
 
         Text {
-            id: column_name
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             font.pixelSize: 13
             elide: Text.ElideRight
             color: "#202020"
+            text: columnName + "(" + columnType + ")"
         }
 
         Rectangle {

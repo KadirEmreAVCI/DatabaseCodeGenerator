@@ -114,8 +114,8 @@ Rectangle {
                     }
 
                     opacity: model.enabled ? 1.0 : 0.4
-                    text: model.text
-                    iconSource: model.iconSource
+                    columnName: model.columnName
+                    columnType: model.columnType
                 }
             }
 
@@ -137,10 +137,10 @@ Rectangle {
 
     ListModel {
         id: dbColumnModel
-        ListElement { text: "aaa"; iconSource: "cat.png"; enabled: false }
-        ListElement { text: "bbb"; iconSource: "dog.png"; enabled: true }
-        ListElement { text: "ccc"; iconSource: "pig.png"; enabled: true }
-        ListElement { text: "ddd"; iconSource: "bird.png"; enabled: true }
+        ListElement { columnName: "ID"; columnType: "INT"; enabled: false }
+        ListElement { columnName: "bbb"; columnType: "TEXT"; enabled: true }
+        ListElement { columnName: "ccc"; columnType: "INT"; enabled: true }
+        ListElement { columnName: "ddd"; columnType: "BLOB"; enabled: true }
     }
 
     DelegateModel {
