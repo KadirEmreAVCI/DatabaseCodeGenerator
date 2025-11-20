@@ -14,6 +14,10 @@ Rectangle {
 
     signal addRequested()
 
+    // 🔹 External model is ALWAYS provided from outside
+    //    Expected roles: columnName, columnType, enabled
+    required property var externalModel
+
     Component {
         id: dragDelegate
 
@@ -74,7 +78,6 @@ Rectangle {
                 property color dragColor: Qt.darker(baseColor, 1.20)
                 property color disabledColor: "#e6e6e6"
 
-                // 🔥 State-based color: clean, readable, scalable
                 color: {
                     if (!model.enabled)
                         return disabledColor
@@ -135,17 +138,9 @@ Rectangle {
         }
     }
 
-    ListModel {
-        id: dbColumnModel
-        ListElement { columnName: "ID"; columnType: "INT"; enabled: false }
-        ListElement { columnName: "bbb"; columnType: "TEXT"; enabled: true }
-        ListElement { columnName: "ccc"; columnType: "INT"; enabled: true }
-        ListElement { columnName: "ddd"; columnType: "BLOB"; enabled: true }
-    }
-
     DelegateModel {
         id: visualModel
-        model: dbColumnModel
+        model: externalModel          // 🔥 always external
         delegate: dragDelegate
     }
 
@@ -189,7 +184,6 @@ Rectangle {
         property color hoverColor: Qt.lighter(baseColor, 1.10)
         property color pressColor: Qt.darker(baseColor, 1.20)
 
-        // ✔ This assigns color correctly
         color: addMouse.pressed
             ? pressColor
             : (addMouse.containsMouse ? hoverColor : baseColor)

@@ -9,18 +9,20 @@ Rectangle {
     border.color: "black"
     border.width: 3
     radius: 10
-    color: "white"      // 🔹 outer table is the white rounded card
-    clip: true          // 🔹 keep children inside rounded border
+    color: "white"
+    clip: true
 
-    // Exposed property: can be set from Main.qml
+    // Exposed properties
     property string tableName: "Default Table"
 
-    // 🔹 Total height = top border + header + separator + content + bottom border
-    implicitHeight: root.border.width               // top margin
+    // 🔹 Always provided from outside
+    required property var columnModel
+
+    implicitHeight: root.border.width
                     + table_header.height
                     + separator.height
                     + table_content.height
-                    + root.border.width             // bottom margin
+                    + root.border.width
 
     // Header
     Rectangle {
@@ -66,7 +68,7 @@ Rectangle {
     // Content area for columns
     Rectangle {
         id: table_content
-        color: "transparent"   // 🔹 no own background; use root's rounded white
+        color: "transparent"
         anchors {
             top: separator.bottom
             left: parent.left
@@ -77,7 +79,6 @@ Rectangle {
         antialiasing: true
         clip: true
 
-        // 🔹 Height comes from DatabaseTableContent
         height: tableContent.implicitHeight
 
         DatabaseTableContent {
@@ -87,6 +88,9 @@ Rectangle {
                 left: parent.left
                 right: parent.right
             }
+
+            // 🔥 pass model down
+            externalModel: root.columnModel
         }
     }
 }

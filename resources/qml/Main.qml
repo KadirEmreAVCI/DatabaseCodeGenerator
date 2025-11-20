@@ -8,36 +8,45 @@ Window {
     visible: true
     width: 800
     height: 600
-    title: ""
 
-    // Use custom grid component
     GridBackground {
         id: dotGrid
         anchors.fill: parent
-
-        // optional overrides
         gridSize: 20
         dotSize: 1
         dotColor: "#808080"
         backgroundColor: "#f3f3f3"
     }
 
+    ListModel {
+        id: usersColumnsModel
+        ListElement { columnName: "ID";        columnType: "INT";   enabled: false }
+        ListElement { columnName: "Username";  columnType: "TEXT";  enabled: true  }
+        ListElement { columnName: "Email";     columnType: "TEXT";  enabled: true  }
+    }
+
+    ListModel {
+        id: ordersColumnsModel
+        ListElement { columnName: "OrderID";   columnType: "INT";   enabled: false }
+        ListElement { columnName: "UserID";    columnType: "INT";   enabled: true  }
+        ListElement { columnName: "Amount";    columnType: "REAL";  enabled: true  }
+        ListElement { columnName: "Status";    columnType: "TEXT";  enabled: true  }
+    }
+
     ZoomableCanvas {
         id: zoomLayer
         anchors.fill: parent
 
-        // optional zoom limits
         minZoom: 0.4
         maxZoom: 2.5
         zoom: 1.0
-
-        // All visual items you want to zoom/pan go here:
 
         DatabaseTable {
             id: table1
             x: 100
             y: 100
             tableName: "Users"
+            columnModel: usersColumnsModel
         }
 
         DatabaseTable {
@@ -45,6 +54,7 @@ Window {
             x: 450
             y: 150
             tableName: "Orders"
+            columnModel: ordersColumnsModel
         }
     }
 }
