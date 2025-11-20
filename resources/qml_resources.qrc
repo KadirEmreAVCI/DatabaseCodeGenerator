@@ -1,5 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/Main.qml</file>
+        <file>qml/GridBackground.qml</file>
+        <file>qml/ZoomableCanvas.qml</file>
+        <file>qml/DatabaseTable.qml</file>
+        <file>qml/DatabaseTableContent.qml</file>
+        <file>qml/DatabaseColumnItem.qml</file>
     </qresource>
 </RCC>
