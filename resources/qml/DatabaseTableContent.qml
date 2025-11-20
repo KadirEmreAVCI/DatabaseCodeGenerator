@@ -169,10 +169,12 @@ Rectangle {
         cacheBuffer: 50
     }
 
-    // Add button directly below the last item
     Rectangle {
         id: addButton
-        height: 36
+        width: parent.width
+        height: 32
+        radius: 4
+
         anchors {
             left: parent.left
             right: parent.right
@@ -181,21 +183,32 @@ Rectangle {
             leftMargin: 6
             rightMargin: 6
         }
-        radius: 6
-        color: "#5AB0FF"
-        border.color: "#2A8EDB"
+
+        // Base theme
+        property color baseColor: "#e0f6ff"
+        property color hoverColor: Qt.lighter(baseColor, 1.10)
+        property color pressColor: Qt.darker(baseColor, 1.20)
+
+        // ✔ This assigns color correctly
+        color: addMouse.pressed
+            ? pressColor
+            : (addMouse.containsMouse ? hoverColor : baseColor)
+
+        Behavior on color { ColorAnimation { duration: 100 } }
+
+        MouseArea {
+            id: addMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: root.addRequested()
+            cursorShape: Qt.PointingHandCursor
+        }
 
         Text {
             anchors.centerIn: parent
             text: "+"
+            font.pixelSize: 18
             font.bold: true
-            font.pointSize: 24
-            color: "white"
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.addRequested()
         }
     }
 }
