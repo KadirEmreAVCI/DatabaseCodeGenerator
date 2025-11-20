@@ -68,6 +68,7 @@ Item {
                 // remember where content was when pan started
                 root.panStartX = content.x;
                 root.panStartY = content.y;
+                cursorShape = Qt.ClosedHandCursor;
             }
         }
 
@@ -76,6 +77,7 @@ Item {
                 // translation is read-only; we just use it
                 content.x = root.panStartX + translation.x;
                 content.y = root.panStartY + translation.y;
+                cursorShape = Qt.ClosedHandCursor;
             }
         }
     }
