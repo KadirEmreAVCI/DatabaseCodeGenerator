@@ -5,5 +5,6 @@
         <file>qml/ZoomableCanvas.qml</file>
         <file>qml/DatabaseTable.qml</file>
         <file>qml/DatabaseTableContent.qml</file>
+        <file>qml/DatabaseColumnItem.qml</file>
     </qresource>
 </RCC>

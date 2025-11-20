@@ -1,6 +1,6 @@
 // DatabaseTableContent.qml
 import QtQuick
-import QtQml.Models     // for DelegateModel
+import QtQml.Models
 
 Rectangle {
     id: root
@@ -17,9 +17,6 @@ Rectangle {
             id: dragArea
 
             property bool held: false
-            required property string name
-            required property string type
-            required property int age
 
             anchors {
                 left: parent?.left
@@ -46,7 +43,7 @@ Rectangle {
                     verticalCenter: parent.verticalCenter
                 }
                 width: dragArea.width
-                height: column.implicitHeight + 4
+                height: column_item.implicitHeight + 4
 
                 border.width: 1
                 border.color: "lightsteelblue"
@@ -59,7 +56,7 @@ Rectangle {
 
                     ParentChange {
                         target: content
-                        parent: root     // <== still works here
+                        parent: root
                     }
                     AnchorChanges {
                         target: content
@@ -70,16 +67,16 @@ Rectangle {
                     }
                 }
 
-                Column {
-                    id: column
+                DatabaseColumnItem {
+                    id: column_item
                     anchors {
                         fill: parent
                         margins: 2
                     }
 
-                    Text { text: qsTr("Name: ") + dragArea.name }
-                    Text { text: qsTr("Type: ") + dragArea.type }
-                    Text { text: qsTr("Age: ") + dragArea.age }
+                    // bind model roles
+                    text: model.text
+                    iconSource: model.iconSource
                 }
             }
 
@@ -99,15 +96,15 @@ Rectangle {
     }
 
     ListModel {
-        id: petsModel
-        ListElement { name: "aaa"; type: "cat"; age: 3 }
-        ListElement { name: "bbb"; type: "dog"; age: 5 }
-        ListElement { name: "ccc"; type: "pig"; age: 2 }
+        id: dbColumnModel
+        ListElement { text: "aaa"; iconSource: "cat.png" }
+        ListElement { text: "bbb"; iconSource: "dog.png" }
+        ListElement { text: "ccc"; iconSource: "pig.png" }
     }
 
     DelegateModel {
         id: visualModel
-        model: petsModel
+        model: dbColumnModel
         delegate: dragDelegate
     }
 
@@ -120,7 +117,6 @@ Rectangle {
         }
 
         model: visualModel
-
         spacing: 4
         cacheBuffer: 50
     }

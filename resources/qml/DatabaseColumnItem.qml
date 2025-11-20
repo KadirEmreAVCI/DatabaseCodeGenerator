@@ -9,30 +9,12 @@ Rectangle {
     implicitHeight: 32
     radius: 3
 
-    property color baseColor: "red"
-    property color hoverColor: Qt.lighter(baseColor)   
-    property color pressedColor: Qt.darker(baseColor)  
-
     border.color: "#dddddd"
     border.width: 1
 
     // Public API
     property alias text: column_name.text
     property alias iconSource: column_icon.source
-
-    MouseArea {
-        id: dragArea
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-
-        onPressed: {
-            root.color = pressedColor
-        }
-        onReleased: {
-            root.color = containsMouse ? hoverColor : baseColor
-        }
-    }
 
     RowLayout {
         id: database_column_layout
@@ -82,5 +64,4 @@ Rectangle {
             
         }
     }
-    Component.onCompleted: root.color = baseColor
 }
