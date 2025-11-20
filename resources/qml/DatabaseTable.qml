@@ -14,10 +14,9 @@ Rectangle {
 
     // Exposed properties
     property string tableName: "Default Table"
+    required property var columnModel   // external model provided from Main.qml
 
-    // 🔹 Always provided from outside
-    required property var columnModel
-
+    // Total height = border + header + separator + content + bottom border
     implicitHeight: root.border.width
                     + table_header.height
                     + separator.height
@@ -43,6 +42,14 @@ Rectangle {
             font.bold: true
             font.pointSize: 14
         }
+
+        // 🔹 Drag the whole table by holding the HEADER (zoom-safe)
+        DragHandler {
+            id: headerDrag
+            target: root                    // move the table itself
+            acceptedButtons: Qt.LeftButton
+            cursorShape: Qt.DragMoveCursor  // hand cursor while dragging
+        }
     }
 
     // Separator between header and content
@@ -55,14 +62,6 @@ Rectangle {
         }
         height: root.border.width
         color: root.border.color
-    }
-
-    // Drag the whole table by holding the HEADER
-    MouseArea {
-        anchors.fill: table_header
-        drag.target: root
-        drag.axis: Drag.XAndYAxis
-        cursorShape: Qt.DragMoveCursor
     }
 
     // Content area for columns
@@ -79,6 +78,7 @@ Rectangle {
         antialiasing: true
         clip: true
 
+        // height comes from DatabaseTableContent
         height: tableContent.implicitHeight
 
         DatabaseTableContent {
@@ -89,7 +89,6 @@ Rectangle {
                 right: parent.right
             }
 
-            // 🔥 pass model down
             externalModel: root.columnModel
         }
     }

@@ -54,7 +54,7 @@ Rectangle {
                 Repeater {
                     model: 3
                     Rectangle {
-                        width: 3
+                        width: 18
                         height: 3
                         radius: 1.5
                         color: "#999999"
