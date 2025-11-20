@@ -28,14 +28,25 @@ Rectangle {
             }
             height: content.height
 
+            hoverEnabled: true
+
             drag.target: held ? content : undefined
             drag.axis: Drag.YAxis
 
-            onPressAndHold: {
+            cursorShape: {
+                if (!model.enabled || !containsMouse)
+                    return Qt.ArrowCursor
+                return held ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+            }
+
+            onPressed: {
                 if (model.enabled)
                     held = true
             }
-            onReleased: held = false
+
+            onReleased: {
+                held = false
+            }
 
             Rectangle {
                 id: content
@@ -49,14 +60,35 @@ Rectangle {
                     horizontalCenter: parent.horizontalCenter
                     verticalCenter: parent.verticalCenter
                 }
+
                 width: dragArea.width
                 height: column_item.implicitHeight + 4
 
+                radius: 2
                 border.width: 1
                 border.color: "lightsteelblue"
-                color: dragArea.held ? "lightsteelblue" : "white"
-                Behavior on color { ColorAnimation { duration: 100 } }
-                radius: 2
+
+                // 🎨 Color theme for items
+                property color baseColor: "#f8f8f8"
+                property color hoverColor: Qt.lighter(baseColor, 1.06)
+                property color dragColor: Qt.darker(baseColor, 1.20)
+                property color disabledColor: "#e6e6e6"
+
+                // 🔥 State-based color: clean, readable, scalable
+                color: {
+                    if (!model.enabled)
+                        return disabledColor
+
+                    if (dragArea.held)
+                        return dragColor
+
+                    if (dragArea.containsMouse)
+                        return hoverColor
+
+                    return baseColor
+                }
+
+                Behavior on color { ColorAnimation { duration: 120 } }
 
                 states: State {
                     when: dragArea.held
@@ -82,18 +114,14 @@ Rectangle {
                     }
 
                     opacity: model.enabled ? 1.0 : 0.4
-
-                    // bind model roles
                     text: model.text
                     iconSource: model.iconSource
                 }
             }
 
             DropArea {
-                anchors {
-                    fill: parent
-                    margins: 10
-                }
+                anchors.fill: parent
+                anchors.margins: 10
 
                 onEntered: (drag) => {
                     if (model.enabled) {
@@ -134,7 +162,6 @@ Rectangle {
             topMargin: 2
         }
 
-        // make the list just as tall as its contents
         height: contentHeight
 
         model: visualModel
