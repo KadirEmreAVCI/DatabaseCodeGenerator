@@ -10,6 +10,8 @@ Rectangle {
     border.color: "gray"
     border.width: 1
 
+    signal addRequested()
+
     Component {
         id: dragDelegate
 
@@ -78,7 +80,6 @@ Rectangle {
                     }
                     opacity: model.enabled ? 1.0 : 0.4
 
-                    // bind model roles
                     text: model.text
                     iconSource: model.iconSource
                 }
@@ -91,7 +92,6 @@ Rectangle {
                 }
 
                 onEntered: (drag) => {
-                    // Only reorder *into* items that are enabled
                     if (model.enabled) {
                         visualModel.items.move(
                             drag.source.DelegateModel.itemsIndex,
@@ -116,16 +116,47 @@ Rectangle {
         delegate: dragDelegate
     }
 
+    // 🔹 Main list
     ListView {
         id: view
 
         anchors {
-            fill: parent
+            left: parent.left
+            right: parent.right
+            top: parent.top
             margins: 2
         }
 
+        height: parent.height - addButton.height - 8  // leave space for button
         model: visualModel
         spacing: 4
         cacheBuffer: 50
+    }
+
+    Rectangle {
+        id: addButton
+        height: 36
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            margins: 6
+        }
+        radius: 6
+        color: "#5AB0FF"
+        border.color: "#2A8EDB"
+
+        Text {
+            anchors.centerIn: parent
+            text: "+"
+            font.bold: true
+            font.pointSize: 24
+            color: "white"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.addRequested()
+        }
     }
 }
