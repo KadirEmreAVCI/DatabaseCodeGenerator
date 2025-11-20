@@ -22,8 +22,17 @@ Window {
         backgroundColor: "#f3f3f3"
     }
 
-    DatabaseTableContent {
-        id: tableContent
-        anchors.centerIn: parent
+    DatabaseTable {
+        id: table1
+        x: 100
+        y: 100
+        tableName: "Users"
+    }
+
+    DatabaseTable {
+        id: table2
+        x: 450
+        y: 150
+        tableName: "Orders"
     }
 }

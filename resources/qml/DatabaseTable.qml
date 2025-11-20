@@ -48,9 +48,9 @@ Rectangle {
         color: root.border.color
     }
 
-    // Drag whole table by holding the table
+    // Drag the whole table by holding the HEADER
     MouseArea {
-        anchors.fill: parent
+        anchors.fill: table_header   // <- only header is draggable now
         drag.target: root
         drag.axis: Drag.XAndYAxis
         cursorShape: Qt.DragMoveCursor
@@ -72,28 +72,10 @@ Rectangle {
         antialiasing: true
         clip: true
 
-        // Model for the columns (same 3 example items as before)
-        ListModel {
-            id: columnsModel
-            ListElement { name: "id (INTEGER)";        icon: "qrc:/icons/key.png" }
-            ListElement { name: "username (TEXT)";     icon: "qrc:/icons/text.png" }
-            ListElement { name: "created_at (DATETIME)"; icon: "qrc:/icons/clock.png" }
-        }
-
-        ListView {
-            id: columnList
+        // ⬇️ Use the new DatabaseTableContent instead of inline ListView
+        DatabaseTableContent {
+            id: tableContent
             anchors.fill: parent
-            anchors.margins: 4
-            spacing: 4
-            clip: true
-
-            model: columnsModel
-
-            delegate: DatabaseColumnItem {
-                width: columnList.width
-                text: name
-                iconSource: icon
-            }
         }
     }
 }
