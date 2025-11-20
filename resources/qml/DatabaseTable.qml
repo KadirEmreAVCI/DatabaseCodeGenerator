@@ -9,7 +9,8 @@ Rectangle {
     border.color: "black"
     border.width: 3
     radius: 10
-    color: "transparent"
+    color: "white"      // 🔹 outer table is the white rounded card
+    clip: true          // 🔹 keep children inside rounded border
 
     // Exposed property: can be set from Main.qml
     property string tableName: "Default Table"
@@ -65,7 +66,7 @@ Rectangle {
     // Content area for columns
     Rectangle {
         id: table_content
-        color: "white"
+        color: "transparent"   // 🔹 no own background; use root's rounded white
         anchors {
             top: separator.bottom
             left: parent.left
