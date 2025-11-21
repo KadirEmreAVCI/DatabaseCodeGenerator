@@ -18,7 +18,8 @@ Rectangle {
     signal deleteRequested(int rowIndex)
 
     // 🔹 External column model (required)
-    //    Expected roles: columnName, columnType, enabled
+    //    Expected roles at minimum: columnName, columnType, enabled
+    //    Optional roles (if provided): isPrimaryKey, isRelationSource
     required property var externalModel
 
     //
@@ -120,6 +121,10 @@ Rectangle {
                     // bind from model
                     columnName: model.columnName
                     columnType: model.columnType
+
+                    // classification flags (optional roles)
+                    isPrimaryKey: model.isPrimaryKey
+                    isRelationSource: model.isRelationSource
 
                     // visual state
                     opacity: model.enabled ? 1.0 : 0.4

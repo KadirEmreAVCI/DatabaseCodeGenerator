@@ -16,6 +16,11 @@ Rectangle {
     property string columnName: ""
     property string columnType: ""
 
+    // Classification flags
+    property bool isPrimaryKey: false
+    property bool isRelationSource: false   // e.g. FK source
+    // ordinary row = both flags false
+
     // Hover / delete / drag behaviour (set from delegate)
     property bool hovered: false
     property bool deletable: true   // usually bound to model.enabled
@@ -28,6 +33,28 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 4
         spacing: 6
+
+        // 🔹 Label icon on the LEFT of the text
+        //  - 🔑  : primary key
+        //  - 🔗  : relation source (FK-like)
+        //  - 🔹  : ordinary column
+        Text {
+            id: labelIcon
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: 18
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: 14
+
+            text: {
+                if (isPrimaryKey)
+                    return "🔑"
+                if (isRelationSource)
+                    return "🔗"
+                return "🔹"   // ordinary row
+            }
+            opacity: isPrimaryKey ? 1.0 : 0.8
+        }
 
         // Single text: "Name (TYPE)" – they stay glued together
         Text {
@@ -75,7 +102,6 @@ Rectangle {
                 onClicked: {
                     root.deleteRequested()
                 }
-                // no mouse.accepted usage anymore → no deprecation warning
             }
         }
 
