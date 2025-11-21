@@ -16,10 +16,10 @@ Rectangle {
     property string columnName: ""
     property string columnType: ""
 
-    // Hover / delete behaviour (set from delegate)
+    // Hover / delete / drag behaviour (set from delegate)
     property bool hovered: false
-    property bool deletable: true
-    property bool dragging: false      // set from DatabaseTableContent
+    property bool deletable: true   // usually bound to model.enabled
+    property bool dragging: false   // bound to dragArea.held
 
     signal deleteRequested()
 
@@ -29,7 +29,7 @@ Rectangle {
         anchors.margins: 4
         spacing: 6
 
-        // Single text: "Name (TYPE)" – they stay sticked
+        // Single text: "Name (TYPE)" – they stay glued together
         Text {
             id: column_label
             Layout.fillWidth: true
@@ -54,15 +54,14 @@ Rectangle {
 
             visible: root.hovered && root.deletable && !root.dragging
 
-            // neutral when not hovered, “alert” when hovered
             color: deleteMouse.containsMouse ? "#ffe5e5" : "transparent"
             border.color: deleteMouse.containsMouse ? "#ff4a4a" : "transparent"
             border.width: deleteMouse.containsMouse ? 1 : 0
 
             Text {
                 anchors.centerIn: parent
-                text: "✕"                // red cross
-                font.pixelSize: 20       // thicker / bigger
+                text: "✕"
+                font.pixelSize: 16       // thicker / bigger
                 font.bold: true
                 color: deleteMouse.containsMouse ? "#ff2020" : "#c05050"
             }
@@ -82,13 +81,15 @@ Rectangle {
             }
         }
 
-        // ⚫ Three centered dots – kept as before
+        // ⚫ Three centered dots – shown only for *enabled* (deletable) items
         Rectangle {
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: 20      // width as in your original
+            Layout.preferredWidth: 20
             Layout.preferredHeight: parent.height - 4
             radius: 2
             color: "transparent"
+
+            visible: root.deletable    // ❗ no dots for disabled items
 
             Column {
                 id: three_centered_dots
@@ -98,7 +99,7 @@ Rectangle {
                 Repeater {
                     model: 3
                     Rectangle {
-                        width: 18
+                        width: 3
                         height: 3
                         radius: 1.5
                         color: "#999999"

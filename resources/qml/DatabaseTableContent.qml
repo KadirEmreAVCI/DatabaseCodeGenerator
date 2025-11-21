@@ -16,6 +16,7 @@ Rectangle {
     signal addRequested()
 
     // 🔹 External column model (required)
+    //    Expected roles: columnName, columnType, enabled
     required property var externalModel
 
     //
@@ -118,12 +119,11 @@ Rectangle {
                     columnName: model.columnName
                     columnType: model.columnType
 
+                    // visual state
                     opacity: model.enabled ? 1.0 : 0.4
-
-                    // 🔹 hover & drag state for delete button logic
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: model.enabled
+                    deletable: model.enabled     // ❗ controls delete + 3 dots
 
                     onDeleteRequested: {
                         if (root.externalModel && typeof model.index === "number") {
@@ -210,7 +210,6 @@ Rectangle {
             rightMargin: 6
         }
 
-        // Base theme
         property color baseColor: "#e0f6ff"
         property color hoverColor: Qt.lighter(baseColor, 1.10)
         property color pressColor: Qt.darker(baseColor, 1.20)
