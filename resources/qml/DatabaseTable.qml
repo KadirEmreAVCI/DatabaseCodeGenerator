@@ -97,5 +97,4 @@ Rectangle {
     function rowEdgePosition(rowIndex, side, targetItem) {
         return tableContent.rowEdgePosition(rowIndex, side, targetItem);
     }
-
 }
