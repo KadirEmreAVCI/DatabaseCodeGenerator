@@ -164,6 +164,18 @@ Rectangle {
         cacheBuffer: 50
     }
 
+    function rowEdgePosition(rowIndex, side, targetItem) {
+        const item = view.itemAtIndex(rowIndex);
+        if (!item)
+            return Qt.point(0, 0);
+
+        const pInLocal = item.mapToItem(root, 0, item.height / 2);
+        const edgeX = (side === "left") ? 0 : root.width;
+
+        return root.mapToItem(targetItem, edgeX, pInLocal.y);
+    }
+
+
     Rectangle {
         id: addButton
         width: parent.width

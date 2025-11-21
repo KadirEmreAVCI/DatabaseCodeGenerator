@@ -19,18 +19,18 @@ Window {
     }
 
     ListModel {
-        id: usersColumnsModel
+        id: tournamentColumnsModel
         ListElement { columnName: "ID";        columnType: "INT";   enabled: false }
-        ListElement { columnName: "Username";  columnType: "TEXT";  enabled: true  }
-        ListElement { columnName: "Email";     columnType: "TEXT";  enabled: true  }
+        ListElement { columnName: "Season";    columnType: "TEXT";  enabled: true  }
+        ListElement { columnName: "Category";  columnType: "TEXT";  enabled: true  }
     }
 
     ListModel {
-        id: ordersColumnsModel
-        ListElement { columnName: "OrderID";   columnType: "INT";   enabled: false }
-        ListElement { columnName: "UserID";    columnType: "INT";   enabled: true  }
-        ListElement { columnName: "Amount";    columnType: "REAL";  enabled: true  }
-        ListElement { columnName: "Status";    columnType: "TEXT";  enabled: true  }
+        id: matchColumnsModel
+        ListElement { columnName: "ID";             columnType: "INT";   enabled: false }
+        ListElement { columnName: "TournamentID";   columnType: "INT";   enabled: true  }
+        ListElement { columnName: "Date";         columnType: "REAL";  enabled: true  }
+        ListElement { columnName: "Time";         columnType: "TEXT";  enabled: true  }
     }
 
     ZoomableCanvas {
@@ -41,20 +41,50 @@ Window {
         maxZoom: 2.5
         zoom: 1.0
 
+        // 🔹 Lines layer (same zoomed space as tables)
+        ConnectionsLayer {
+            id: links
+            anchors.fill: parent
+            z: -1  // or 1, depending if you want lines behind or on top of tables
+        }
+
         DatabaseTable {
             id: table1
             x: 100
             y: 100
-            tableName: "Users"
-            columnModel: usersColumnsModel
+            tableName: "Tournament"
+            columnModel: tournamentColumnsModel
+
+            onXChanged: links.requestRedraw()
+            onYChanged: links.requestRedraw()
         }
 
         DatabaseTable {
             id: table2
             x: 450
             y: 150
-            tableName: "Orders"
-            columnModel: ordersColumnsModel
+            tableName: "Match"
+            columnModel: matchColumnsModel
+
+            onXChanged: links.requestRedraw()
+            onYChanged: links.requestRedraw()
+        }
+
+        Component.onCompleted: {
+            links.connections = [
+                {
+                    sourceTable: table2,
+                    sourceRow: 1,
+
+                    destinationTable: table1,
+                    destinationRow: 0,
+
+                    // NEW: single relationship parameter
+                    // allowed values: "1..1" or "1..*"
+                    relationship: "1..*"
+                }
+            ];
+            links.requestRedraw();
         }
     }
 }
