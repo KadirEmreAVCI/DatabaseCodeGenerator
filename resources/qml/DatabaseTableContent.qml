@@ -5,6 +5,7 @@ import QtQml.Models
 Rectangle {
     id: root
     width: 300
+
     // height = list items + spacing + add button + a tiny bottom margin
     implicitHeight: addButton.y + addButton.height + 2
 
@@ -12,17 +13,23 @@ Rectangle {
     border.color: "gray"
     border.width: 1
 
+    // 🔹 Signals for C++ side
     signal addRequested()
+    signal deleteRequested(int rowIndex)
 
-    // 🔹 External model is ALWAYS provided from outside
+    // 🔹 External column model (required)
     //    Expected roles: columnName, columnType, enabled
     required property var externalModel
 
+    //
+    // ───────────────────────────── Delegate ─────────────────────────────
+    //
     Component {
         id: dragDelegate
 
         MouseArea {
             id: dragArea
+            hoverEnabled: true
 
             property bool held: false
 
@@ -31,8 +38,6 @@ Rectangle {
                 right: parent?.right
             }
             height: content.height
-
-            hoverEnabled: true
 
             drag.target: held ? content : undefined
             drag.axis: Drag.YAxis
@@ -48,9 +53,7 @@ Rectangle {
                     held = true
             }
 
-            onReleased: {
-                held = false
-            }
+            onReleased: held = false
 
             Rectangle {
                 id: content
@@ -102,10 +105,8 @@ Rectangle {
                     }
                     AnchorChanges {
                         target: content
-                        anchors {
-                            horizontalCenter: undefined
-                            verticalCenter: undefined
-                        }
+                        anchors.horizontalCenter: undefined
+                        anchors.verticalCenter: undefined
                     }
                 }
 
@@ -116,9 +117,23 @@ Rectangle {
                         margins: 2
                     }
 
-                    opacity: model.enabled ? 1.0 : 0.4
+                    // bind from model
                     columnName: model.columnName
                     columnType: model.columnType
+
+                    // visual state
+                    opacity: model.enabled ? 1.0 : 0.4
+                    hovered: dragArea.containsMouse
+                    dragging: dragArea.held
+                    deletable: model.enabled     // controls delete button + 3 dots
+
+                    // 🔥 Do NOT touch the model here.
+                    // Just inform C++ which row wants to be deleted.
+                    onDeleteRequested: {
+                        if (typeof model.index === "number") {
+                            root.deleteRequested(model.index)
+                        }
+                    }
                 }
             }
 
@@ -138,13 +153,18 @@ Rectangle {
         }
     }
 
+    //
+    // ───────────────────────────── DelegateModel ─────────────────────────────
+    //
     DelegateModel {
         id: visualModel
-        model: externalModel          // 🔥 always external
+        model: externalModel
         delegate: dragDelegate
     }
 
-    // List items
+    //
+    // ───────────────────────────── ListView ─────────────────────────────
+    //
     ListView {
         id: view
 
@@ -158,24 +178,27 @@ Rectangle {
         }
 
         height: contentHeight
-
         model: visualModel
         spacing: 4
         cacheBuffer: 50
     }
 
+    //
+    // ───────────────────────────── rowEdgePosition API ─────────────────────────────
+    //
     function rowEdgePosition(rowIndex, side, targetItem) {
-        const item = view.itemAtIndex(rowIndex);
+        const item = view.itemAtIndex(rowIndex)
         if (!item)
-            return Qt.point(0, 0);
+            return Qt.point(0, 0)
 
-        const pInLocal = item.mapToItem(root, 0, item.height / 2);
-        const edgeX = (side === "left") ? 0 : root.width;
-
-        return root.mapToItem(targetItem, edgeX, pInLocal.y);
+        const pInLocal = item.mapToItem(root, 0, item.height / 2)
+        const edgeX = (side === "left") ? 0 : root.width
+        return root.mapToItem(targetItem, edgeX, pInLocal.y)
     }
 
-
+    //
+    // ───────────────────────────── Add Button ─────────────────────────────
+    //
     Rectangle {
         id: addButton
         width: parent.width
@@ -191,7 +214,6 @@ Rectangle {
             rightMargin: 6
         }
 
-        // Base theme
         property color baseColor: "#e0f6ff"
         property color hoverColor: Qt.lighter(baseColor, 1.10)
         property color pressColor: Qt.darker(baseColor, 1.20)
@@ -206,8 +228,8 @@ Rectangle {
             id: addMouse
             anchors.fill: parent
             hoverEnabled: true
-            onClicked: root.addRequested()
             cursorShape: Qt.PointingHandCursor
+            onClicked: root.addRequested()
         }
 
         Text {

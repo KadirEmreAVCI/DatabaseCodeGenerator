@@ -28,7 +28,7 @@ Window {
     ListModel {
         id: matchColumnsModel
         ListElement { columnName: "ID";             columnType: "INT";   enabled: false }
-        ListElement { columnName: "TournamentID";   columnType: "INT";   enabled: true  }
+        ListElement { columnName: "TournamentID";   columnType: "INT";   enabled: false }
         ListElement { columnName: "Date";         columnType: "REAL";  enabled: true  }
         ListElement { columnName: "Time";         columnType: "TEXT";  enabled: true  }
     }
