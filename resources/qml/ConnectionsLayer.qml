@@ -34,16 +34,36 @@ Item {
                 if (!c.sourceTable || !c.destinationTable)
                     continue;
 
-                // 🔹 edge points aligned with specific rows
-                var p1 = c.sourceTable.rowEdgePosition(
+                let sourceTable = c.sourceTable;
+                let destTable   = c.destinationTable;
+
+                // 🔹 decide sides dynamically based on relative X positions
+                let sourceCenterX = sourceTable.x + sourceTable.width / 2;
+                let destCenterX   = destTable.x   + destTable.width   / 2;
+
+                let sourceSide;
+                let destSide;
+
+                if (sourceCenterX <= destCenterX) {
+                    // source is left of destination → source.right -> dest.left
+                    sourceSide = "right";
+                    destSide   = "left";
+                } else {
+                    // source is right of destination → source.left -> dest.right
+                    sourceSide = "left";
+                    destSide   = "right";
+                }
+
+                // 🔹 edge points aligned with specific rows (but side is dynamic)
+                var p1 = sourceTable.rowEdgePosition(
                             c.sourceRow,
-                            c.sourceSide,
+                            sourceSide,
                             root
                         );
 
-                var p2 = c.destinationTable.rowEdgePosition(
+                var p2 = destTable.rowEdgePosition(
                             c.destinationRow,
-                            c.destinationSide,
+                            destSide,
                             root
                         );
 
@@ -82,13 +102,12 @@ Item {
 
                 // ---- modern direction markers ----
 
-                // 1) small outlined circle at source (center stays at p1)
+                // 1) small outlined circle at source (center at p1)
                 ctx.beginPath();
                 ctx.arc(p1.x, p1.y, sourceRadius, 0, Math.PI * 2, false);
                 ctx.stroke();
 
                 // 2) open chevron arrow at destination (source -> destination)
-                // approximate tangent at the end using last control segment
                 let vx = p2.x - cp2x;
                 let vy = p2.y - cp2y;
 
@@ -119,6 +138,7 @@ Item {
                     ctx.stroke();
                 }
             }
+
             ctx.restore();
         }
     }
