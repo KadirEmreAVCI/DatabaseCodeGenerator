@@ -12,9 +12,16 @@ Rectangle {
     border.color: "#dddddd"
     border.width: 1
 
-    // Public API
+    // Public API: roles coming from the model
     property string columnName: ""
     property string columnType: ""
+
+    // Hover / delete behaviour (set from delegate)
+    property bool hovered: false
+    property bool deletable: true
+    property bool dragging: false      // set from DatabaseTableContent
+
+    signal deleteRequested()
 
     RowLayout {
         id: database_column_layout
@@ -22,26 +29,63 @@ Rectangle {
         anchors.margins: 4
         spacing: 6
 
-        Image {
-            id: column_icon
-            Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: 16
-            Layout.preferredHeight: 16
-            fillMode: Image.PreserveAspectFit
-        }
-
+        // Single text: "Name (TYPE)" – they stay sticked
         Text {
+            id: column_label
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
             font.pixelSize: 13
             elide: Text.ElideRight
             color: "#202020"
-            text: columnName + "(" + columnType + ")"
+
+            text: columnType !== ""
+                  ? columnName + " (" + columnType + ")"
+                  : columnName
         }
 
+        // 🔴 Delete button (thicker red cross)
+        // - only visible when hovered, deletable, and not dragging
         Rectangle {
+            id: deleteButton
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: 20
+            Layout.preferredHeight: parent.height - 4
+            radius: 3
+
+            visible: root.hovered && root.deletable && !root.dragging
+
+            // neutral when not hovered, “alert” when hovered
+            color: deleteMouse.containsMouse ? "#ffe5e5" : "transparent"
+            border.color: deleteMouse.containsMouse ? "#ff4a4a" : "transparent"
+            border.width: deleteMouse.containsMouse ? 1 : 0
+
+            Text {
+                anchors.centerIn: parent
+                text: "✕"                // red cross
+                font.pixelSize: 20       // thicker / bigger
+                font.bold: true
+                color: deleteMouse.containsMouse ? "#ff2020" : "#c05050"
+            }
+
+            MouseArea {
+                id: deleteMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+                    root.deleteRequested()
+                    mouse.accepted = true
+                }
+
+                onPressed: mouse.accepted = true
+            }
+        }
+
+        // ⚫ Three centered dots – kept as before
+        Rectangle {
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: 20      // width as in your original
             Layout.preferredHeight: parent.height - 4
             radius: 2
             color: "transparent"
@@ -61,7 +105,6 @@ Rectangle {
                     }
                 }
             }
-            
         }
     }
 }
