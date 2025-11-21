@@ -13,7 +13,9 @@ Rectangle {
     border.color: "gray"
     border.width: 1
 
+    // 🔹 Signals for C++ side
     signal addRequested()
+    signal deleteRequested(int rowIndex)
 
     // 🔹 External column model (required)
     //    Expected roles: columnName, columnType, enabled
@@ -123,11 +125,13 @@ Rectangle {
                     opacity: model.enabled ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: model.enabled     // ❗ controls delete + 3 dots
+                    deletable: model.enabled     // controls delete button + 3 dots
 
+                    // 🔥 Do NOT touch the model here.
+                    // Just inform C++ which row wants to be deleted.
                     onDeleteRequested: {
-                        if (root.externalModel && typeof model.index === "number") {
-                            root.externalModel.remove(model.index)
+                        if (typeof model.index === "number") {
+                            root.deleteRequested(model.index)
                         }
                     }
                 }

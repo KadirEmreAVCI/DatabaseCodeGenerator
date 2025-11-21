@@ -74,10 +74,8 @@ Rectangle {
 
                 onClicked: {
                     root.deleteRequested()
-                    mouse.accepted = true
                 }
-
-                onPressed: mouse.accepted = true
+                // no mouse.accepted usage anymore → no deprecation warning
             }
         }
 
@@ -89,7 +87,7 @@ Rectangle {
             radius: 2
             color: "transparent"
 
-            visible: root.deletable    // ❗ no dots for disabled items
+            visible: root.deletable    // no dots for disabled items
 
             Column {
                 id: three_centered_dots
