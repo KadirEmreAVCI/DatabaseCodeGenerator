@@ -6,26 +6,131 @@ Rectangle {
     id: root
     width: 300
 
-    // height = list items + spacing + add button + a tiny bottom margin
+    // Height = list items + spacing + add button + bottom padding
     implicitHeight: addButton.y + addButton.height + 2
 
     color: "white"
     border.color: "gray"
     border.width: 1
 
-    // 🔹 Signals for C++ side
+    // ------- Signals exposed to C++ -------
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
 
-    // 🔹 External column model (required)
-    //    Expected roles at minimum: columnName, columnType, enabled
-    //    Optional roles (if provided): isPrimaryKey, isRelationSource
+    // Required external model
     required property var externalModel
 
-    //
-    // ───────────────────────────── Delegate ─────────────────────────────
-    //
+    // ======================================
+    //  Delete Confirmation Dialog (custom)
+    // ======================================
+    property bool confirmVisible: false
+    property int confirmRowIndex: -1
+    property string confirmColumnName: ""
+
+    Rectangle {
+        id: confirmDialog
+        visible: root.confirmVisible
+        anchors.centerIn: parent
+        width: 240
+        height: 120
+        radius: 8
+        color: "#ffffff"
+        border.color: "#444"
+        border.width: 1
+        z: 9999
+
+        Rectangle {
+            anchors.fill: parent
+            anchors.margins: 10
+            color: "transparent"
+
+            Column {
+                anchors.fill: parent
+                spacing: 12
+
+                Text {
+                    text: "Delete column?"
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#222"
+                }
+
+                Text {
+                    text: "Column: " + root.confirmColumnName
+                    color: "#333"
+                    font.pixelSize: 13
+                    wrapMode: Text.Wrap
+                }
+
+                Row {
+                    spacing: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    // --- CANCEL BUTTON ---
+                    Rectangle {
+                        width: 80; height: 30; radius: 4
+                        color: "#e0e0e0"
+                        border.color: "#888"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Cancel"
+                            color: "#333"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                root.confirmVisible = false
+                                root.confirmRowIndex = -1
+                                root.confirmColumnName = ""
+                            }
+                        }
+                    }
+
+                    // --- DELETE BUTTON ---
+                    Rectangle {
+                        width: 80; height: 30; radius: 4
+                        color: "#ffdddd"
+                        border.color: "#d33"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Delete"
+                            color: "#a00"
+                            font.bold: true
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                if (root.confirmRowIndex >= 0) {
+
+                                    console.log(
+                                        "Deleting column:",
+                                        root.confirmColumnName,
+                                        "(row", root.confirmRowIndex, ")"
+                                    );
+
+                                    // notify C++ side
+                                    root.deleteRequested(root.confirmRowIndex)
+                                }
+
+                                root.confirmVisible = false
+                                root.confirmRowIndex = -1
+                                root.confirmColumnName = ""
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ======================================
+    //  Delegate
+    // ======================================
     Component {
         id: dragDelegate
 
@@ -57,11 +162,8 @@ Rectangle {
 
             onReleased: {
                 held = false
-
-                // Emit release event to C++ (only for enabled rows)
-                if (model.enabled && model.index >= 0) {
+                if (model.enabled && model.index >= 0)
                     root.itemReleased(model.index)
-                }
             }
 
             Rectangle {
@@ -79,12 +181,10 @@ Rectangle {
 
                 width: dragArea.width
                 height: column_item.implicitHeight + 4
-
                 radius: 2
                 border.width: 1
                 border.color: "lightsteelblue"
 
-                // 🎨 Color theme for items
                 property color baseColor: "#f8f8f8"
                 property color hoverColor: Qt.lighter(baseColor, 1.06)
                 property color dragColor: Qt.darker(baseColor, 1.20)
@@ -93,13 +193,10 @@ Rectangle {
                 color: {
                     if (!model.enabled)
                         return disabledColor
-
                     if (dragArea.held)
                         return dragColor
-
                     if (dragArea.containsMouse)
                         return hoverColor
-
                     return baseColor
                 }
 
@@ -107,7 +204,6 @@ Rectangle {
 
                 states: State {
                     when: dragArea.held
-
                     ParentChange {
                         target: content
                         parent: root
@@ -126,26 +222,22 @@ Rectangle {
                         margins: 2
                     }
 
-                    // bind from model
                     columnName: model.columnName
                     columnType: model.columnType
 
-                    // classification flags (optional roles)
                     isPrimaryKey: model.isPrimaryKey
                     isRelationSource: model.isRelationSource
 
-                    // visual state
                     opacity: model.enabled ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: model.enabled     // controls delete button + 3 dots
+                    deletable: model.enabled
 
-                    // 🔥 Do NOT touch the model here.
-                    // Just inform C++ which row wants to be deleted.
                     onDeleteRequested: {
-                        if (typeof model.index === "number") {
-                            root.deleteRequested(model.index)
-                        }
+                        // Open confirmation dialog
+                        root.confirmRowIndex = model.index
+                        root.confirmColumnName = model.columnName
+                        root.confirmVisible = true
                     }
                 }
             }
@@ -166,52 +258,50 @@ Rectangle {
         }
     }
 
-    //
-    // ───────────────────────────── DelegateModel ─────────────────────────────
-    //
+    // ======================================
+    //  DelegateModel
+    // ======================================
     DelegateModel {
         id: visualModel
         model: externalModel
         delegate: dragDelegate
     }
 
-    //
-    // ───────────────────────────── ListView ─────────────────────────────
-    //
+    // ======================================
+    //  ListView
+    // ======================================
     ListView {
         id: view
-
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: parent.top
-            leftMargin: 2
-            rightMargin: 2
-            topMargin: 2
-        }
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.leftMargin: 2
+        anchors.rightMargin: 2
+        anchors.topMargin: 2
 
         height: contentHeight
-        model: visualModel
         spacing: 4
         cacheBuffer: 50
+        model: visualModel
     }
 
-    //
-    // ───────────────────────────── rowEdgePosition API ─────────────────────────────
-    //
+    // ======================================
+    //  rowEdgePosition API
+    // ======================================
     function rowEdgePosition(rowIndex, side, targetItem) {
         const item = view.itemAtIndex(rowIndex)
         if (!item)
             return Qt.point(0, 0)
 
         const pInLocal = item.mapToItem(root, 0, item.height / 2)
-        const edgeX = (side === "left") ? 0 : root.width
+        const edgeX = side === "left" ? 0 : root.width
+
         return root.mapToItem(targetItem, edgeX, pInLocal.y)
     }
 
-    //
-    // ───────────────────────────── Add Button ─────────────────────────────
-    //
+    // ======================================
+    //  Add Button
+    // ======================================
     Rectangle {
         id: addButton
         width: parent.width
@@ -232,8 +322,8 @@ Rectangle {
         property color pressColor: Qt.darker(baseColor, 1.20)
 
         color: addMouse.pressed
-            ? pressColor
-            : (addMouse.containsMouse ? hoverColor : baseColor)
+                ? pressColor
+                : (addMouse.containsMouse ? hoverColor : baseColor)
 
         Behavior on color { ColorAnimation { duration: 100 } }
 
