@@ -16,6 +16,7 @@ Rectangle {
     // 🔹 Signals for C++ side
     signal addRequested()
     signal deleteRequested(int rowIndex)
+    signal itemReleased(int rowIndex)
 
     // 🔹 External column model (required)
     //    Expected roles at minimum: columnName, columnType, enabled
@@ -54,7 +55,14 @@ Rectangle {
                     held = true
             }
 
-            onReleased: held = false
+            onReleased: {
+                held = false
+
+                // Emit release event to C++ (only for enabled rows)
+                if (model.enabled && model.index >= 0) {
+                    root.itemReleased(model.index)
+                }
+            }
 
             Rectangle {
                 id: content
