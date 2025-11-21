@@ -41,12 +41,22 @@ Window {
         maxZoom: 2.5
         zoom: 1.0
 
+        // 🔹 Lines layer (same zoomed space as tables)
+        ConnectionsLayer {
+            id: links
+            anchors.fill: parent
+            z: -1  // or 1, depending if you want lines behind or on top of tables
+        }
+
         DatabaseTable {
             id: table1
             x: 100
             y: 100
             tableName: "Users"
             columnModel: usersColumnsModel
+
+            onXChanged: links.requestRedraw()
+            onYChanged: links.requestRedraw()
         }
 
         DatabaseTable {
@@ -55,6 +65,16 @@ Window {
             y: 150
             tableName: "Orders"
             columnModel: ordersColumnsModel
+
+            onXChanged: links.requestRedraw()
+            onYChanged: links.requestRedraw()
+        }
+
+        Component.onCompleted: {
+            links.connections = [
+                { from: table1, to: table2 }
+            ];
+            links.requestRedraw();
         }
     }
 }
