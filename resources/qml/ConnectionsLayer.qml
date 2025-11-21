@@ -28,6 +28,12 @@ Item {
             let arrowLength = 15;                // length of chevron arms
             let arrowAngle = Math.PI / 7;        // ~25.7 degrees
             let sourceRadius = 10;               // small circle at source
+            let centerLabelOffset = 10;          // distance of center label from curve
+
+            // slightly larger & bold for labels
+            ctx.font = "bold 14px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
 
             for (var i = 0; i < root.connections.length; ++i) {
                 var c = root.connections[i];
@@ -36,6 +42,17 @@ Item {
 
                 let sourceTable = c.sourceTable;
                 let destTable   = c.destinationTable;
+
+                // 🔹 map relationship -> center label
+                // allowed: "1..1" and "1..*"
+                let relation = c.relationship || "1..*";
+
+                let midLabel;
+                if (relation === "1..1") {
+                    midLabel = "1:1";
+                } else { // "1..*"
+                    midLabel = "1:*";
+                }
 
                 // 🔹 decide sides dynamically based on relative X positions
                 let sourceCenterX = sourceTable.x + sourceTable.width / 2;
@@ -54,7 +71,7 @@ Item {
                     destSide   = "right";
                 }
 
-                // 🔹 edge points aligned with specific rows (but side is dynamic)
+                // 🔹 edge points aligned with specific rows
                 var p1 = sourceTable.rowEdgePosition(
                             c.sourceRow,
                             sourceSide,
@@ -74,16 +91,13 @@ Item {
                 let cp2x = p2.x - dx;
                 let cp2y = p2.y;
 
-                // ✅ compute tangent at start and move start point to circle edge
+                // ✅ tangent at start, to offset line from circle center
                 let svx = cp1x - p1.x;
                 let svy = cp1y - p1.y;
-
                 if (svx === 0 && svy === 0) {
-                    // fallback: straight line towards destination
                     svx = p2.x - p1.x;
                     svy = p2.y - p1.y;
                 }
-
                 let slen = Math.sqrt(svx * svx + svy * svy);
                 let startX = p1.x;
                 let startY = p1.y;
@@ -95,6 +109,7 @@ Item {
                     startY = p1.y + svy * sourceRadius;
                 }
 
+                // draw main curve
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
                 ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
@@ -110,7 +125,6 @@ Item {
                 // 2) open chevron arrow at destination (source -> destination)
                 let vx = p2.x - cp2x;
                 let vy = p2.y - cp2y;
-
                 if (vx === 0 && vy === 0) {
                     vx = p2.x - p1.x;
                     vy = p2.y - p1.y;
@@ -137,6 +151,87 @@ Item {
                     ctx.lineTo(x2, y2);
                     ctx.stroke();
                 }
+
+                // ---- center relation label (e.g. "1:1" or "1:*") ----
+
+                // cubic Bezier midpoint at t = 0.5
+                let t = 0.5;
+                let it = 1.0 - t;
+
+                let midX =
+                    it*it*it * p1.x +
+                    3*it*it*t * cp1x +
+                    3*it*t*t * cp2x +
+                    t*t*t * p2.x;
+
+                let midY =
+                    it*it*it * p1.y +
+                    3*it*it*t * cp1y +
+                    3*it*t*t * cp2y +
+                    t*t*t * p2.y;
+
+                // simple normal based on straight line for offset
+                let lvx = p2.x - p1.x;
+                let lvy = p2.y - p1.y;
+                let llen = Math.sqrt(lvx * lvx + lvy * lvy);
+                let nx = 0;
+                let ny = -1;
+
+                if (llen > 0) {
+                    lvx /= llen;
+                    lvy /= llen;
+                    nx = -lvy;
+                    ny = lvx;
+                }
+
+                let labelX = midX + nx * centerLabelOffset;
+                let labelY = midY + ny * centerLabelOffset;
+
+                // 🔹 draw a pill-shaped background + bold label for visibility
+                ctx.save();
+
+                // measure text width for bubble size
+                let metrics = ctx.measureText(midLabel);
+                let textWidth = metrics.width;
+                let paddingX = 8;
+                let paddingY = 4;
+                let bubbleWidth = textWidth + paddingX * 2;
+                let bubbleHeight = 18 + paddingY;  // ~ font height + padding
+
+                let bubbleX = labelX - bubbleWidth / 2;
+                let bubbleY = labelY - bubbleHeight / 2;
+
+                // bubble background
+                ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+                ctx.strokeStyle = "#2d8cff";
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                // simple rounded-rect
+                let r = 6;
+                ctx.moveTo(bubbleX + r, bubbleY);
+                ctx.lineTo(bubbleX + bubbleWidth - r, bubbleY);
+                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY,
+                                    bubbleX + bubbleWidth, bubbleY + r);
+                ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - r);
+                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight,
+                                    bubbleX + bubbleWidth - r, bubbleY + bubbleHeight);
+                ctx.lineTo(bubbleX + r, bubbleY + bubbleHeight);
+                ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleHeight,
+                                    bubbleX, bubbleY + bubbleHeight - r);
+                ctx.lineTo(bubbleX, bubbleY + r);
+                ctx.quadraticCurveTo(bubbleX, bubbleY,
+                                    bubbleX + r, bubbleY);
+                ctx.closePath();
+
+                ctx.fill();
+                ctx.stroke();
+
+                // label text
+                ctx.fillStyle = "#1f3b57";
+                ctx.fillText(midLabel, labelX, labelY);
+
+                ctx.restore();
             }
 
             ctx.restore();

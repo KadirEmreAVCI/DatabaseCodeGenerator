@@ -19,18 +19,18 @@ Window {
     }
 
     ListModel {
-        id: usersColumnsModel
+        id: tournamentColumnsModel
         ListElement { columnName: "ID";        columnType: "INT";   enabled: false }
-        ListElement { columnName: "Username";  columnType: "TEXT";  enabled: true  }
-        ListElement { columnName: "Email";     columnType: "TEXT";  enabled: true  }
+        ListElement { columnName: "Season";    columnType: "TEXT";  enabled: true  }
+        ListElement { columnName: "Category";  columnType: "TEXT";  enabled: true  }
     }
 
     ListModel {
-        id: ordersColumnsModel
-        ListElement { columnName: "OrderID";   columnType: "INT";   enabled: false }
-        ListElement { columnName: "UserID";    columnType: "INT";   enabled: true  }
-        ListElement { columnName: "Amount";    columnType: "REAL";  enabled: true  }
-        ListElement { columnName: "Status";    columnType: "TEXT";  enabled: true  }
+        id: matchColumnsModel
+        ListElement { columnName: "ID";             columnType: "INT";   enabled: false }
+        ListElement { columnName: "TournamentID";   columnType: "INT";   enabled: true  }
+        ListElement { columnName: "Date";         columnType: "REAL";  enabled: true  }
+        ListElement { columnName: "Time";         columnType: "TEXT";  enabled: true  }
     }
 
     ZoomableCanvas {
@@ -52,8 +52,8 @@ Window {
             id: table1
             x: 100
             y: 100
-            tableName: "Users"
-            columnModel: usersColumnsModel
+            tableName: "Tournament"
+            columnModel: tournamentColumnsModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
@@ -63,8 +63,8 @@ Window {
             id: table2
             x: 450
             y: 150
-            tableName: "Orders"
-            columnModel: ordersColumnsModel
+            tableName: "Match"
+            columnModel: matchColumnsModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
@@ -73,11 +73,15 @@ Window {
         Component.onCompleted: {
             links.connections = [
                 {
-                    sourceTable: table1,
+                    sourceTable: table2,
                     sourceRow: 1,
 
-                    destinationTable: table2,
+                    destinationTable: table1,
                     destinationRow: 0,
+
+                    // NEW: single relationship parameter
+                    // allowed values: "1..1" or "1..*"
+                    relationship: "1..*"
                 }
             ];
             links.requestRedraw();
