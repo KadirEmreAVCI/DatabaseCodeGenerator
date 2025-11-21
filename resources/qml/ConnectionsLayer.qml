@@ -32,8 +32,20 @@ Item {
 
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
+
+                // cubic bezier control points
+                let curvatureFactor = 1;
+                let dx = (p2.x - p1.x) * curvatureFactor;
+                let cp1x = p1.x + dx;
+                let cp1y = p1.y;
+                let cp2x = p2.x - dx;
+                let cp2y = p2.y;
+
+                // draw a smooth curved connection
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+
                 ctx.stroke();
+
             }
 
             ctx.restore();
