@@ -72,7 +72,15 @@ Window {
 
         Component.onCompleted: {
             links.connections = [
-                { from: table1, to: table2 }
+                {
+                    sourceTable: table1,
+                    sourceRow: 1,
+                    sourceSide: "right",
+
+                    destinationTable: table2,
+                    destinationRow: 0,
+                    destinationSide: "left"
+                }
             ];
             links.requestRedraw();
         }

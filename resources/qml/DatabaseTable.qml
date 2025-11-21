@@ -92,4 +92,10 @@ Rectangle {
             externalModel: root.columnModel
         }
     }
+
+    // Exposed helper: get a point on table content edge aligned with a given row
+    function rowEdgePosition(rowIndex, side, targetItem) {
+        return tableContent.rowEdgePosition(rowIndex, side, targetItem);
+    }
+
 }

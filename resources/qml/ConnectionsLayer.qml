@@ -23,29 +23,35 @@ Item {
 
             for (var i = 0; i < root.connections.length; ++i) {
                 var c = root.connections[i];
-                if (!c.from || !c.to)
+                if (!c.sourceTable || !c.destinationTable)
                     continue;
 
-                // Map centers of tables into this layer's coordinates
-                var p1 = c.from.mapToItem(root, c.from.width / 2, c.from.height / 2);
-                var p2 = c.to.mapToItem(root, c.to.width / 2, c.to.height / 2);
+                // source & destination edge points
+                var p1 = c.sourceTable.rowEdgePosition(
+                            c.sourceRow,
+                            c.sourceSide,
+                            root
+                        );
+
+                var p2 = c.destinationTable.rowEdgePosition(
+                            c.destinationRow,
+                            c.destinationSide,
+                            root
+                        );
 
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
 
-                // cubic bezier control points
-                let curvatureFactor = 1;
+                // Curved connector
+                let curvatureFactor = 0.4;
                 let dx = (p2.x - p1.x) * curvatureFactor;
                 let cp1x = p1.x + dx;
                 let cp1y = p1.y;
                 let cp2x = p2.x - dx;
                 let cp2y = p2.y;
 
-                // draw a smooth curved connection
                 ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-
                 ctx.stroke();
-
             }
 
             ctx.restore();
