@@ -1,55 +1,43 @@
 // DatabaseTableContent.qml
 import QtQuick
 import QtQml.Models
+import QtQuick.Dialogs
 
 Rectangle {
     id: root
     width: 300
 
-    // height = list items + spacing + add button + a tiny bottom margin
     implicitHeight: addButton.y + addButton.height + 2
-
     color: "white"
     border.color: "gray"
     border.width: 1
 
-    // 🔹 Signals for C++ side
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
     signal reorderConfirmed(int fromRow, int toRow)
 
-    // 🔹 External column model (required)
-    //    Expected roles at minimum: columnName, columnType, enabled
-    //    Optional roles: isPrimaryKey, isRelationSource
     required property var externalModel
 
-    //
-    // ───────────────────── Delete confirmation state ─────────────────────
-    //
     property bool confirmVisible: false
     property int confirmRowIndex: -1
     property string confirmColumnName: ""
 
-    //
-    // ───────────────────── Reorder confirmation state ────────────────────
-    //
     property bool reorderConfirmVisible: false
-    property var snapshotBeforeReorder: []   // array of row objects
+    property var snapshotBeforeReorder: []
     property int reorderFromIndex: -1
     property int reorderToIndex: -1
     property string reorderColumnName: ""
 
-    //
-    // ───────────────────────────── Delegate ─────────────────────────────
-    //
+    // ------------------------------------------------------------------
+    // Drag Delegate
+    // ------------------------------------------------------------------
     Component {
         id: dragDelegate
 
         MouseArea {
             id: dragArea
             hoverEnabled: true
-
             property bool held: false
 
             anchors {
@@ -71,15 +59,15 @@ Rectangle {
                 if (model.enabled) {
                     held = true
 
-                    // 🔹 Take a snapshot of the current externalModel
+                    // snapshot before reordering
                     root.snapshotBeforeReorder = []
                     for (var i = 0; i < externalModel.count; ++i) {
                         var row = externalModel.get(i)
                         root.snapshotBeforeReorder.push({
-                            columnName:       row.columnName,
-                            columnType:       row.columnType,
-                            enabled:          row.enabled,
-                            isPrimaryKey:     row.isPrimaryKey,
+                            columnName: row.columnName,
+                            columnType: row.columnType,
+                            enabled: row.enabled,
+                            isPrimaryKey: row.isPrimaryKey,
                             isRelationSource: row.isRelationSource
                         })
                     }
@@ -93,16 +81,13 @@ Rectangle {
             onReleased: {
                 held = false
 
-                // Notify C++ that user released this item
-                if (model.enabled && model.index >= 0) {
+                if (model.enabled && model.index >= 0)
                     root.itemReleased(model.index)
-                }
 
-                // 🔹 Check if the external model order has changed
+                // detect reorder
                 if (model.enabled &&
                     root.snapshotBeforeReorder.length === externalModel.count) {
 
-                    // Remember final index for this item
                     root.reorderToIndex = model.index
 
                     var changed = false
@@ -111,44 +96,37 @@ Rectangle {
                         var old = root.snapshotBeforeReorder[i]
 
                         if (!old ||
-                            now.columnName       !== old.columnName       ||
-                            now.columnType       !== old.columnType       ||
-                            now.enabled          !== old.enabled          ||
-                            now.isPrimaryKey     !== old.isPrimaryKey     ||
+                            now.columnName !== old.columnName ||
+                            now.columnType !== old.columnType ||
+                            now.enabled !== old.enabled ||
+                            now.isPrimaryKey !== old.isPrimaryKey ||
                             now.isRelationSource !== old.isRelationSource) {
                             changed = true
                             break
                         }
                     }
 
-                    if (changed &&
-                        root.reorderFromIndex >= 0 &&
-                        root.reorderToIndex   >= 0 &&
-                        root.reorderFromIndex !== root.reorderToIndex) {
-
+                    if (changed && root.reorderFromIndex !== root.reorderToIndex)
                         root.reorderConfirmVisible = true
-                    } else {
-                        // no real change → clean up snapshot
+                    else {
                         root.snapshotBeforeReorder = []
                         root.reorderFromIndex = -1
-                        root.reorderToIndex   = -1
+                        root.reorderToIndex = -1
                         root.reorderColumnName = ""
                     }
                 }
             }
 
+            // content rect
             Rectangle {
                 id: content
-
                 Drag.active: dragArea.held
                 Drag.source: dragArea
                 Drag.hotSpot.x: width / 2
                 Drag.hotSpot.y: height / 2
 
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                    verticalCenter: parent.verticalCenter
-                }
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
 
                 width: dragArea.width
                 height: column_item.implicitHeight + 4
@@ -157,22 +135,15 @@ Rectangle {
                 border.width: 1
                 border.color: "lightsteelblue"
 
-                // 🎨 Color theme for items
                 property color baseColor: "#f8f8f8"
                 property color hoverColor: Qt.lighter(baseColor, 1.06)
                 property color dragColor: Qt.darker(baseColor, 1.20)
                 property color disabledColor: "#e6e6e6"
 
                 color: {
-                    if (!model.enabled)
-                        return disabledColor
-
-                    if (dragArea.held)
-                        return dragColor
-
-                    if (dragArea.containsMouse)
-                        return hoverColor
-
+                    if (!model.enabled) return disabledColor
+                    if (dragArea.held) return dragColor
+                    if (dragArea.containsMouse) return hoverColor
                     return baseColor
                 }
 
@@ -180,11 +151,7 @@ Rectangle {
 
                 states: State {
                     when: dragArea.held
-
-                    ParentChange {
-                        target: content
-                        parent: root
-                    }
+                    ParentChange { target: content; parent: root }
                     AnchorChanges {
                         target: content
                         anchors.horizontalCenter: undefined
@@ -194,31 +161,24 @@ Rectangle {
 
                 DatabaseColumnItem {
                     id: column_item
-                    anchors {
-                        fill: parent
-                        margins: 2
-                    }
+                    anchors.fill: parent
+                    anchors.margins: 2
 
-                    // bind from model
                     columnName: model.columnName
                     columnType: model.columnType
-
-                    // classification flags (optional roles)
-                    isPrimaryKey:     model.isPrimaryKey
+                    isPrimaryKey: model.isPrimaryKey
                     isRelationSource: model.isRelationSource
 
-                    // visual state
-                    opacity:   model.enabled ? 1.0 : 0.4
-                    hovered:   dragArea.containsMouse
-                    dragging:  dragArea.held
-                    deletable: model.enabled     // controls delete button + 3 dots
+                    opacity: model.enabled ? 1.0 : 0.4
+                    hovered: dragArea.containsMouse
+                    dragging: dragArea.held
+                    deletable: model.enabled
 
-                    // ❌ User clicked delete icon -> open confirmation
                     onDeleteRequested: {
                         if (model.index >= 0) {
-                            root.confirmRowIndex   = model.index
+                            root.confirmRowIndex = model.index
                             root.confirmColumnName = model.columnName
-                            root.confirmVisible    = true
+                            root.confirmVisible = true
                         }
                     }
                 }
@@ -229,95 +189,72 @@ Rectangle {
                 anchors.margins: 10
 
                 onEntered: (drag) => {
-                    if (!model.enabled)
-                        return
+                    if (!model.enabled) return
 
-                    // Live reordering: update both visualModel and externalModel
                     var from = drag.source.DelegateModel.itemsIndex
-                    var to   = dragArea.DelegateModel.itemsIndex
+                    var to = dragArea.DelegateModel.itemsIndex
 
-                    if (from === to)
-                        return
+                    if (from === to) return
 
                     visualModel.items.move(from, to)
-
-                    // Reorder underlying ListModel so snapshot comparison works
-                    if (externalModel && typeof externalModel.move === "function") {
+                    if (externalModel && externalModel.move)
                         externalModel.move(from, to, 1)
-                    }
                 }
             }
         }
     }
 
-    //
-    // ───────────────────────────── DelegateModel ─────────────────────────────
-    //
     DelegateModel {
         id: visualModel
         model: externalModel
         delegate: dragDelegate
     }
 
-    //
-    // ───────────────────────────── ListView ─────────────────────────────
-    //
     ListView {
         id: view
-
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: parent.top
-            leftMargin: 2
-            rightMargin: 2
-            topMargin: 2
-        }
-
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.leftMargin: 2
+        anchors.rightMargin: 2
+        anchors.topMargin: 2
         height: contentHeight
-        model: visualModel
         spacing: 4
-        cacheBuffer: 50
+        model: visualModel
     }
 
-    //
-    // ───────────────────────────── rowEdgePosition API ─────────────────────────────
-    //
     function rowEdgePosition(rowIndex, side, targetItem) {
         const item = view.itemAtIndex(rowIndex)
-        if (!item)
-            return Qt.point(0, 0)
+        if (!item) return Qt.point(0, 0)
 
-        const pInLocal = item.mapToItem(root, 0, item.height / 2)
+        const p = item.mapToItem(root, 0, item.height / 2)
         const edgeX = (side === "left") ? 0 : root.width
-        return root.mapToItem(targetItem, edgeX, pInLocal.y)
+        return root.mapToItem(targetItem, edgeX, p.y)
     }
 
-    //
-    // ───────────────────────────── Add Button ─────────────────────────────
-    //
+    // ---
+    // Add Button
+    // ---
     Rectangle {
         id: addButton
         width: parent.width
         height: 32
         radius: 4
 
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: view.bottom
-            topMargin: 4
-            leftMargin: 6
-            rightMargin: 6
-        }
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: view.bottom
+        anchors.topMargin: 4
+        anchors.leftMargin: 6
+        anchors.rightMargin: 6
 
         property color baseColor: "#e0f6ff"
         property color hoverColor: Qt.lighter(baseColor, 1.10)
         property color pressColor: Qt.darker(baseColor, 1.20)
 
         color: addMouse.pressed
-               ? pressColor
-               : (addMouse.containsMouse ? hoverColor : baseColor)
+             ? pressColor
+             : (addMouse.containsMouse ? hoverColor : baseColor)
 
         Behavior on color { ColorAnimation { duration: 100 } }
 
@@ -337,9 +274,9 @@ Rectangle {
         }
     }
 
-    //
-    // ───────────────────────────── Delete Confirmation Overlay ─────────────────────
-    //
+    // -----------------------------------------------------
+    // DELETE CONFIRMATION
+    // -----------------------------------------------------
     Rectangle {
         id: deleteOverlay
         anchors.fill: parent
@@ -347,14 +284,12 @@ Rectangle {
         visible: root.confirmVisible
         z: 900
 
-        MouseArea { anchors.fill: parent }   // swallow clicks
+        MouseArea { anchors.fill: parent }
 
         Rectangle {
-            width: 260
-            height: 130
-            radius: 8
-            color: "#ffffff"
-            border.color: "#888888"
+            width: 260; height: 130
+            radius: 8; color: "white"
+            border.color: "#888"
             anchors.centerIn: parent
 
             Column {
@@ -362,17 +297,8 @@ Rectangle {
                 anchors.margins: 12
                 spacing: 10
 
-                Text {
-                    text: qsTr("Delete column?")
-                    font.pixelSize: 15
-                    font.bold: true
-                }
-
-                Text {
-                    text: qsTr("Column: %1").arg(root.confirmColumnName)
-                    font.pixelSize: 13
-                    wrapMode: Text.Wrap
-                }
+                Text { text: "Delete column?"; font.pixelSize: 15; font.bold: true }
+                Text { text: "Column: " + root.confirmColumnName; font.pixelSize: 13 }
 
                 Row {
                     spacing: 12
@@ -380,8 +306,7 @@ Rectangle {
 
                     Rectangle {
                         width: 80; height: 28; radius: 4
-                        color: "#f0f0f0"
-                        border.color: "#b0b0b0"
+                        color: "#f0f0f0"; border.color: "#b0b0b0"
 
                         MouseArea {
                             anchors.fill: parent
@@ -392,26 +317,19 @@ Rectangle {
                             }
                         }
 
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Cancel")
-                            font.pixelSize: 12
-                        }
+                        Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
                     Rectangle {
                         width: 80; height: 28; radius: 4
-                        color: "#ffdddd"
-                        border.color: "#ff5555"
+                        color: "#ffdddd"; border.color: "#ff5555"
 
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
                                 if (root.confirmRowIndex >= 0) {
-                                    console.log("Deleting column:",
-                                                root.confirmColumnName,
-                                                "(row", root.confirmRowIndex, ")")
                                     root.deleteRequested(root.confirmRowIndex)
+                                    deletionInfoDialog.open()   // ✔ show info dialog
                                 }
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
@@ -421,9 +339,7 @@ Rectangle {
 
                         Text {
                             anchors.centerIn: parent
-                            text: qsTr("Delete")
-                            font.pixelSize: 12
-                            color: "#aa0000"
+                            text: "Delete"; font.pixelSize: 12; color: "#aa0000"
                         }
                     }
                 }
@@ -431,9 +347,15 @@ Rectangle {
         }
     }
 
-    //
-    // ───────────────────────────── Reorder Confirmation Overlay ─────────────────────
-    //
+    MessageDialog {
+        id: deletionInfoDialog
+        title: "Column Deleted"
+        text: "The column has been deleted successfully."
+    }
+
+    // -----------------------------------------------------
+    // REORDER CONFIRMATION
+    // -----------------------------------------------------
     Rectangle {
         id: reorderOverlay
         anchors.fill: parent
@@ -441,14 +363,12 @@ Rectangle {
         visible: root.reorderConfirmVisible
         z: 950
 
-        MouseArea { anchors.fill: parent }   // swallow clicks
+        MouseArea { anchors.fill: parent }
 
         Rectangle {
-            width: 280
-            height: 140
-            radius: 8
-            color: "#ffffff"
-            border.color: "#888888"
+            width: 280; height: 140
+            radius: 8; color: "white"
+            border.color: "#888"
             anchors.centerIn: parent
 
             Column {
@@ -456,94 +376,63 @@ Rectangle {
                 anchors.margins: 12
                 spacing: 10
 
+                Text { text: "Apply new column order?"; font.pixelSize: 15; font.bold: true }
                 Text {
-                    text: qsTr("Apply new column order?")
-                    font.pixelSize: 15
-                    font.bold: true
-                }
-
-                Text {
-                    text: qsTr("Column \"%1\" has been moved.").arg(root.reorderColumnName)
+                    text: "Column \"" + root.reorderColumnName + "\" has been moved."
                     font.pixelSize: 13
-                    wrapMode: Text.Wrap
                 }
 
                 Row {
                     spacing: 12
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    // Cancel -> revert model to snapshot
                     Rectangle {
                         width: 80; height: 28; radius: 4
-                        color: "#f0f0f0"
-                        border.color: "#b0b0b0"
+                        color: "#f0f0f0"; border.color: "#b0b0b0"
 
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.snapshotBeforeReorder &&
-                                    root.snapshotBeforeReorder.length > 0) {
-
-                                    externalModel.clear()
-                                    for (var i = 0; i < root.snapshotBeforeReorder.length; ++i) {
-                                        externalModel.append(root.snapshotBeforeReorder[i])
-                                    }
-                                }
+                                externalModel.clear()
+                                for (var i = 0; i < root.snapshotBeforeReorder.length; ++i)
+                                    externalModel.append(root.snapshotBeforeReorder[i])
 
                                 root.snapshotBeforeReorder = []
-                                root.reorderFromIndex = -1
-                                root.reorderToIndex   = -1
-                                root.reorderColumnName = ""
                                 root.reorderConfirmVisible = false
                             }
                         }
 
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Cancel")
-                            font.pixelSize: 12
-                        }
+                        Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
-                    // Apply -> keep new order, emit signal
                     Rectangle {
                         width: 80; height: 28; radius: 4
-                        color: "#ddf4ff"
-                        border.color: "#3399ff"
+                        color: "#ddf4ff"; border.color: "#3399ff"
 
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.reorderFromIndex >= 0 &&
-                                    root.reorderToIndex   >= 0 &&
-                                    root.reorderFromIndex !== root.reorderToIndex) {
-
-                                    console.log("Reorder confirmed from",
-                                                root.reorderFromIndex,
-                                                "to",
-                                                root.reorderToIndex)
-
-                                    root.reorderConfirmed(root.reorderFromIndex,
-                                                          root.reorderToIndex)
-                                }
+                                root.reorderConfirmed(root.reorderFromIndex, root.reorderToIndex)
+                                reorderInfoDialog.open()   // ✔ show info dialog
 
                                 root.snapshotBeforeReorder = []
-                                root.reorderFromIndex = -1
-                                root.reorderToIndex   = -1
-                                root.reorderColumnName = ""
                                 root.reorderConfirmVisible = false
                             }
                         }
 
                         Text {
                             anchors.centerIn: parent
-                            text: qsTr("Apply")
-                            font.pixelSize: 12
-                            color: "#115599"
+                            text: "Apply"; font.pixelSize: 12; color: "#115599"
                         }
                     }
                 }
             }
         }
+    }
+
+    MessageDialog {
+        id: reorderInfoDialog
+        title: "Order Updated"
+        text: "Column order has been updated."
     }
 }
