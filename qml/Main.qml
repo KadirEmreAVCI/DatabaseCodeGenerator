@@ -1,6 +1,7 @@
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
+import DatabaseCodeGenerator 1.0
+import QtQuick.Window
 import QtQml.Models
 
 Window {

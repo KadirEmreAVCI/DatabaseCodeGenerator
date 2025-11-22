@@ -1,5 +1,7 @@
 // DatabaseTable.qml
 import QtQuick
+import QtQuick.Controls
+import DatabaseCodeGenerator 1.0
 import QtQuick.Layouts
 
 Rectangle {

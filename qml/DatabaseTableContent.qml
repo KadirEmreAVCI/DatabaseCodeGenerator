@@ -1,5 +1,7 @@
 // DatabaseTableContent.qml
 import QtQuick
+import QtQuick.Controls
+import DatabaseCodeGenerator 1.0
 import QtQml.Models
 import QtQuick.Dialogs
 
