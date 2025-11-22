@@ -1,5 +1,7 @@
 // ZoomableCanvas.qml
 import QtQuick
+import QtQuick.Controls
+import DatabaseCodeGenerator 1.0
 
 Item {
     id: root

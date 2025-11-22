@@ -1,5 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QDir>
+#include <QDebug>
 
 int main(int argc, char **argv)
 {
@@ -7,7 +9,7 @@ int main(int argc, char **argv)
 
     QQmlApplicationEngine engine;
 
-    engine.load(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
+    engine.loadFromModule("DatabaseCodeGenerator", "Main");
 
     if (engine.rootObjects().isEmpty())
         return -1;
