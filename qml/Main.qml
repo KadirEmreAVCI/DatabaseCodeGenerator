@@ -53,7 +53,7 @@ Window {
             id: table1
             x: 100
             y: 100
-            tableName: "Tournament"
+            tableName: tournamentTableModel.name
             columnModel: tournamentColumnsModel
 
             onXChanged: links.requestRedraw()
@@ -64,7 +64,7 @@ Window {
             id: table2
             x: 450
             y: 150
-            tableName: "Match"
+            tableName: matchTableModel.name
             columnModel: matchColumnsModel
 
             onXChanged: links.requestRedraw()
