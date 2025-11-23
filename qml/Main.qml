@@ -21,17 +21,17 @@ Window {
 
     ListModel {
         id: tournamentColumnsModel
-        ListElement { columnName: "ID";        columnType: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: true }
-        ListElement { columnName: "Season";    columnType: "TEXT";  enabled: true;  isPrimaryKey: false; isRelationSource: false }
-        ListElement { columnName: "Category";  columnType: "TEXT";  enabled: true ; isPrimaryKey: false; isRelationSource: false}
+        ListElement { name: "ID";        type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: true }
+        ListElement { name: "Season";    type: "TEXT";  enabled: true;  isPrimaryKey: false; isRelationSource: false }
+        ListElement { name: "Category";  type: "TEXT";  enabled: true ; isPrimaryKey: false; isRelationSource: false}
     }
 
     ListModel {
         id: matchColumnsModel
-        ListElement { columnName: "ID";             columnType: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: false }
-        ListElement { columnName: "TournamentID";   columnType: "INT";   enabled: false; isPrimaryKey: false; isRelationSource: true }
-        ListElement { columnName: "Date";         columnType: "REAL";  enabled: true; isPrimaryKey: false; isRelationSource: false }
-        ListElement { columnName: "Time";         columnType: "TEXT";  enabled: true; isPrimaryKey: false; isRelationSource: false}
+        ListElement { name: "ID";           type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: false }
+        ListElement { name: "TournamentID"; type: "INT";   enabled: false; isPrimaryKey: false; isRelationSource: true }
+        ListElement { name: "Date";         type: "REAL";  enabled: true; isPrimaryKey: false; isRelationSource: false }
+        ListElement { name: "Time";         type: "TEXT";  enabled: true; isPrimaryKey: false; isRelationSource: false}
     }
 
     ZoomableCanvas {

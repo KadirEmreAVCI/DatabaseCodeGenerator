@@ -1,7 +1,19 @@
 #include "Model.h"
 
-Model::Model(const Position& rPosition, QObject *parent) : m_rPosition(rPosition), QObject(parent)
+Model::Model(const Position& rPosition, const QString& sName, QObject *parent) : m_rPosition(rPosition), m_sName{sName}, QObject(parent)
 {
+}
+int Model::GetX() const
+{
+    return m_rPosition.x;
+}
+int Model::GetY() const
+{
+    return m_rPosition.y;
+}
+QString Model::GetName() const
+{
+    return m_sName;
 }
 void Model::ChangePosition(int x, int y)
 {
@@ -12,11 +24,11 @@ void Model::ChangePosition(int x, int y)
         emit positionChanged();
     }
 }
-int Model::GetX() const
+void Model::SetName(const QString &name)
 {
-    return m_rPosition.x;
-}
-int Model::GetY() const
-{
-    return m_rPosition.y;
+    if(m_sName != name)
+    {
+        m_sName = name;
+        emit nameChanged();
+    }
 }

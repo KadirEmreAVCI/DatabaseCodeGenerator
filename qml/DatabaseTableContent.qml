@@ -23,13 +23,13 @@ Rectangle {
 
     property bool confirmVisible: false
     property int confirmRowIndex: -1
-    property string confirmColumnName: ""
+    property string confirmname: ""
 
     property bool reorderConfirmVisible: false
     property var snapshotBeforeReorder: []
     property int reorderFromIndex: -1
     property int reorderToIndex: -1
-    property string reorderColumnName: ""
+    property string reordername: ""
 
     // ------------------------------------------------------------------
     // Drag Delegate
@@ -66,8 +66,8 @@ Rectangle {
                     for (var i = 0; i < externalModel.count; ++i) {
                         var row = externalModel.get(i)
                         root.snapshotBeforeReorder.push({
-                            columnName: row.columnName,
-                            columnType: row.columnType,
+                            name: row.name,
+                            type: row.type,
                             enabled: row.enabled,
                             isPrimaryKey: row.isPrimaryKey,
                             isRelationSource: row.isRelationSource
@@ -76,7 +76,7 @@ Rectangle {
 
                     root.reorderFromIndex = model.index
                     root.reorderToIndex = model.index
-                    root.reorderColumnName = model.columnName
+                    root.reordername = model.name
                 }
             }
 
@@ -98,8 +98,8 @@ Rectangle {
                         var old = root.snapshotBeforeReorder[i]
 
                         if (!old ||
-                            now.columnName !== old.columnName ||
-                            now.columnType !== old.columnType ||
+                            now.name !== old.name ||
+                            now.type !== old.type ||
                             now.enabled !== old.enabled ||
                             now.isPrimaryKey !== old.isPrimaryKey ||
                             now.isRelationSource !== old.isRelationSource) {
@@ -114,7 +114,7 @@ Rectangle {
                         root.snapshotBeforeReorder = []
                         root.reorderFromIndex = -1
                         root.reorderToIndex = -1
-                        root.reorderColumnName = ""
+                        root.reordername = ""
                     }
                 }
             }
@@ -166,8 +166,8 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
 
-                    columnName: model.columnName
-                    columnType: model.columnType
+                    name: model.name
+                    type: model.type
                     isPrimaryKey: model.isPrimaryKey
                     isRelationSource: model.isRelationSource
 
@@ -179,7 +179,7 @@ Rectangle {
                     onDeleteRequested: {
                         if (model.index >= 0) {
                             root.confirmRowIndex = model.index
-                            root.confirmColumnName = model.columnName
+                            root.confirmname = model.name
                             root.confirmVisible = true
                         }
                     }
@@ -300,7 +300,7 @@ Rectangle {
                 spacing: 10
 
                 Text { text: "Delete column?"; font.pixelSize: 15; font.bold: true }
-                Text { text: "Column: " + root.confirmColumnName; font.pixelSize: 13 }
+                Text { text: "Column: " + root.confirmname; font.pixelSize: 13 }
 
                 Row {
                     spacing: 12
@@ -315,7 +315,7 @@ Rectangle {
                             onClicked: {
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
-                                root.confirmColumnName = ""
+                                root.confirmname = ""
                             }
                         }
 
@@ -335,7 +335,7 @@ Rectangle {
                                 }
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
-                                root.confirmColumnName = ""
+                                root.confirmname = ""
                             }
                         }
 
@@ -380,7 +380,7 @@ Rectangle {
 
                 Text { text: "Apply new column order?"; font.pixelSize: 15; font.bold: true }
                 Text {
-                    text: "Column \"" + root.reorderColumnName + "\" has been moved."
+                    text: "Column \"" + root.reordername + "\" has been moved."
                     font.pixelSize: 13
                 }
 
