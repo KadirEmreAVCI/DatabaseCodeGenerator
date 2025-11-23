@@ -51,9 +51,9 @@ Window {
 
         DatabaseTable {
             id: table1
-            x: 100
-            y: 100
-            tableName: "Tournament"
+            x: tournamentTableModel.x
+            y: tournamentTableModel.y
+            tableName: tournamentTableModel.name
             columnModel: tournamentColumnsModel
 
             onXChanged: links.requestRedraw()
@@ -62,9 +62,9 @@ Window {
 
         DatabaseTable {
             id: table2
-            x: 450
-            y: 150
-            tableName: "Match"
+            x: matchTableModel.x
+            y: matchTableModel.y
+            tableName: matchTableModel.name
             columnModel: matchColumnsModel
 
             onXChanged: links.requestRedraw()
