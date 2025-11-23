@@ -1,8 +1,7 @@
 #include "TableModel.h"
 
-TableModel::TableModel(const QString& sName, QObject *parent) : QObject(parent)
+TableModel::TableModel(const QString& sName, const Position& rPosition, QObject *parent) : m_sName{sName}, Model{rPosition, parent}
 {
-    SetName(sName);
 }
 TableModel::~TableModel()
 {

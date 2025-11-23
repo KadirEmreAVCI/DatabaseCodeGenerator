@@ -1,14 +1,14 @@
 #ifndef TABLEMODEL_H_
 #define TABLEMODEL_H_
 
-#include <QObject>
+#include "Model.h"
 
-class TableModel : public QObject{
+class TableModel : public Model{
     Q_OBJECT
     Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
 
 public:
-    TableModel(const QString& sName, QObject *parent = nullptr);
+    TableModel(const QString& sName, const Position& rPosition, QObject *parent = nullptr);
     ~TableModel();
     
     QString GetName() const;

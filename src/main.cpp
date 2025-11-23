@@ -9,8 +9,8 @@ int main(int argc, char **argv)
 
     QQmlApplicationEngine engine;
 
-    TableModel rTournamentTableModel{"Tournament"};
-    TableModel rMatchTableModel{"Match"};
+    TableModel rTournamentTableModel{"Tournament", Position{100, 150}};
+    TableModel rMatchTableModel{"Match", Position{450, 150}};
     engine.rootContext()->setContextProperty("tournamentTableModel", &rTournamentTableModel);
     engine.rootContext()->setContextProperty("matchTableModel", &rMatchTableModel);
 

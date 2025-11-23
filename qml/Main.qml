@@ -51,8 +51,8 @@ Window {
 
         DatabaseTable {
             id: table1
-            x: 100
-            y: 100
+            x: tournamentTableModel.x
+            y: tournamentTableModel.y
             tableName: tournamentTableModel.name
             columnModel: tournamentColumnsModel
 
@@ -62,8 +62,8 @@ Window {
 
         DatabaseTable {
             id: table2
-            x: 450
-            y: 150
+            x: matchTableModel.x
+            y: matchTableModel.y
             tableName: matchTableModel.name
             columnModel: matchColumnsModel
 
