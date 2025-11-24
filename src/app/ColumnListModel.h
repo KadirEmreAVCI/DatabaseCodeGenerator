@@ -9,6 +9,9 @@ class ColumnListModel : public QAbstractListModel{
 public:
     enum Roles {
         TypeRole = Qt::UserRole + 1,
+        IsEnabledRole,
+        IsPrimaryKeyRole,
+        IsRelationSourceRole,
         NameRole,
         XRole,
         YRole

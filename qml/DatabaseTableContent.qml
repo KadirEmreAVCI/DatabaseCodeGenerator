@@ -52,13 +52,13 @@ Rectangle {
             drag.axis: Drag.YAxis
 
             cursorShape: {
-                if (!model.enabled || !containsMouse)
+                if (!model.isEnabled || !containsMouse)
                     return Qt.ArrowCursor
                 return held ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             }
 
             onPressed: {
-                if (model.enabled) {
+                if (model.isEnabled) {
                     held = true
 
                     // snapshot before reordering
@@ -68,7 +68,7 @@ Rectangle {
                         root.snapshotBeforeReorder.push({
                             name: row.name,
                             type: row.type,
-                            enabled: row.enabled,
+                            isEnabled: row.isEnabled,
                             isPrimaryKey: row.isPrimaryKey,
                             isRelationSource: row.isRelationSource
                         })
@@ -83,11 +83,11 @@ Rectangle {
             onReleased: {
                 held = false
 
-                if (model.enabled && model.index >= 0)
+                if (model.isEnabled && model.index >= 0)
                     root.itemReleased(model.index)
 
                 // detect reorder
-                if (model.enabled &&
+                if (model.isEnabled &&
                     root.snapshotBeforeReorder.length === externalModel.count) {
 
                     root.reorderToIndex = model.index
@@ -100,7 +100,7 @@ Rectangle {
                         if (!old ||
                             now.name !== old.name ||
                             now.type !== old.type ||
-                            now.enabled !== old.enabled ||
+                            now.isEnabled !== old.isEnabled ||
                             now.isPrimaryKey !== old.isPrimaryKey ||
                             now.isRelationSource !== old.isRelationSource) {
                             changed = true
@@ -143,7 +143,7 @@ Rectangle {
                 property color disabledColor: "#e6e6e6"
 
                 color: {
-                    if (!model.enabled) return disabledColor
+                    if (!model.isEnabled) return disabledColor
                     if (dragArea.held) return dragColor
                     if (dragArea.containsMouse) return hoverColor
                     return baseColor
@@ -171,10 +171,10 @@ Rectangle {
                     isPrimaryKey: model.isPrimaryKey
                     isRelationSource: model.isRelationSource
 
-                    opacity: model.enabled ? 1.0 : 0.4
+                    opacity: model.isEnabled ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: model.enabled
+                    deletable: model.isEnabled
 
                     onDeleteRequested: {
                         if (model.index >= 0) {
@@ -191,7 +191,7 @@ Rectangle {
                 anchors.margins: 10
 
                 onEntered: (drag) => {
-                    if (!model.enabled) return
+                    if (!model.isEnabled) return
 
                     var from = drag.source.DelegateModel.itemsIndex
                     var to = dragArea.DelegateModel.itemsIndex
