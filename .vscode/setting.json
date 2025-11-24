@@ -1,7 +1,26 @@
 {
-    "files.associations": {
-        "*.qml": "qml"
-    },
-    "cmake.configureOnOpen": false,
-    "Qt: Default Installation": "D:\\Qt\\6.7.0\\msvc2019_64"
+    "configurations": [
+        {
+            "name": "Windows",
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/app",
+                "D:/Qt/6.7.0/msvc2019_64/include",
+                "D:/Qt/6.7.0/msvc2019_64/include/QtCore",
+                "D:/Qt/6.7.0/msvc2019_64/include/QtGui",
+                "D:/Qt/6.7.0/msvc2019_64/include/QtQml",
+                "D:/Qt/6.7.0/msvc2019_64/include/QtQuick",
+                "D:/Qt/6.7.0/msvc2019_64/include/QtQuickControls2"
+            ],
+            "defines": [
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.40.33807/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
 }
