@@ -19,21 +19,6 @@ Window {
         backgroundColor: "#f3f3f3"
     }
 
-    // ListModel {
-    //     id: tournamentColumnsModel
-    //     ListElement { name: "ID";        type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: true }
-    //     ListElement { name: "Season";    type: "TEXT";  enabled: true;  isPrimaryKey: false; isRelationSource: false }
-    //     ListElement { name: "Category";  type: "TEXT";  enabled: true ; isPrimaryKey: false; isRelationSource: false}
-    // }
-
-    // ListModel {
-    //     id: matchColumnsModel
-    //     ListElement { name: "ID";           type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: false }
-    //     ListElement { name: "TournamentID"; type: "INT";   enabled: false; isPrimaryKey: false; isRelationSource: true }
-    //     ListElement { name: "Date";         type: "REAL";  enabled: true; isPrimaryKey: false; isRelationSource: false }
-    //     ListElement { name: "Time";         type: "TEXT";  enabled: true; isPrimaryKey: false; isRelationSource: false}
-    // }
-
     ZoomableCanvas {
         id: zoomLayer
         anchors.fill: parent

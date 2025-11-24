@@ -4,9 +4,11 @@ ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     // Example data initialization
-    m_vecColumnItems.append(new ColumnItemModel("INT",  false, true, false, Position(0, 0), "ID", this));
-    m_vecColumnItems.append(new ColumnItemModel("TEXT", true, false, true, Position(0, 0), "SEASON", this));
-    m_vecColumnItems.append(new ColumnItemModel("TEXT", true, false, false, Position(0, 0), "CATEGORY", this));
+    
+}
+ColumnListModel::ColumnListModel(const QVector<ColumnItemModel*>& vecColumnItems, QObject *parent)
+    : QAbstractListModel(parent), m_vecColumnItems(vecColumnItems)
+{
 }
 int ColumnListModel::rowCount(const QModelIndex &parent) const
 {
@@ -46,4 +48,8 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[XRole] = "x";
     roles[YRole] = "y";
     return roles;
+}
+void ColumnListModel::SetColumnItems(const QVector<ColumnItemModel*>& vecColumnItems)
+{
+    m_vecColumnItems = vecColumnItems;
 }
