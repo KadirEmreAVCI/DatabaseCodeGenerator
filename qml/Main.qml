@@ -19,20 +19,20 @@ Window {
         backgroundColor: "#f3f3f3"
     }
 
-    ListModel {
-        id: tournamentColumnsModel
-        ListElement { name: "ID";        type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: true }
-        ListElement { name: "Season";    type: "TEXT";  enabled: true;  isPrimaryKey: false; isRelationSource: false }
-        ListElement { name: "Category";  type: "TEXT";  enabled: true ; isPrimaryKey: false; isRelationSource: false}
-    }
+    // ListModel {
+    //     id: tournamentColumnsModel
+    //     ListElement { name: "ID";        type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: true }
+    //     ListElement { name: "Season";    type: "TEXT";  enabled: true;  isPrimaryKey: false; isRelationSource: false }
+    //     ListElement { name: "Category";  type: "TEXT";  enabled: true ; isPrimaryKey: false; isRelationSource: false}
+    // }
 
-    ListModel {
-        id: matchColumnsModel
-        ListElement { name: "ID";           type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: false }
-        ListElement { name: "TournamentID"; type: "INT";   enabled: false; isPrimaryKey: false; isRelationSource: true }
-        ListElement { name: "Date";         type: "REAL";  enabled: true; isPrimaryKey: false; isRelationSource: false }
-        ListElement { name: "Time";         type: "TEXT";  enabled: true; isPrimaryKey: false; isRelationSource: false}
-    }
+    // ListModel {
+    //     id: matchColumnsModel
+    //     ListElement { name: "ID";           type: "INT";   enabled: false; isPrimaryKey: true; isRelationSource: false }
+    //     ListElement { name: "TournamentID"; type: "INT";   enabled: false; isPrimaryKey: false; isRelationSource: true }
+    //     ListElement { name: "Date";         type: "REAL";  enabled: true; isPrimaryKey: false; isRelationSource: false }
+    //     ListElement { name: "Time";         type: "TEXT";  enabled: true; isPrimaryKey: false; isRelationSource: false}
+    // }
 
     ZoomableCanvas {
         id: zoomLayer
@@ -54,7 +54,7 @@ Window {
             x: tournamentTableModel.x
             y: tournamentTableModel.y
             tableName: tournamentTableModel.name
-            columnModel: tournamentColumnsModel
+            columnModel: tournamentColumnListModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
@@ -65,7 +65,7 @@ Window {
             x: matchTableModel.x
             y: matchTableModel.y
             tableName: matchTableModel.name
-            columnModel: matchColumnsModel
+            columnModel: matchColumnListModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()

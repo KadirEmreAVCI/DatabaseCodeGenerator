@@ -8,13 +8,13 @@ ColumnListModel::ColumnListModel(QObject *parent)
     m_vecColumnItems.append(new ColumnItemModel("TEXT", Position(0, 0), "SEASON", this));
     m_vecColumnItems.append(new ColumnItemModel("TEXT", Position(0, 0), "CATEGORY", this));
 }
-int ColumnListModel::rowCount(const QModelIndex &parent = QModelIndex()) const
+int ColumnListModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return m_vecColumnItems.size();
 }
-QVariant ColumnListModel::data(const QModelIndex &index, int role = Qt::DisplayRole) const
+QVariant ColumnListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return {};
