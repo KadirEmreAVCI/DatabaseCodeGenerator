@@ -17,17 +17,23 @@ class Model : public QObject{
     Q_OBJECT
     Q_PROPERTY(int x READ GetX NOTIFY positionChanged)
     Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
+    Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
 public:
-    Model(const Position& rPosition = {}, QObject *parent = nullptr);
+    Model(const Position& rPosition = {}, const QString& sName = "", QObject *parent = nullptr);
     virtual ~Model() = default;
     
-    void ChangePosition(int x, int y);
+    QString GetName() const;
     int GetX() const;
     int GetY() const;
+    
+    void SetPosition(int x, int y);
+    void SetName(const QString &name);
 protected:
     Position m_rPosition;
+    QString m_sName;
 signals:
     void positionChanged();
+    void nameChanged();
 };
 
 #endif // MODEL_H_

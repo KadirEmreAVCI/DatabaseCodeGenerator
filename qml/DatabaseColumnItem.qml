@@ -16,8 +16,8 @@ Rectangle {
     border.width: 1
 
     // Public API: roles coming from the model
-    property string columnName: ""
-    property string columnType: ""
+    property string name: ""
+    property string type: ""
 
     // Classification flags
     property bool isPrimaryKey: false
@@ -68,9 +68,9 @@ Rectangle {
             elide: Text.ElideRight
             color: "#202020"
 
-            text: columnType !== ""
-                  ? columnName + " (" + columnType + ")"
-                  : columnName
+            text: type !== ""
+                  ? name + " (" + type + ")"
+                  : name
         }
 
         // 🔴 Delete button (thicker red cross)

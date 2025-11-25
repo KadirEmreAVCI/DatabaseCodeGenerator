@@ -2,21 +2,19 @@
 #define TABLEMODEL_H_
 
 #include "Model.h"
+#include "ColumnListModel.h"
 
 class TableModel : public Model{
     Q_OBJECT
-    Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
-
+    Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
-    TableModel(const QString& sName, const Position& rPosition, QObject *parent = nullptr);
-    ~TableModel();
-    
-    QString GetName() const;
-    void SetName(const QString &name);
-signals:
-    void nameChanged();
+    TableModel(const QString& sName = "", const Position& rPosition = {}, QObject *parent = nullptr);
+    virtual ~TableModel()override = default;
+
+    ColumnListModel* GetColumnListModel() const;
+    void SetColumnListModel(ColumnListModel* pColumnListModel);
 private:
-    QString m_sName;
+    ColumnListModel* m_pColumnListModel;
 };
 
 #endif // TABLEMODEL_H_
