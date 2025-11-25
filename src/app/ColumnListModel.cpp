@@ -49,7 +49,34 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[YRole] = "y";
     return roles;
 }
-void ColumnListModel::SetColumnItems(const QVector<ColumnItemModel*>& vecColumnItems)
+void ColumnListModel::AddColumnItem(ColumnItemModel* pColumnItem)
 {
-    m_vecColumnItems = vecColumnItems;
+    if (!pColumnItem)
+        return;
+
+    pColumnItem->setParent(this);
+
+    const int row = m_vecColumnItems.size();
+    beginInsertRows(QModelIndex(), row, row);
+    m_vecColumnItems.append(pColumnItem);
+    endInsertRows();
+
+    emit countChanged();
+}
+QVariantMap ColumnListModel::get(int row) const
+{
+    QVariantMap map;
+    if (row < 0 || row >= m_vecColumnItems.size())
+        return map;
+
+    ColumnItemModel *item = m_vecColumnItems.at(row);
+    if (!item)
+        return map;
+
+    map["name"]             = item->GetName();          // adapt to your getters
+    map["type"]             = item->GetType();
+    map["isEnabled"]        = item->GetIsEnabled();
+    map["isPrimaryKey"]     = item->GetIsPrimaryKey();
+    map["isRelationSource"] = item->GetIsRelationSource();
+    return map;
 }

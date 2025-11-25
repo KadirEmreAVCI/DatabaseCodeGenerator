@@ -39,7 +39,7 @@ Window {
             x: tournamentTableModel.x
             y: tournamentTableModel.y
             tableName: tournamentTableModel.name
-            columnModel: tournamentColumnListModel
+            columnModel: tournamentTableModel.columnListModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
@@ -50,7 +50,7 @@ Window {
             x: matchTableModel.x
             y: matchTableModel.y
             tableName: matchTableModel.name
-            columnModel: matchColumnListModel
+            columnModel: matchTableModel.columnListModel
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()

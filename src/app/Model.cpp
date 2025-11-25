@@ -15,7 +15,7 @@ QString Model::GetName() const
 {
     return m_sName;
 }
-void Model::ChangePosition(int x, int y)
+void Model::SetPosition(int x, int y)
 {
     if(m_rPosition.x != x || m_rPosition.y != y)
     {

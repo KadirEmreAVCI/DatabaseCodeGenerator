@@ -6,6 +6,8 @@
 
 class ColumnListModel : public QAbstractListModel{
     Q_OBJECT
+    Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+
 public:
     enum Roles {
         TypeRole = Qt::UserRole + 1,
@@ -24,10 +26,14 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
+    
+    void AddColumnItem(ColumnItemModel* pColumnItem);
 
-    void SetColumnItems(const QVector<ColumnItemModel*>& vecColumnItems);
+    Q_INVOKABLE QVariantMap get(int row) const;
 private:
     QVector<ColumnItemModel*> m_vecColumnItems;
+signals:
+    void countChanged();
 };
 
 

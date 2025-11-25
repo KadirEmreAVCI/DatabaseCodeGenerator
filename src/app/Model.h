@@ -26,7 +26,7 @@ public:
     int GetX() const;
     int GetY() const;
     
-    void ChangePosition(int x, int y);
+    void SetPosition(int x, int y);
     void SetName(const QString &name);
 protected:
     Position m_rPosition;

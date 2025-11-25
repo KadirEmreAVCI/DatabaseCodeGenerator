@@ -17,7 +17,9 @@ Rectangle {
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
-    signal reorderConfirmed(int fromRow, int toRow)
+
+    // 🔹 Controller will listen this and reorder ColumnListModel in C++
+    signal moveColumnRequest(int fromRow, int toRow)
 
     required property var externalModel
 
@@ -26,7 +28,6 @@ Rectangle {
     property string confirmname: ""
 
     property bool reorderConfirmVisible: false
-    property var snapshotBeforeReorder: []
     property int reorderFromIndex: -1
     property int reorderToIndex: -1
     property string reordername: ""
@@ -60,20 +61,7 @@ Rectangle {
             onPressed: {
                 if (model.isEnabled) {
                     held = true
-
-                    // snapshot before reordering
-                    root.snapshotBeforeReorder = []
-                    for (var i = 0; i < externalModel.count; ++i) {
-                        var row = externalModel.get(i)
-                        root.snapshotBeforeReorder.push({
-                            name: row.name,
-                            type: row.type,
-                            isEnabled: row.isEnabled,
-                            isPrimaryKey: row.isPrimaryKey,
-                            isRelationSource: row.isRelationSource
-                        })
-                    }
-
+                    // remember where drag started & which column
                     root.reorderFromIndex = model.index
                     root.reorderToIndex = model.index
                     root.reordername = model.name
@@ -86,36 +74,19 @@ Rectangle {
                 if (model.isEnabled && model.index >= 0)
                     root.itemReleased(model.index)
 
-                // detect reorder
+                // show confirmation only if we actually moved to another index
                 if (model.isEnabled &&
-                    root.snapshotBeforeReorder.length === externalModel.count) {
+                    root.reorderFromIndex >= 0 &&
+                    root.reorderToIndex >= 0 &&
+                    root.reorderFromIndex !== root.reorderToIndex) {
 
-                    root.reorderToIndex = model.index
 
-                    var changed = false
-                    for (var i = 0; i < externalModel.count; ++i) {
-                        var now = externalModel.get(i)
-                        var old = root.snapshotBeforeReorder[i]
-
-                        if (!old ||
-                            now.name !== old.name ||
-                            now.type !== old.type ||
-                            now.isEnabled !== old.isEnabled ||
-                            now.isPrimaryKey !== old.isPrimaryKey ||
-                            now.isRelationSource !== old.isRelationSource) {
-                            changed = true
-                            break
-                        }
-                    }
-
-                    if (changed && root.reorderFromIndex !== root.reorderToIndex)
-                        root.reorderConfirmVisible = true
-                    else {
-                        root.snapshotBeforeReorder = []
-                        root.reorderFromIndex = -1
-                        root.reorderToIndex = -1
-                        root.reordername = ""
-                    }
+                    root.reorderConfirmVisible = true
+                } else {
+                    // reset if there was no movement
+                    root.reorderFromIndex = -1
+                    root.reorderToIndex = -1
+                    root.reordername = ""
                 }
             }
 
@@ -196,11 +167,17 @@ Rectangle {
                     var from = drag.source.DelegateModel.itemsIndex
                     var to = dragArea.DelegateModel.itemsIndex
 
-                    if (from === to) return
+                    if (from === to)
+                        return
 
+                    // Remember the very first origin index if not set yet
+                    if (root.reorderFromIndex < 0)
+                        root.reorderFromIndex = from
+
+                    // Always keep the latest target index
+                    root.reorderToIndex = to
+                    // 🔹 Only visual reordering; C++ model is unchanged
                     visualModel.items.move(from, to)
-                    if (externalModel && externalModel.move)
-                        externalModel.move(from, to, 1)
                 }
             }
         }
@@ -331,7 +308,7 @@ Rectangle {
                             onClicked: {
                                 if (root.confirmRowIndex >= 0) {
                                     root.deleteRequested(root.confirmRowIndex)
-                                    deletionInfoDialog.open()   // ✔ show info dialog
+                                    deletionInfoDialog.open()
                                 }
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
@@ -388,6 +365,7 @@ Rectangle {
                     spacing: 12
                     anchors.horizontalCenter: parent.horizontalCenter
 
+                    // Cancel
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#f0f0f0"; border.color: "#b0b0b0"
@@ -395,18 +373,25 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                externalModel.clear()
-                                for (var i = 0; i < root.snapshotBeforeReorder.length; ++i)
-                                    externalModel.append(root.snapshotBeforeReorder[i])
+                                // Optional: revert visual move if there was one
+                                if (root.reorderFromIndex >= 0 &&
+                                    root.reorderToIndex >= 0 &&
+                                    root.reorderFromIndex !== root.reorderToIndex) {
+                                    visualModel.items.move(root.reorderToIndex,
+                                                           root.reorderFromIndex)
+                                }
 
-                                root.snapshotBeforeReorder = []
                                 root.reorderConfirmVisible = false
+                                root.reorderFromIndex = -1
+                                root.reorderToIndex = -1
+                                root.reordername = ""
                             }
                         }
 
                         Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
+                    // Apply
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#ddf4ff"; border.color: "#3399ff"
@@ -414,11 +399,16 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                root.reorderConfirmed(root.reorderFromIndex, root.reorderToIndex)
-                                reorderInfoDialog.open()   // ✔ show info dialog
+                                // 🔹 Notify Controller: do real C++ reorder here
+                                root.moveColumnRequest(root.reorderFromIndex,
+                                                       root.reorderToIndex)
 
-                                root.snapshotBeforeReorder = []
+                                reorderInfoDialog.open()
+
                                 root.reorderConfirmVisible = false
+                                root.reorderFromIndex = -1
+                                root.reorderToIndex = -1
+                                root.reordername = ""
                             }
                         }
 
