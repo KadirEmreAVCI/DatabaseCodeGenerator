@@ -1,27 +1,27 @@
-#include "ColumnItemModel.h"
+#include "ColumnModel.h"
 
-ColumnItemModel::ColumnItemModel(const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, const Position& rPosition, const QString& sName, QObject *parent)
+ColumnModel::ColumnModel(const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, const Position& rPosition, const QString& sName, QObject *parent)
     : Model(rPosition, sName, parent), m_sType(sType), m_blIsEnabled(blIsEnabled), m_blIsPrimaryKey(blIsPrimaryKey), m_blIsRelationSource(blIsRelationSource)
 {
 }
 
-QString ColumnItemModel::GetType() const
+QString ColumnModel::GetType() const
 {
     return m_sType;
 }
-bool ColumnItemModel::GetIsEnabled() const
+bool ColumnModel::GetIsEnabled() const
 {
     return m_blIsEnabled;
 }
-bool ColumnItemModel::GetIsPrimaryKey() const
+bool ColumnModel::GetIsPrimaryKey() const
 {
     return m_blIsPrimaryKey;
 }
-bool ColumnItemModel::GetIsRelationSource() const
+bool ColumnModel::GetIsRelationSource() const
 {
     return m_blIsRelationSource;
 }
-void ColumnItemModel::SetType(const QString &type)
+void ColumnModel::SetType(const QString &type)
 {
     if (m_sType != type) 
     {
@@ -29,7 +29,7 @@ void ColumnItemModel::SetType(const QString &type)
         emit typeChanged();
     }
 }
-void ColumnItemModel::SetIsEnabled(bool blIsEnabled)
+void ColumnModel::SetIsEnabled(bool blIsEnabled)
 {
     if (m_blIsEnabled != blIsEnabled) 
     {
@@ -37,7 +37,7 @@ void ColumnItemModel::SetIsEnabled(bool blIsEnabled)
         emit isEnabledChanged();
     }
 }
-void ColumnItemModel::SetIsPrimaryKey(bool blIsPrimaryKey)
+void ColumnModel::SetIsPrimaryKey(bool blIsPrimaryKey)
 {
     if (m_blIsPrimaryKey != blIsPrimaryKey) 
     {
@@ -45,7 +45,7 @@ void ColumnItemModel::SetIsPrimaryKey(bool blIsPrimaryKey)
         emit isPrimaryKeyChanged();
     }
 }
-void ColumnItemModel::SetIsRelationSource(bool blIsRelationSource)
+void ColumnModel::SetIsRelationSource(bool blIsRelationSource)
 {
     if (m_blIsRelationSource != blIsRelationSource) 
     {

@@ -2,7 +2,7 @@
 #define COLUMNLISTMODEL_H_
 
 #include <QAbstractListModel>
-#include "ColumnItemModel.h"
+#include "ColumnModel.h"
 
 class ColumnListModel : public QAbstractListModel{
     Q_OBJECT
@@ -19,7 +19,7 @@ public:
         YRole
     };
     explicit ColumnListModel(QObject *parent = nullptr);
-    ColumnListModel(const QVector<ColumnItemModel*>& vecColumnItems, QObject *parent = nullptr);
+    ColumnListModel(const QVector<ColumnModel*>& vecColumnItems, QObject *parent = nullptr);
     virtual ~ColumnListModel() override = default;
     
     // ---------- QAbstractListModel interface ----------
@@ -27,11 +27,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
     
-    void AddColumnItem(ColumnItemModel* pColumnItem);
+    void AddColumnItem(ColumnModel* pColumnItem);
 
     Q_INVOKABLE QVariantMap get(int row) const;
 private:
-    QVector<ColumnItemModel*> m_vecColumnItems;
+    QVector<ColumnModel*> m_vecColumnModels;
 signals:
     void countChanged();
 };

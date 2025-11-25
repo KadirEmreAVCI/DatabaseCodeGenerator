@@ -1,17 +1,17 @@
-#ifndef COLUMNITEMMODEL_H_
-#define COLUMNITEMMODEL_H_
+#ifndef COLUMNMODEL_H_
+#define COLUMNMODEL_H_
 
 #include "Model.h"
 
-class ColumnItemModel : public Model{
+class ColumnModel : public Model{
     Q_OBJECT
     Q_PROPERTY(QString type READ GetType NOTIFY typeChanged)
     Q_PROPERTY(bool isEnabled READ GetIsEnabled NOTIFY isEnabledChanged)
     Q_PROPERTY(bool isPrimaryKey READ GetIsPrimaryKey NOTIFY isPrimaryKeyChanged)
     Q_PROPERTY(bool isRelationSource READ GetIsRelationSource NOTIFY isRelationSourceChanged)
 public:
-    ColumnItemModel(const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, const Position& rPosition = {}, const QString& sName = "", QObject *parent = nullptr);
-    virtual ~ColumnItemModel()override = default;
+    ColumnModel(const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, const Position& rPosition = {}, const QString& sName = "", QObject *parent = nullptr);
+    virtual ~ColumnModel()override = default;
 
     // Getters and Setters
     QString GetType() const;
@@ -34,4 +34,4 @@ private:
     bool m_blIsPrimaryKey{false};
     bool m_blIsRelationSource{false};
 };
-#endif // COLUMNITEMMODEL_H_
+#endif // COLUMNMODEL_H_

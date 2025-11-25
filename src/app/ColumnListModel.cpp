@@ -6,15 +6,15 @@ ColumnListModel::ColumnListModel(QObject *parent)
     // Example data initialization
     
 }
-ColumnListModel::ColumnListModel(const QVector<ColumnItemModel*>& vecColumnItems, QObject *parent)
-    : QAbstractListModel(parent), m_vecColumnItems(vecColumnItems)
+ColumnListModel::ColumnListModel(const QVector<ColumnModel*>& vecColumnModels, QObject *parent)
+    : QAbstractListModel(parent), m_vecColumnModels(vecColumnModels)
 {
 }
 int ColumnListModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_vecColumnItems.size();
+    return m_vecColumnModels.size();
 }
 QVariant ColumnListModel::data(const QModelIndex &index, int role) const
 {
@@ -22,18 +22,18 @@ QVariant ColumnListModel::data(const QModelIndex &index, int role) const
         return {};
 
     const int row = index.row();
-    if (row < 0 || row >= m_vecColumnItems.size())
+    if (row < 0 || row >= m_vecColumnModels.size())
         return {};
 
-    const ColumnItemModel* const pColumnItem = m_vecColumnItems.at(row);
+    const ColumnModel* const pColumnModel = m_vecColumnModels.at(row);
     switch (role) {
-    case TypeRole:              return pColumnItem->GetType();
-    case NameRole:              return pColumnItem->GetName();
-    case IsEnabledRole:         return pColumnItem->GetIsEnabled();
-    case IsPrimaryKeyRole:      return pColumnItem->GetIsPrimaryKey();
-    case IsRelationSourceRole:  return pColumnItem->GetIsRelationSource();
-    case XRole:                 return pColumnItem->GetX();
-    case YRole:                 return pColumnItem->GetY();
+    case TypeRole:              return pColumnModel->GetType();
+    case NameRole:              return pColumnModel->GetName();
+    case IsEnabledRole:         return pColumnModel->GetIsEnabled();
+    case IsPrimaryKeyRole:      return pColumnModel->GetIsPrimaryKey();
+    case IsRelationSourceRole:  return pColumnModel->GetIsRelationSource();
+    case XRole:                 return pColumnModel->GetX();
+    case YRole:                 return pColumnModel->GetY();
     default:                    return {};
     }
 }
@@ -49,16 +49,16 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[YRole] = "y";
     return roles;
 }
-void ColumnListModel::AddColumnItem(ColumnItemModel* pColumnItem)
+void ColumnListModel::AddColumnItem(ColumnModel* pColumnModel)
 {
-    if (!pColumnItem)
+    if (!pColumnModel)
         return;
 
-    pColumnItem->setParent(this);
+    pColumnModel->setParent(this);
 
-    const int row = m_vecColumnItems.size();
+    const int row = m_vecColumnModels.size();
     beginInsertRows(QModelIndex(), row, row);
-    m_vecColumnItems.append(pColumnItem);
+    m_vecColumnModels.append(pColumnModel);
     endInsertRows();
 
     emit countChanged();
@@ -66,17 +66,17 @@ void ColumnListModel::AddColumnItem(ColumnItemModel* pColumnItem)
 QVariantMap ColumnListModel::get(int row) const
 {
     QVariantMap map;
-    if (row < 0 || row >= m_vecColumnItems.size())
+    if (row < 0 || row >= m_vecColumnModels.size())
         return map;
 
-    ColumnItemModel *item = m_vecColumnItems.at(row);
-    if (!item)
+    ColumnModel *pColumnModel = m_vecColumnModels.at(row);
+    if (!pColumnModel)
         return map;
 
-    map["name"]             = item->GetName();          // adapt to your getters
-    map["type"]             = item->GetType();
-    map["isEnabled"]        = item->GetIsEnabled();
-    map["isPrimaryKey"]     = item->GetIsPrimaryKey();
-    map["isRelationSource"] = item->GetIsRelationSource();
+    map["name"]             = pColumnModel->GetName();          // adapt to your getters
+    map["type"]             = pColumnModel->GetType();
+    map["isEnabled"]        = pColumnModel->GetIsEnabled();
+    map["isPrimaryKey"]     = pColumnModel->GetIsPrimaryKey();
+    map["isRelationSource"] = pColumnModel->GetIsRelationSource();
     return map;
 }
