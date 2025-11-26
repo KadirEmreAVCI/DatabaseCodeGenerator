@@ -4,9 +4,21 @@
 #include "Model.h"
 #include "ColumnListModel.h"
 
+struct Position{
+    Position(int x = 0, int y = 0)
+    {
+        Position::x = x;
+        Position::y = y;
+    }
+    int x;
+    int y;
+};
+
 class TableModel : public Model{
     Q_OBJECT
     Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
+    Q_PROPERTY(int x READ GetX NOTIFY positionChanged)
+    Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
     TableModel(const QString& sName, const Position& rPosition = {}, QObject *parent = nullptr);
@@ -14,16 +26,21 @@ public:
 
     // Getters
     QString GetName() const;
+    int GetX() const;
+    int GetY() const;
     ColumnListModel* GetColumnListModel() const;
 
     // Setters
     void SetName(const QString &name);
+    void SetPosition(int x, int y);
     void SetColumnListModel(ColumnListModel* pColumnListModel);
 private:
     QString m_sName;
+    Position m_rPosition;
     ColumnListModel* m_pColumnListModel;
 signals:
     void nameChanged();
+    void positionChanged();
 };
 
 #endif // TABLEMODEL_H_

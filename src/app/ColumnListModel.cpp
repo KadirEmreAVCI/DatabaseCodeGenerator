@@ -32,8 +32,6 @@ QVariant ColumnListModel::data(const QModelIndex &index, int role) const
     case IsEnabledRole:         return pColumnModel->GetIsEnabled();
     case IsPrimaryKeyRole:      return pColumnModel->GetIsPrimaryKey();
     case IsRelationSourceRole:  return pColumnModel->GetIsRelationSource();
-    case XRole:                 return pColumnModel->GetX();
-    case YRole:                 return pColumnModel->GetY();
     default:                    return {};
     }
 }
@@ -45,8 +43,6 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[IsPrimaryKeyRole] = "isPrimaryKey";
     roles[IsRelationSourceRole] = "isRelationSource";
     roles[NameRole] = "name";
-    roles[XRole] = "x";
-    roles[YRole] = "y";
     return roles;
 }
 void ColumnListModel::AddColumnItem(ColumnModel* pColumnModel)

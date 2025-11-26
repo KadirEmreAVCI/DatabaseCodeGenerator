@@ -1,12 +1,20 @@
 #include "TableModel.h"
 
 TableModel::TableModel(const QString& sName, const Position& rPosition, QObject *parent) 
-    : Model{rPosition, parent}, m_sName{sName}, m_pColumnListModel{new ColumnListModel(this)}
+    : m_sName{sName}, m_rPosition{rPosition}, m_pColumnListModel{new ColumnListModel(this)}
 {
 }
 QString TableModel::GetName() const
 {
     return m_sName;
+}
+int TableModel::GetX() const
+{
+    return m_rPosition.x;
+}
+int TableModel::GetY() const
+{
+    return m_rPosition.y;
 }
 ColumnListModel* TableModel::GetColumnListModel() const
 {
@@ -22,5 +30,14 @@ void TableModel::SetName(const QString &name)
     {
         m_sName = name;
         emit nameChanged();
+    }
+}
+void TableModel::SetPosition(int x, int y)
+{
+    if(m_rPosition.x != x || m_rPosition.y != y)
+    {
+        m_rPosition.x = x;
+        m_rPosition.y = y;
+        emit positionChanged();
     }
 }
