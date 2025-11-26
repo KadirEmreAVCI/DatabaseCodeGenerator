@@ -13,19 +13,19 @@ int main(int argc, char **argv)
     TableModel rTournamentTableModel{"Tournament", Position{100, 150}};
     if(rTournamentTableModel.GetColumnListModel() != nullptr)
     {
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("INT",  false, true,  true,  Position(0, 0), "ID"));
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("TEXT", true,  false, false, Position(0, 0), "Season"));
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("TEXT", true,  false, false, Position(0, 0), "Category"));
+        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  true,  Position(0, 0)));
+        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Season", "TEXT", true,  false, false, Position(0, 0)));
+        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Category", "TEXT", true,  false, false, Position(0, 0)));
     }
     engine.rootContext()->setContextProperty("tournamentTableModel", &rTournamentTableModel);
 
     TableModel rMatchTableModel{"Match", Position{450, 150}};
     if(rMatchTableModel.GetColumnListModel() != nullptr)
     {
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("INT",  false, true,  false, Position(0, 0), "ID"));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("INT",  false, false, true,  Position(0, 0), "TournamentID"));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("REAL", true,  false, false, Position(0, 0), "Date"));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("TEXT", true,  false, false, Position(0, 0), "Time"));
+        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  false, Position(0, 0)));
+        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("TournamentID", "INT",  false, false, true,  Position(0, 0)));
+        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Date", "REAL", true,  false, false, Position(0, 0)));
+        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Time", "TEXT", true,  false, false, Position(0, 0)));
     }
     engine.rootContext()->setContextProperty("matchTableModel", &rMatchTableModel);
     
