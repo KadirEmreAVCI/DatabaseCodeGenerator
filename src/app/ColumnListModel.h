@@ -28,10 +28,10 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     
     void AddColumnItem(ColumnModel* pColumnItem);
-
-    Q_INVOKABLE QVariantMap get(int row) const;
 private:
     QVector<ColumnModel*> m_vecColumnModels;
+public slots:
+    QVariantMap GetColumn(int row) const;
 signals:
     void countChanged();
 };

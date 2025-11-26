@@ -63,7 +63,7 @@ void ColumnListModel::AddColumnItem(ColumnModel* pColumnModel)
 
     emit countChanged();
 }
-QVariantMap ColumnListModel::get(int row) const
+QVariantMap ColumnListModel::GetColumn(int row) const
 {
     QVariantMap map;
     if (row < 0 || row >= m_vecColumnModels.size())
