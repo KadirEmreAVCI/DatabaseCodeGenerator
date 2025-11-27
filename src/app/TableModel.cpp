@@ -1,8 +1,12 @@
 #include "TableModel.h"
 
-TableModel::TableModel(const QString& sName, const Position& rPosition, int iID, QObject *parent) 
-    : m_sName{sName}, m_rPosition{rPosition}, m_pColumnListModel{new ColumnListModel(this)}, Model(iID, parent)
+TableModel::TableModel(int iID, const QString& sName, const Position& rPosition, QObject *parent) 
+    : m_iID{iID}, m_sName{sName}, m_rPosition{rPosition}, m_pColumnListModel{new ColumnListModel(this)}, Model(parent)
 {
+}
+int TableModel::GetID() const
+{
+    return m_iID;
 }
 QString TableModel::GetName() const
 {

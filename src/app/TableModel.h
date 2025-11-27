@@ -16,15 +16,17 @@ struct Position{
 
 class TableModel : public Model{
     Q_OBJECT
+    Q_PROPERTY(int ID READ GetID)
     Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
     Q_PROPERTY(int x READ GetX NOTIFY positionChanged)
     Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
-    TableModel(const QString& sName, const Position& rPosition = {}, int iID = -1, QObject *parent = nullptr);
+    TableModel(int iID, const QString& sName, const Position& rPosition = {}, QObject *parent = nullptr);
     virtual ~TableModel()override = default;
 
     // Getters
+    int GetID() const;
     QString GetName() const;
     int GetX() const;
     int GetY() const;
@@ -35,6 +37,7 @@ public:
     void SetPosition(int x, int y);
     void SetColumnListModel(ColumnListModel* pColumnListModel);
 private:
+    int m_iID;
     QString m_sName;
     Position m_rPosition;
     ColumnListModel* m_pColumnListModel;

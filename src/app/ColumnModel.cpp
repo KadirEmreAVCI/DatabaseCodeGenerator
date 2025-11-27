@@ -1,7 +1,7 @@
 #include "ColumnModel.h"
 
-ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, int iID, QObject *parent)
-    : m_sName{sName}, m_sType(sType), m_blIsEnabled(blIsEnabled), m_blIsPrimaryKey(blIsPrimaryKey), m_blIsRelationSource(blIsRelationSource), Model(iID, parent)
+ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, QObject *parent)
+    : m_sName{sName}, m_sType(sType), m_blIsEnabled(blIsEnabled), m_blIsPrimaryKey(blIsPrimaryKey), m_blIsRelationSource(blIsRelationSource), Model(parent)
 {
 }
 QString ColumnModel::GetName() const

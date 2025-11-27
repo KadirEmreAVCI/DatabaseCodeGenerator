@@ -5,15 +5,10 @@
 
 class Model : public QObject {
     Q_OBJECT
-    Q_PROPERTY(int ID READ GetID)
+    
 public:
-    explicit Model(int iID = -1, QObject *parent = nullptr);
-    virtual ~Model() = default; 
-
-    // Getters
-    int GetID() const;
-protected:
-    int m_iID;
+    explicit Model(QObject *parent = nullptr);
+    virtual ~Model() = default;         
 };
 
 #endif // MODEL_H_
