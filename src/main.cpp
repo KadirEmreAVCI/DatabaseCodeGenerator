@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    TableModel rTournamentTableModel{"Tournament", Position{100, 150}};
+    TableModel rTournamentTableModel{"Tournament", Position{100, 150}, 0};
     if(rTournamentTableModel.GetColumnListModel() != nullptr)
     {
         rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  true));
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     }
     engine.rootContext()->setContextProperty("tournamentTableModel", &rTournamentTableModel);
 
-    TableModel rMatchTableModel{"Match", Position{450, 150}};
+    TableModel rMatchTableModel{"Match", Position{450, 150}, 1};
     if(rMatchTableModel.GetColumnListModel() != nullptr)
     {
         rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  false));
