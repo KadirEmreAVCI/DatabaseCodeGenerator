@@ -1,8 +1,9 @@
+// Main.qml
 import QtQuick
 import QtQuick.Controls
-import DatabaseCodeGenerator 1.0
 import QtQuick.Window
 import QtQml.Models
+import DatabaseCodeGenerator 1.0
 
 Window {
     id: mainWindow
@@ -36,24 +37,33 @@ Window {
 
         DatabaseTable {
             id: table1
+            canvas: zoomLayer                    // 🔹 tell table which canvas it belongs to
             x: tournamentTableModel.x
             y: tournamentTableModel.y
             tableName: tournamentTableModel.name
             columnModel: tournamentTableModel.columnListModel
+            tableID: tournamentTableModel.ID     // if exposed from C++
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
+
+            // Optional, later:
+            // onTableNameChangeRequested: tableController.onTableNameChangeRequested(tableID, newName)
         }
 
         DatabaseTable {
             id: table2
+            canvas: zoomLayer
             x: matchTableModel.x
             y: matchTableModel.y
             tableName: matchTableModel.name
             columnModel: matchTableModel.columnListModel
+            tableID: matchTableModel.ID
 
             onXChanged: links.requestRedraw()
             onYChanged: links.requestRedraw()
+
+            // onTableNameChangeRequested: tableController.onTableNameChangeRequested(tableID, newName)
         }
 
         Component.onCompleted: {
@@ -65,12 +75,10 @@ Window {
                     destinationTable: table1,
                     destinationRow: 0,
 
-                    // NEW: single relationship parameter
-                    // allowed values: "1..1" or "1..*"
                     relationship: "1..*"
                 }
-            ];
-            links.requestRedraw();
+            ]
+            links.requestRedraw()
         }
     }
 }

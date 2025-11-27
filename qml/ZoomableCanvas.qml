@@ -18,6 +18,9 @@ Item {
     // All visual children of ZoomableCanvas go into "content"
     default property alias contentChildren: content.data
 
+    // 🔹 Emitted when user taps on the canvas
+    signal workspaceClicked()
+
     clip: true   // keep drawing inside bounds
 
     // This is the item we actually zoom & pan
@@ -87,6 +90,13 @@ Item {
     TapHandler {
         acceptedButtons: Qt.LeftButton
         gesturePolicy: TapHandler.DragThreshold
+
+        // 🔹 Single tap → notify listeners
+        onTapped: function(point, button) {
+            root.workspaceClicked()
+        }
+
+        // Double-tap → reset view
         onDoubleTapped: {
             root.zoom = 1.0;
             content.x = 0;
