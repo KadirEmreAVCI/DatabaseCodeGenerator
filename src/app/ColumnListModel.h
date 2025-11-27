@@ -14,9 +14,7 @@ public:
         IsEnabledRole,
         IsPrimaryKeyRole,
         IsRelationSourceRole,
-        NameRole,
-        XRole,
-        YRole
+        NameRole
     };
     explicit ColumnListModel(QObject *parent = nullptr);
     ColumnListModel(const QVector<ColumnModel*>& vecColumnItems, QObject *parent = nullptr);

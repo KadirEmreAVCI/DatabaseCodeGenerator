@@ -3,37 +3,17 @@
 
 #include <QObject>
 
-struct Position{
-    Position(int x = 0, int y = 0)
-    {
-        Position::x = x;
-        Position::y = y;
-    }
-    int x;
-    int y;
-};
-
-class Model : public QObject{
+class Model : public QObject {
     Q_OBJECT
-    Q_PROPERTY(int x READ GetX NOTIFY positionChanged)
-    Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
-    Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
+    Q_PROPERTY(int ID READ GetID)
 public:
-    Model(const Position& rPosition = {}, const QString& sName = "", QObject *parent = nullptr);
-    virtual ~Model() = default;
-    
-    QString GetName() const;
-    int GetX() const;
-    int GetY() const;
-    
-    void SetPosition(int x, int y);
-    void SetName(const QString &name);
+    explicit Model(int iID = -1, QObject *parent = nullptr);
+    virtual ~Model() = default; 
+
+    // Getters
+    int GetID() const;
 protected:
-    Position m_rPosition;
-    QString m_sName;
-signals:
-    void positionChanged();
-    void nameChanged();
+    int m_iID;
 };
 
 #endif // MODEL_H_
