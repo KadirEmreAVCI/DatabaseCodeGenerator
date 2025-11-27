@@ -14,9 +14,23 @@ Rectangle {
     color: "white"
     clip: true
 
-    // Exposed properties
+    // ───────────── Exposed properties ─────────────
+    // Driven from C++ (TableModel)
+    property int tableID: -1
     property string tableName: "Default Table"
-    required property var columnModel   // external model provided from Main.qml
+    required property var columnModel   // external model provided from Main.qml    
+
+    // UI-only state
+    property bool editingName: false
+
+    // QML will not update tableName itself, only request it:
+    signal tableNameChangeRequested(int tableID, string newName)
+
+    // Helper: cancel editing without changing anything
+    function cancelNameEditing() {
+        nameEditor.text = root.tableName
+        root.editingName = false
+    }
 
     // Total height = border + header + separator + content + bottom border
     implicitHeight: root.border.width
@@ -25,7 +39,7 @@ Rectangle {
                     + table_content.height
                     + root.border.width
 
-    // Header
+    // ───────────────────── Header ─────────────────────
     Rectangle {
         id: table_header
         color: "#cfe8ff"
@@ -38,23 +52,118 @@ Rectangle {
         height: 40
         antialiasing: true
 
+        // Static label (shown when not editing)
         Text {
+            id: tableNameText
             anchors.centerIn: parent
             text: root.tableName
             font.bold: true
             font.pointSize: 14
+            visible: !root.editingName
         }
 
-        // 🔹 Drag the whole table by holding the HEADER (zoom-safe)
+        // Inline editor (shown on double click)
+        TextField {
+            id: nameEditor
+            anchors {
+                left: parent.left
+                right: parent.right
+                horizontalCenter: parent.horizontalCenter
+                verticalCenter: parent.verticalCenter
+                leftMargin: 8
+                rightMargin: 8
+            }
+            visible: root.editingName
+            text: root.tableName
+            selectByMouse: true
+
+            Keys.onEscapePressed: {
+                // ESC → cancel, revert, close
+                root.cancelNameEditing()
+            }
+
+            // ENTER → accept & emit, then close
+            onAccepted: commitName()
+
+            // FOCUS LOST (e.g. click outside table) → cancel
+            onEditingFinished: {
+                if (root.editingName) {
+                    root.cancelNameEditing()
+                }
+            }
+
+            function commitName() {
+                if (!root.editingName)
+                    return
+
+                var trimmed = text.trim()
+
+                // If empty → cancel
+                if (trimmed.length === 0) {
+                    root.cancelNameEditing()
+                    return
+                }
+
+                // QML does NOT change tableName, only requests it:
+                if (trimmed !== root.tableName) {
+                    root.tableNameChangeRequested(root.tableID, trimmed)
+                }
+
+                // prevent onEditingFinished from cancelling after accept
+                root.editingName = false
+            }
+        }
+
+        // Double click header to start editing
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            propagateComposedEvents: true
+
+            onDoubleClicked: {
+                root.editingName = true
+                nameEditor.text = root.tableName
+                nameEditor.forceActiveFocus()
+                nameEditor.selectAll()
+            }
+        }
+
+        // Drag the whole table by holding the HEADER
         DragHandler {
             id: headerDrag
-            target: root                    // move the table itself
+            target: root
             acceptedButtons: Qt.LeftButton
-            cursorShape: Qt.DragMoveCursor  // hand cursor while dragging
+            cursorShape: Qt.DragMoveCursor
         }
     }
 
-    // Separator between header and content
+    // ───────────────────── Global click-to-close handler ─────────────────────
+    // Active only while editing; closes editor when clicking anywhere outside
+    MouseArea {
+        id: closeEditingArea
+        anchors.fill: parent
+        enabled: root.editingName
+        z: 998
+        acceptedButtons: Qt.LeftButton
+        propagateComposedEvents: true
+
+        onPressed: {
+            // Map click to nameEditor coordinate system
+            var p = mapToItem(nameEditor, mouse.x, mouse.y)
+            var inEditor =
+                p.x >= 0 && p.x <= nameEditor.width &&
+                p.y >= 0 && p.y <= nameEditor.height
+
+            if (!inEditor) {
+                root.cancelNameEditing()
+            }
+
+            // Let underlying items still process the click
+            mouse.accepted = false
+        }
+    }
+
+    // ───────────────────── Separator ─────────────────────
     Rectangle {
         id: separator
         anchors {
@@ -66,7 +175,7 @@ Rectangle {
         color: root.border.color
     }
 
-    // Content area for columns
+    // ───────────────────── Content area for columns ─────────────────────
     Rectangle {
         id: table_content
         color: "transparent"
