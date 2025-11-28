@@ -4,6 +4,7 @@
 #include <iostream>
 #include "TableModel.h"
 #include "ColumnListModel.h"
+#include "TableController.h"
 
 int main(int argc, char **argv)
 {
@@ -29,6 +30,11 @@ int main(int argc, char **argv)
     }
     engine.rootContext()->setContextProperty("matchTableModel", &rMatchTableModel);
     
+    TableController rTableController;
+    rTableController.AddTable(&rTournamentTableModel);
+    rTableController.AddTable(&rMatchTableModel);
+    engine.rootContext()->setContextProperty("tableController", &rTableController);
+
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
 
     if (engine.rootObjects().isEmpty())

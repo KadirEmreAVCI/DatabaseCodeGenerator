@@ -17,7 +17,6 @@ Rectangle {
     //
     // ───────────────────── Exposed properties ─────────────────────
     //
-    // Driven from C++ (TableModel)
     property int tableID: -1
     property string tableName: "Default Table"
     required property var columnModel   // external model provided from Main.qml
@@ -27,6 +26,14 @@ Rectangle {
 
     // Signals
     signal tableNameChangeRequested(int tableID, string newName)
+
+    onTableNameChangeRequested: {
+        if (typeof tableController !== "undefined" && tableController) {
+            tableController.onTableNameChangeRequested(tableID, newName)
+        } else {
+            console.warn("DatabaseTable.qml: tableController is not available in QML context")
+        }
+    }
 
     //
     // Helper: cancel editing without changing anything
@@ -105,13 +112,6 @@ Rectangle {
             // ENTER → accept & emit, then close
             onAccepted: commitName()
 
-            // If focus is lost while still editing, cancel
-            onEditingFinished: {
-                if (root.editingName) {
-                    root.cancelNameEditing()
-                }
-            }
-
             function commitName() {
                 if (!root.editingName)
                     return
@@ -123,12 +123,7 @@ Rectangle {
                     root.cancelNameEditing()
                     return
                 }
-
-                //
-                // IMPORTANT:
-                // QML does NOT change tableName.
-                // It only requests that C++ updates it.
-                //
+                
                 if (trimmed !== root.tableName) {
                     root.tableNameChangeRequested(root.tableID, trimmed)
                 }
