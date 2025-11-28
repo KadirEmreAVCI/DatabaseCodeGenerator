@@ -35,49 +35,32 @@ Window {
             z: -1  // or 1, depending if you want lines behind or on top of tables
         }
 
-        DatabaseTable {
-            id: table1
-            canvas: zoomLayer                    // 🔹 tell table which canvas it belongs to
-            x: tournamentTableModel.x
-            y: tournamentTableModel.y
-            tableName: tournamentTableModel.name
-            columnModel: tournamentTableModel.columnListModel
-            tableID: tournamentTableModel.ID     // if exposed from C++
+        // 🔹 Create one DatabaseTable per TableModel in TableController
+        Repeater {
+            id: tableRepeater
+            model: tableController.GetTables()   // QList<QObject*> from C++
 
-            onXChanged: links.requestRedraw()
-            onYChanged: links.requestRedraw()
+            delegate: DatabaseTable {
+                id: tableItem
+                canvas: zoomLayer
 
-            // Optional, later:
-            // onTableNameChangeRequested: tableController.onTableNameChangeRequested(tableID, newName)
-        }
+                required property var modelData
+                
+                tableID: modelData.ID
+                x:       modelData.x
+                y:       modelData.y
+                tableName:   modelData.name
+                columnModel: modelData.columnListModel
 
-        DatabaseTable {
-            id: table2
-            canvas: zoomLayer
-            x: matchTableModel.x
-            y: matchTableModel.y
-            tableName: matchTableModel.name
-            columnModel: matchTableModel.columnListModel
-            tableID: matchTableModel.ID
-
-            onXChanged: links.requestRedraw()
-            onYChanged: links.requestRedraw()
-
-            // onTableNameChangeRequested: tableController.onTableNameChangeRequested(tableID, newName)
+                // Re-draw links when position changes
+                onXChanged: links.requestRedraw()
+                onYChanged: links.requestRedraw()
+            }
         }
 
         Component.onCompleted: {
-            links.connections = [
-                {
-                    sourceTable: table2,
-                    sourceRow: 1,
-
-                    destinationTable: table1,
-                    destinationRow: 0,
-
-                    relationship: "1..*"
-                }
-            ]
+            // TODO: update this part once we decide how to build connections
+            // with dynamic tables (e.g. via IDs or indexes).
             links.requestRedraw()
         }
     }

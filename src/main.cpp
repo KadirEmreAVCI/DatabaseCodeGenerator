@@ -29,7 +29,7 @@ int main(int argc, char **argv)
         rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Time", "TEXT", true,  false, false));
     }
     engine.rootContext()->setContextProperty("matchTableModel", &rMatchTableModel);
-    
+
     TableController rTableController;
     rTableController.AddTable(&rTournamentTableModel);
     rTableController.AddTable(&rMatchTableModel);

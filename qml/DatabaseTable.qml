@@ -95,7 +95,6 @@ Rectangle {
             anchors {
                 left: parent.left
                 right: parent.right
-                horizontalCenter: parent.horizontalCenter
                 verticalCenter: parent.verticalCenter
                 leftMargin: 8
                 rightMargin: 8

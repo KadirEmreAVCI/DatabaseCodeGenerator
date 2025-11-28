@@ -10,7 +10,14 @@ TableController::TableController(QObject *parent)
 }
 void TableController::AddTable(TableModel* pTable)
 {
-    m_mapTable.insert(std::make_pair(pTable->GetID(), pTable));
+    if(nullptr != pTable)
+    {
+        m_mapTable.insert(std::make_pair(pTable->GetID(), pTable));
+    }
+    else
+    {
+        qDebug() << "Error: TableModel pointer is null.";
+    }
 }
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
 {
@@ -29,4 +36,21 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
     {
         qDebug() << "Error: Table ID not found.";
     }
+}
+QList<QObject*> TableController::GetTables() const
+{
+    QList<QObject*> lsTable;
+    lsTable.reserve(static_cast<int>(m_mapTable.size()));
+    for (auto [iID, pTable] : m_mapTable) 
+    {
+        if (pTable) 
+        {
+            lsTable.append(pTable);
+        } 
+        else 
+        {
+            qDebug() << "Warning: null TableModel for id" << iID;
+        }
+    }
+    return lsTable;
 }
