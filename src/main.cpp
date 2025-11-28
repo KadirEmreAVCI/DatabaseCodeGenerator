@@ -11,30 +11,28 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    TableModel rTournamentTableModel{0, "Tournament", Position{100, 150}};
-    if(rTournamentTableModel.GetColumnListModel() != nullptr)
+    auto pTournamentTableModel = new TableModel(0, "Tournament", Position{100, 150});
+    if(pTournamentTableModel->GetColumnListModel() != nullptr)
     {
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  true));
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Season", "TEXT", true,  false, false));
-        rTournamentTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Category", "TEXT", true,  false, false));
+        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  true));
+        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Season", "TEXT", true,  false, false));
+        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
     }
-    engine.rootContext()->setContextProperty("tournamentTableModel", &rTournamentTableModel);
 
-    TableModel rMatchTableModel{1, "Match", Position{450, 150}};
-    if(rMatchTableModel.GetColumnListModel() != nullptr)
+    auto pMatchTableModel = new TableModel(1, "Match", Position{450, 150});
+    if(pMatchTableModel->GetColumnListModel() != nullptr)
     {
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("ID", "INT",  false, true,  false));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("TournamentID", "INT",  false, false, true));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Date", "REAL", true,  false, false));
-        rMatchTableModel.GetColumnListModel()->AddColumnItem(new ColumnModel("Time", "TEXT", true,  false, false));
+        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  false));
+        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("TournamentID", "INT",  false, false, true));
+        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Date", "REAL", true,  false, false));
+        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Time", "TEXT", true,  false, false));
     }
-    engine.rootContext()->setContextProperty("matchTableModel", &rMatchTableModel);
 
-    TableController rTableController;
-    rTableController.AddTable(&rTournamentTableModel);
-    rTableController.AddTable(&rMatchTableModel);
-    engine.rootContext()->setContextProperty("tableController", &rTableController);
-
+    auto pTableController = new TableController;
+    pTableController->AddTable(pTournamentTableModel);
+    pTableController->AddTable(pMatchTableModel);
+    
+    engine.rootContext()->setContextProperty("tableController", pTableController);
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
 
     if (engine.rootObjects().isEmpty())
