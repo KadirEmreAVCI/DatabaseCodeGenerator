@@ -1,8 +1,9 @@
+// Main.qml
 import QtQuick
 import QtQuick.Controls
-import DatabaseCodeGenerator 1.0
 import QtQuick.Window
 import QtQml.Models
+import DatabaseCodeGenerator 1.0
 
 Window {
     id: mainWindow
@@ -34,43 +35,33 @@ Window {
             z: -1  // or 1, depending if you want lines behind or on top of tables
         }
 
-        DatabaseTable {
-            id: table1
-            x: tournamentTableModel.x
-            y: tournamentTableModel.y
-            tableName: tournamentTableModel.name
-            columnModel: tournamentTableModel.columnListModel
+        // 🔹 Create one DatabaseTable per TableModel in TableController
+        Repeater {
+            id: tableRepeater
+            model: tableController.GetTables()   // QList<QObject*> from C++
 
-            onXChanged: links.requestRedraw()
-            onYChanged: links.requestRedraw()
-        }
+            delegate: DatabaseTable {
+                id: tableItem
+                canvas: zoomLayer
 
-        DatabaseTable {
-            id: table2
-            x: matchTableModel.x
-            y: matchTableModel.y
-            tableName: matchTableModel.name
-            columnModel: matchTableModel.columnListModel
+                required property var modelData
+                
+                tableID: modelData.ID
+                x:       modelData.x
+                y:       modelData.y
+                tableName:   modelData.name
+                columnModel: modelData.columnListModel
 
-            onXChanged: links.requestRedraw()
-            onYChanged: links.requestRedraw()
+                // Re-draw links when position changes
+                onXChanged: links.requestRedraw()
+                onYChanged: links.requestRedraw()
+            }
         }
 
         Component.onCompleted: {
-            links.connections = [
-                {
-                    sourceTable: table2,
-                    sourceRow: 1,
-
-                    destinationTable: table1,
-                    destinationRow: 0,
-
-                    // NEW: single relationship parameter
-                    // allowed values: "1..1" or "1..*"
-                    relationship: "1..*"
-                }
-            ];
-            links.requestRedraw();
+            // TODO: update this part once we decide how to build connections
+            // with dynamic tables (e.g. via IDs or indexes).
+            links.requestRedraw()
         }
     }
 }

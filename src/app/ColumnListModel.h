@@ -25,7 +25,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
     
-    void AddColumnItem(ColumnModel* pColumnItem);
+    void AddColumn(ColumnModel* pColumnItem);
 private:
     QVector<ColumnModel*> m_vecColumnModels;
 public slots:

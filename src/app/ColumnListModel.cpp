@@ -2,9 +2,7 @@
 
 ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
-{
-    // Example data initialization
-    
+{    
 }
 ColumnListModel::ColumnListModel(const QVector<ColumnModel*>& vecColumnModels, QObject *parent)
     : QAbstractListModel(parent), m_vecColumnModels(vecColumnModels)
@@ -45,7 +43,7 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[NameRole] = "name";
     return roles;
 }
-void ColumnListModel::AddColumnItem(ColumnModel* pColumnModel)
+void ColumnListModel::AddColumn(ColumnModel* pColumnModel)
 {
     if (!pColumnModel)
         return;

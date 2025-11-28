@@ -1,10 +1,6 @@
 #include "Model.h"
 
-Model::Model(int iID, QObject *parent)
-    : m_iID{iID}, QObject{parent}
+Model::Model(QObject *parent)
+    : QObject{parent}
 {
-}
-int Model::GetID() const
-{
-    return m_iID;
 }
