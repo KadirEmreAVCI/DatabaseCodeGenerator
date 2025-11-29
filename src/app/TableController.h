@@ -23,7 +23,7 @@ public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onCreateNewTable();
 private:
-    std::map<int, TableModel*> m_mapTable;
+    std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();

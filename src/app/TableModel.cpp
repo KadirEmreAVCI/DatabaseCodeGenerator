@@ -1,7 +1,7 @@
 #include "TableModel.h"
 
-TableModel::TableModel(const QString& sName, const Position& rPosition, QObject *parent) 
-    : m_sName{sName}, m_rPosition{rPosition}, m_pColumnListModel{new ColumnListModel(this)}, Model(parent)
+TableModel::TableModel(const QString& sName, const QPoint& rPoint, QObject *parent) 
+    : m_sName{sName}, m_rPoint{rPoint}, m_pColumnListModel{new ColumnListModel(this)}, Model(parent)
 {
 }
 int TableModel::GetID() const
@@ -12,13 +12,9 @@ QString TableModel::GetName() const
 {
     return m_sName;
 }
-int TableModel::GetX() const
+QPoint TableModel::GetPoint()const
 {
-    return m_rPosition.x;
-}
-int TableModel::GetY() const
-{
-    return m_rPosition.y;
+    return m_rPoint;
 }
 ColumnListModel* TableModel::GetColumnListModel() const
 {
@@ -44,12 +40,11 @@ void TableModel::SetName(const QString &name)
         emit nameChanged();
     }
 }
-void TableModel::SetPosition(int x, int y)
+void TableModel::SetPoint(const QPoint& rPoint)
 {
-    if(m_rPosition.x != x || m_rPosition.y != y)
+    if(m_rPoint != rPoint)
     {
-        m_rPosition.x = x;
-        m_rPosition.y = y;
-        emit positionChanged();
+        m_rPoint = rPoint;
+        emit pointChanged();
     }
 }

@@ -70,7 +70,7 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
 }
 void TableController::onCreateNewTable()
 {
-    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), Position{0, 0}, this);
+    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), QPoint{0, 0}, this);
     AddTable(pTableModel);
 }
 QList<QObject*> TableController::GetTables() const
