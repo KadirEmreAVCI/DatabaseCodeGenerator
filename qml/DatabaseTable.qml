@@ -87,15 +87,23 @@ Rectangle {
         x: parent ? (parent.width - width) / 2 : 0
         y: parent ? (parent.height - height) / 2 : 0
 
-        contentItem: Text {
-            text: tableNameWarningDialog.message
-            wrapMode: Text.WordWrap
+        // One contentItem that includes both text and buttons
+        contentItem: Column {
+            spacing: 12
             padding: 16
-        }
 
-        footer: DialogButtonBox {
-            standardButtons: DialogButtonBox.Ok
-            onAccepted: tableNameWarningDialog.close()
+            Text {
+                id: messageText
+                text: tableNameWarningDialog.message
+                wrapMode: Text.WordWrap
+            }
+
+            DialogButtonBox {
+                id: buttonBox
+                standardButtons: DialogButtonBox.Ok
+                alignment: Qt.AlignRight
+                onAccepted: tableNameWarningDialog.close()
+            }
         }
     }
 
