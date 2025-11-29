@@ -28,33 +28,6 @@ Window {
         maxZoom: 2.5
         zoom: 1.0
 
-        ConnectionsLayer {
-            id: links
-            anchors.fill: parent
-            z: -1
-        }
-
-        Repeater {
-            id: tableRepeater
-            model: tableController.tables
-
-            delegate: DatabaseTable {
-                id: tableItem
-                required property var modelData
-
-                canvas: zoomLayer
-
-                tableID:     modelData.ID
-                x:           modelData.x
-                y:           modelData.y
-                tableName:   modelData.name
-                columnModel: modelData.columnListModel
-
-                onXChanged: links.requestRedraw()
-                onYChanged: links.requestRedraw()
-            }
-        }
-
         // Main context menu shown on right click
         Menu {
             id: backgroundMenu
@@ -84,6 +57,33 @@ Window {
                     backgroundMenu.y = mouse.y
                     backgroundMenu.open()
                 }
+            }
+        }
+        
+        ConnectionsLayer {
+            id: links
+            anchors.fill: parent
+            z: -1
+        }
+
+        Repeater {
+            id: tableRepeater
+            model: tableController.tables
+
+            delegate: DatabaseTable {
+                id: tableItem
+                required property var modelData
+
+                canvas: zoomLayer
+
+                tableID:     modelData.ID
+                x:           modelData.x
+                y:           modelData.y
+                tableName:   modelData.name
+                columnModel: modelData.columnListModel
+
+                onXChanged: links.requestRedraw()
+                onYChanged: links.requestRedraw()
             }
         }
 

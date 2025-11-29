@@ -210,4 +210,15 @@ Rectangle {
     function rowEdgePosition(rowIndex, side, targetItem) {
         return tableContent.rowEdgePosition(rowIndex, side, targetItem);
     }
+
+    // Swallow right-clicks on the table so background menu won't show
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+
+        onPressed: function(mouse) {
+            // Just consume the event; in future you can open a table-specific menu here
+            mouse.accepted = true
+        }
+    }
 }
