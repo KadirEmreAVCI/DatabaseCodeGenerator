@@ -18,6 +18,7 @@ public:
 
     void AddTable(TableModel*);
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
+    QString NormalizeTableName(const QString& sName) const;
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onCreateNewTable();

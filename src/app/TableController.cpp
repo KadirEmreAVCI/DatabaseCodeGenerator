@@ -30,6 +30,16 @@ bool TableController::IsNameDuplicated(int iChangedTableID, const QString& sNewN
         return (iChangedTableID != iID) && (sNewName == pTableModel->GetName());
     });
 }
+QString TableController::NormalizeTableName(const QString& sName) const
+{
+    if (sName.isEmpty())
+    {
+        return sName;
+    }
+    QString sNormalized = sName.toLower();          
+    sNormalized[0] = sNormalized[0].toUpper();       
+    return sNormalized;
+}
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
 {
     if(auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end())
@@ -37,13 +47,14 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
         if(TableModel* const pTableModel = iterTable->second; pTableModel != nullptr)
         {
             const QString sOldName{pTableModel->GetName()};
-            if(!IsNameDuplicated(iTableID, sNewName))
+            const QString sNormalizedNewName{NormalizeTableName(sNewName)};
+            if(!IsNameDuplicated(iTableID, sNormalizedNewName))
             {
-                pTableModel->SetName(sNewName);
+                pTableModel->SetName(sNormalizedNewName);
             }
             else
             {
-                const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNewName, sOldName);
+                const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNormalizedNewName, sOldName);
                 emit tableNameChangeRejected(iTableID, sWarningMessage);
             }
         }
