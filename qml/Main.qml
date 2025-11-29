@@ -38,7 +38,7 @@ Window {
         // 🔹 Create one DatabaseTable per TableModel in TableController
         Repeater {
             id: tableRepeater
-            model: tableController.GetTables()   // QList<QObject*> from C++
+            model: tableController.tables
 
             delegate: DatabaseTable {
                 id: tableItem

@@ -22,7 +22,7 @@ class TableModel : public Model{
     Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
-    TableModel(int iID, const QString& sName, const Position& rPosition = {}, QObject *parent = nullptr);
+    TableModel(const QString& sName, const Position& rPosition = {}, QObject *parent = nullptr);
     virtual ~TableModel()override = default;
 
     // Getters
@@ -33,6 +33,7 @@ public:
     ColumnListModel* GetColumnListModel() const;
 
     // Setters
+    void SetID(int);
     void SetName(const QString &name);
     void SetPosition(int x, int y);
     void SetColumnListModel(ColumnListModel* pColumnListModel);

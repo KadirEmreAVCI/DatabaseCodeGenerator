@@ -12,6 +12,7 @@ void TableController::AddTable(TableModel* pTable)
 {
     if(nullptr != pTable)
     {
+        pTable->SetID(m_iNextTableID++);
         m_mapTable.insert(std::make_pair(pTable->GetID(), pTable));
     }
     else
@@ -37,13 +38,19 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
         qDebug() << "Error: Table ID not found.";
     }
 }
+void TableController::onCreateNewTable()
+{
+    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), Position{0, 0}, this);
+    AddTable(pTableModel);
+    emit tablesChanged();
+}
 QList<QObject*> TableController::GetTables() const
 {
     QList<QObject*> lsTable;
     lsTable.reserve(static_cast<int>(m_mapTable.size()));
     for (auto [iID, pTable] : m_mapTable) 
     {
-        if (pTable) 
+        if (pTable != nullptr) 
         {
             lsTable.append(pTable);
         } 
