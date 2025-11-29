@@ -27,11 +27,11 @@ Rectangle {
     // Signals
     signal tableNameChangeRequested(int tableID, string newName)
 
-    onTableNameChangeRequested: {
+    onTableNameChangeRequested: function(tableID, newName) {
         if (typeof tableController !== "undefined" && tableController) {
             tableController.onTableNameChangeRequested(tableID, newName)
         } else {
-            console.warn("DatabaseTable.qml: tableController is not available in QML context")
+            console.warn("tableController is not available in QML context")
         }
     }
 
