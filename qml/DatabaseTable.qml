@@ -18,8 +18,8 @@ Rectangle {
     // ───────────────────── Exposed properties ─────────────────────
     //
     property int tableID: -1
-    property string tableName: "Default Table"
-    required property var columnModel   // external model provided from Main.qml
+    property string tableName: "Default Table"   // <- bound from outside: model.name
+    required property var columnModel            // external model provided from Main.qml
 
     required property var canvas
     property bool editingName: false
@@ -41,6 +41,7 @@ Rectangle {
     function cancelNameEditing() {
         if (!editingName)
             return;
+        // Just restore editor from current bound name
         nameEditor.text = root.tableName
         root.editingName = false
     }
@@ -52,6 +53,57 @@ Rectangle {
         target: canvas
         function onWorkspaceClicked() {
             cancelNameEditing()
+        }
+    }
+
+    //
+    // Listen to C++ rejection of name change (duplicate name etc.)
+    //
+    Connections {
+        target: tableController
+
+        function onTableNameChangeRejected(tableID, reason) {
+            if (tableID !== root.tableID)
+                return
+
+            nameEditor.text = root.tableName
+            root.editingName = false
+
+            // Show warning to the user
+            tableNameWarningDialog.message = reason
+            tableNameWarningDialog.open()
+        }
+    }
+
+    //
+    // Dialog for invalid / duplicate name warnings (QtQuick.Controls Dialog)
+    //
+    Dialog {
+        id: tableNameWarningDialog
+        title: qsTr("Invalid table name")
+        modal: true
+        property string message: ""
+
+        x: parent ? (parent.width - width) / 2 : 0
+        y: parent ? (parent.height - height) / 2 : 0
+
+        // One contentItem that includes both text and buttons
+        contentItem: Column {
+            spacing: 12
+            padding: 16
+
+            Text {
+                id: messageText
+                text: tableNameWarningDialog.message
+                wrapMode: Text.WordWrap
+            }
+
+            DialogButtonBox {
+                id: buttonBox
+                standardButtons: DialogButtonBox.Ok
+                alignment: Qt.AlignRight
+                onAccepted: tableNameWarningDialog.close()
+            }
         }
     }
 
@@ -83,7 +135,7 @@ Rectangle {
         Text {
             id: tableNameText
             anchors.centerIn: parent
-            text: root.tableName
+            text: root.tableName           // <- follows model.name via binding
             font.bold: true
             font.pointSize: 14
             visible: !root.editingName
@@ -122,12 +174,15 @@ Rectangle {
                     root.cancelNameEditing()
                     return
                 }
-                
+
                 if (trimmed !== root.tableName) {
+                    // Just tell C++ to try rename.
+                    // We DO NOT change root.tableName here.
                     root.tableNameChangeRequested(root.tableID, trimmed)
                 }
 
-                // mark editing as finished (so onEditingFinished won't cancel)
+                // mark editing as finished; if rename succeeded,
+                // TableModel::nameChanged will update tableName via binding
                 root.editingName = false
             }
         }

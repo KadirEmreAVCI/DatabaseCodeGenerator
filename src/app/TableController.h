@@ -17,6 +17,8 @@ public:
     QList<QObject*> GetTables()const;
 
     void AddTable(TableModel*);
+    bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
+    QString NormalizeTableName(const QString& sName) const;
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onCreateNewTable();
@@ -25,6 +27,7 @@ private:
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
+    void tableNameChangeRejected(int tableID, const QString &sWarningMessage);
 };
 
 #endif // TABLECONTROLLER_H_

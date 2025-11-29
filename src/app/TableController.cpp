@@ -2,6 +2,7 @@
 #include "TableModel.h"
 
 // Standard Library
+#include <algorithm>
 #include <QDebug>
 
 TableController::TableController(QObject *parent)
@@ -21,13 +22,41 @@ void TableController::AddTable(TableModel* pTable)
         qDebug() << "Error: TableModel pointer is null.";
     }
 }
+bool TableController::IsNameDuplicated(int iChangedTableID, const QString& sNewName)const
+{
+    return std::any_of(m_mapTable.cbegin(), m_mapTable.cend(), [=](const auto& prTable){
+        const int iID = prTable.first;
+        const TableModel* const pTableModel = prTable.second;
+        return (iChangedTableID != iID) && (sNewName == pTableModel->GetName());
+    });
+}
+QString TableController::NormalizeTableName(const QString& sName) const
+{
+    if (sName.isEmpty())
+    {
+        return sName;
+    }
+    QString sNormalized = sName.toLower();          
+    sNormalized[0] = sNormalized[0].toUpper();       
+    return sNormalized;
+}
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
 {
     if(auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end())
     {
         if(TableModel* const pTableModel = iterTable->second; pTableModel != nullptr)
         {
-            pTableModel->SetName(sNewName);
+            const QString sOldName{pTableModel->GetName()};
+            const QString sNormalizedNewName{NormalizeTableName(sNewName)};
+            if(!IsNameDuplicated(iTableID, sNormalizedNewName))
+            {
+                pTableModel->SetName(sNormalizedNewName);
+            }
+            else
+            {
+                const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNormalizedNewName, sOldName);
+                emit tableNameChangeRejected(iTableID, sWarningMessage);
+            }
         }
         else
         {
