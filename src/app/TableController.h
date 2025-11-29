@@ -17,6 +17,7 @@ public:
     QList<QObject*> GetTables()const;
 
     void AddTable(TableModel*);
+    bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onCreateNewTable();
