@@ -14,6 +14,7 @@ void TableController::AddTable(TableModel* pTable)
     {
         pTable->SetID(m_iNextTableID++);
         m_mapTable.insert(std::make_pair(pTable->GetID(), pTable));
+        emit tablesChanged();
     }
     else
     {
@@ -42,7 +43,6 @@ void TableController::onCreateNewTable()
 {
     const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), Position{0, 0}, this);
     AddTable(pTableModel);
-    emit tablesChanged();
 }
 QList<QObject*> TableController::GetTables() const
 {

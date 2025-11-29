@@ -28,39 +28,66 @@ Window {
         maxZoom: 2.5
         zoom: 1.0
 
-        // 🔹 Lines layer (same zoomed space as tables)
         ConnectionsLayer {
             id: links
             anchors.fill: parent
-            z: -1  // or 1, depending if you want lines behind or on top of tables
+            z: -1
         }
 
-        // 🔹 Create one DatabaseTable per TableModel in TableController
         Repeater {
             id: tableRepeater
             model: tableController.tables
 
             delegate: DatabaseTable {
                 id: tableItem
+                required property var modelData
+
                 canvas: zoomLayer
 
-                required property var modelData
-                
-                tableID: modelData.ID
-                x:       modelData.x
-                y:       modelData.y
+                tableID:     modelData.ID
+                x:           modelData.x
+                y:           modelData.y
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
-                // Re-draw links when position changes
                 onXChanged: links.requestRedraw()
                 onYChanged: links.requestRedraw()
             }
         }
 
+        // Main context menu shown on right click
+        Menu {
+            id: backgroundMenu
+
+            // This nested Menu becomes a submenu ("New ▶")
+            Menu {
+                id: newSubMenu
+                title: "New"
+
+                MenuItem {
+                    text: "Table"
+                    onTriggered: {
+                        tableController.onCreateNewTable()
+                    }
+                }
+            }
+        }
+
+        MouseArea {
+            id: backgroundRightClickArea
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+
+            onPressed: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+                    backgroundMenu.x = mouse.x
+                    backgroundMenu.y = mouse.y
+                    backgroundMenu.open()
+                }
+            }
+        }
+
         Component.onCompleted: {
-            // TODO: update this part once we decide how to build connections
-            // with dynamic tables (e.g. via IDs or indexes).
             links.requestRedraw()
         }
     }
