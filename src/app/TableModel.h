@@ -16,7 +16,7 @@ struct Position{
 
 class TableModel : public Model{
     Q_OBJECT
-    Q_PROPERTY(int ID READ GetID)
+    Q_PROPERTY(int ID READ GetID NOTIFY idChanged)
     Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
     Q_PROPERTY(int x READ GetX NOTIFY positionChanged)
     Q_PROPERTY(int y READ GetY NOTIFY positionChanged)
@@ -43,6 +43,7 @@ private:
     Position m_rPosition;
     ColumnListModel* m_pColumnListModel;
 signals:
+    void idChanged();
     void nameChanged();
     void positionChanged();
 };

@@ -30,7 +30,11 @@ void TableModel::SetColumnListModel(ColumnListModel* pColumnListModel)
 }
 void TableModel::SetID(int iID)
 {
-    m_iID = iID;
+    if(m_iID != iID)
+    {
+        m_iID = iID;
+        emit idChanged();
+    }
 }
 void TableModel::SetName(const QString &name)
 {
