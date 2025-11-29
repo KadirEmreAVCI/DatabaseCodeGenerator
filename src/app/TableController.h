@@ -26,6 +26,7 @@ private:
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
+    void tableNameChangeRejected(int tableID, const QString &sWarningMessage);
 };
 
 #endif // TABLECONTROLLER_H_

@@ -36,13 +36,15 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
     {
         if(TableModel* const pTableModel = iterTable->second; pTableModel != nullptr)
         {
+            const QString sOldName{pTableModel->GetName()};
             if(!IsNameDuplicated(iTableID, sNewName))
             {
                 pTableModel->SetName(sNewName);
             }
             else
             {
-                // TODO:
+                const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNewName, sOldName);
+                emit tableNameChangeRejected(iTableID, sWarningMessage);
             }
         }
         else
