@@ -21,9 +21,10 @@ public:
     QString NormalizeTableName(const QString& sName) const;
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
+    void onTablePositionChangeRequested(int iTableID, const QPoint& rPoint);
     void onCreateNewTable();
 private:
-    std::map<int, TableModel*> m_mapTable;
+    std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();

@@ -68,9 +68,20 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
         qDebug() << "Error: Table ID not found.";
     }
 }
+void TableController::onTablePositionChangeRequested(int iTableID, const QPoint& rPoint)
+{
+    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    {
+        const auto pTable = iterTable->second;
+        if (pTable != nullptr) 
+        {
+            pTable->SetPoint(rPoint);
+        }
+    }
+}
 void TableController::onCreateNewTable()
 {
-    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), Position{0, 0}, this);
+    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), QPoint{0, 0}, this);
     AddTable(pTableModel);
 }
 QList<QObject*> TableController::GetTables() const

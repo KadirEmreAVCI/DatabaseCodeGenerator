@@ -77,8 +77,8 @@ Window {
                 canvas: zoomLayer
 
                 tableID:     modelData.ID
-                x:           modelData.x
-                y:           modelData.y
+                x:           modelData.point.x
+                y:           modelData.point.y
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
