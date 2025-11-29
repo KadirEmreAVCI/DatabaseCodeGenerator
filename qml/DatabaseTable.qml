@@ -26,10 +26,18 @@ Rectangle {
 
     // Signals
     signal tableNameChangeRequested(int tableID, string newName)
+    signal positionChangeRequested(int tableID, point pos)
 
     onTableNameChangeRequested: function(tableID, newName) {
         if (typeof tableController !== "undefined" && tableController) {
             tableController.onTableNameChangeRequested(tableID, newName)
+        } else {
+            console.warn("tableController is not available in QML context")
+        }
+    }
+    onPositionChangeRequested: function(tableID, pos) {
+        if (typeof tableController !== "undefined" && tableController) {
+            tableController.onTablePositionChangeRequested(tableID, pos)
         } else {
             console.warn("tableController is not available in QML context")
         }
@@ -211,6 +219,14 @@ Rectangle {
             target: root
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.DragMoveCursor
+            onActiveChanged: {
+                if (!active) {
+                    positionChangeRequested(
+                        root.tableID,
+                        Qt.point(Math.round(root.x), Math.round(root.y))
+                    )
+                }
+            }
         }
     }
 
