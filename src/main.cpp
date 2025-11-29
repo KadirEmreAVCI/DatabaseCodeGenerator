@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    auto pTournamentTableModel = new TableModel(0, "Tournament", Position{100, 150});
+    auto pTournamentTableModel = new TableModel("Tournament", Position{100, 150});
     if(pTournamentTableModel->GetColumnListModel() != nullptr)
     {
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  true));
@@ -19,7 +19,7 @@ int main(int argc, char **argv)
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
     }
 
-    auto pMatchTableModel = new TableModel(1, "Match", Position{450, 150});
+    auto pMatchTableModel = new TableModel("Match", Position{450, 150});
     if(pMatchTableModel->GetColumnListModel() != nullptr)
     {
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  false));
