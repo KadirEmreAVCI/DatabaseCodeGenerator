@@ -14,7 +14,6 @@ int main(int argc, char **argv)
     auto pTournamentTableModel = new TableModel("Tournament", QPoint{100, 150});
     if(pTournamentTableModel->GetColumnListModel() != nullptr)
     {
-        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  true));
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Season", "TEXT", true,  false, false));
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
     }
@@ -22,7 +21,6 @@ int main(int argc, char **argv)
     auto pMatchTableModel = new TableModel("Match", QPoint{450, 150});
     if(pMatchTableModel->GetColumnListModel() != nullptr)
     {
-        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("ID", "INT",  false, true,  false));
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("TournamentID", "INT",  false, false, true));
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Date", "REAL", true,  false, false));
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Time", "TEXT", true,  false, false));
