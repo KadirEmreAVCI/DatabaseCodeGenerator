@@ -3,10 +3,7 @@
 ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
 {    
-}
-ColumnListModel::ColumnListModel(const QVector<ColumnModel*>& vecColumnModels, QObject *parent)
-    : QAbstractListModel(parent), m_vecColumnModels(vecColumnModels)
-{
+    AddColumn(new ColumnModel("ID", "INT",  false, true,  true, this));
 }
 int ColumnListModel::rowCount(const QModelIndex &parent) const
 {

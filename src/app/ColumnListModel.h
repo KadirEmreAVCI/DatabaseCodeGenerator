@@ -17,7 +17,6 @@ public:
         NameRole
     };
     explicit ColumnListModel(QObject *parent = nullptr);
-    ColumnListModel(const QVector<ColumnModel*>& vecColumnItems, QObject *parent = nullptr);
     virtual ~ColumnListModel() override = default;
     
     // ---------- QAbstractListModel interface ----------
