@@ -28,6 +28,8 @@ Window {
         maxZoom: 2.5
         zoom: 1.0
 
+        property point lastRightClickPos: Qt.point(0, 0)
+
         // Main context menu shown on right click
         Menu {
             id: backgroundMenu
@@ -40,7 +42,7 @@ Window {
                 MenuItem {
                     text: "Table"
                     onTriggered: {
-                        tableController.onCreateNewTable()
+                        tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
                     }
                 }
             }
@@ -53,6 +55,7 @@ Window {
 
             onPressed: function(mouse) {
                 if (mouse.button === Qt.RightButton) {
+                    zoomLayer.lastRightClickPos = Qt.point(mouse.x, mouse.y)
                     backgroundMenu.x = mouse.x
                     backgroundMenu.y = mouse.y
                     backgroundMenu.open()
