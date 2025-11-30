@@ -79,9 +79,9 @@ void TableController::onTablePositionChangeRequested(int iTableID, const QPoint&
         }
     }
 }
-void TableController::onCreateNewTable()
+void TableController::onCreateNewTable(const QPoint& rPoint)
 {
-    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), QPoint{0, 0}, this);
+    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), rPoint, this);
     AddTable(pTableModel);
 }
 QList<QObject*> TableController::GetTables() const
