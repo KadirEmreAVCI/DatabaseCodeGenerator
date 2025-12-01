@@ -30,73 +30,87 @@ Window {
 
         property point lastRightClickPos: Qt.point(0, 0)
 
-        Menu {
-            id: backgroundMenu
+        // 🔹 Everything inside this array goes to the NON-SCALED overlay
+        overlayChildren: [
+            Item {
+                anchors.fill: parent
 
-            Menu {
-                id: newSubMenu
-                title: qsTr("New")
+                MouseArea {
+                    id: backgroundRightClickArea
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
 
-                MenuItem {
-                    text: qsTr("Table")
-                    onTriggered: {
-                        tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
+                    onPressed: function(mouse) {
+                        if (mouse.button === Qt.RightButton) {
+                            // mouse.x/y are in this Item's coords, which match root
+                            var viewportPoint = Qt.point(mouse.x, mouse.y)
+
+                            // convert to content coords for table creation
+                            zoomLayer.lastRightClickPos = zoomLayer.toContent(viewportPoint)
+
+                            // menu is in the same overlay, so we can use mouse.x/y directly
+                            backgroundMenu.x = mouse.x
+                            backgroundMenu.y = mouse.y
+                            backgroundMenu.open()
+                        }
+                    }
+                }
+
+                Menu {
+                    id: backgroundMenu
+
+                    Menu {
+                        id: newSubMenu
+                        title: qsTr("New")
+
+                        MenuItem {
+                            text: qsTr("Table")
+                            onTriggered: {
+                                tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
+                            }
+                        }
+                    }
+
+                    Menu {
+                        id: zoomSubMenu
+                        title: qsTr("Zoom")
+
+                        MenuItem {
+                            text: qsTr("Zoom In")
+                            onTriggered: {
+                                const step = 0.1
+                                zoomLayer.zoom = Math.min(zoomLayer.zoom + step, zoomLayer.maxZoom)
+                            }
+                        }
+
+                        MenuItem {
+                            text: qsTr("Zoom Out")
+                            onTriggered: {
+                                const step = 0.1
+                                zoomLayer.zoom = Math.max(zoomLayer.zoom - step, zoomLayer.minZoom)
+                            }
+                        }
+
+                        MenuItem {
+                            text: qsTr("Reset Zoom")
+                            onTriggered: {
+                                zoomLayer.zoom = 1.0
+                            }
+                        }
+
+                        MenuItem {
+                            text: qsTr("Fit to Screen")
+                            onTriggered: {
+                                const rect = tableController.GetBoundingRect()
+                                zoomLayer.fitToScreen(rect)
+                            }
+                        }
                     }
                 }
             }
+        ]
 
-            Menu {
-                id: zoomSubMenu
-                title: qsTr("Zoom")
-
-                MenuItem {
-                    text: qsTr("Zoom In")
-                    onTriggered: {
-                        const step = 0.1
-                        zoomLayer.zoom = Math.min(zoomLayer.zoom + step, zoomLayer.maxZoom)
-                    }
-                }
-
-                MenuItem {
-                    text: qsTr("Zoom Out")
-                    onTriggered: {
-                        const step = 0.1
-                        zoomLayer.zoom = Math.max(zoomLayer.zoom - step, zoomLayer.minZoom)
-                    }
-                }
-
-                MenuItem {
-                    text: qsTr("Reset Zoom")
-                    onTriggered: {
-                        zoomLayer.zoom = 1.0
-                    }
-                }
-
-                MenuItem {
-                    text: qsTr("Fit to Screen")
-                    onTriggered: {
-                        const rect = tableController.GetBoundingRect()
-                        zoomLayer.fitToScreen(rect)
-                    }
-                }
-            }
-        }
-
-        MouseArea {
-            id: backgroundRightClickArea
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton
-
-            onPressed: function(mouse) {
-                if (mouse.button === Qt.RightButton) {
-                    zoomLayer.lastRightClickPos = Qt.point(mouse.x, mouse.y)
-                    backgroundMenu.x = mouse.x
-                    backgroundMenu.y = mouse.y
-                    backgroundMenu.open()
-                }
-            }
-        }
-        
+        // 🔹 These stay in the zoomed content
         ConnectionsLayer {
             id: links
             anchors.fill: parent
