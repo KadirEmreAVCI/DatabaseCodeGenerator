@@ -27,6 +27,7 @@ Rectangle {
     // Signals
     signal tableNameChangeRequested(int tableID, string newName)
     signal positionChangeRequested(int tableID, point pos)
+    signal tableDeleteRequested(int tableID)
 
     onTableNameChangeRequested: function(tableID, newName) {
         if (typeof tableController !== "undefined" && tableController) {
@@ -41,6 +42,13 @@ Rectangle {
         } else {
             console.warn("tableController is not available in QML context")
         }
+    }
+    onTableDeleteRequested: function(tableID) {
+        if (typeof tableController !== "undefined" && tableController){
+            tableController.onTableDeleteRequested(tableID)
+        } else {
+            console.warn("tableController is not available in QML context")
+        } 
     }
 
     //
@@ -95,22 +103,55 @@ Rectangle {
         x: parent ? (parent.width - width) / 2 : 0
         y: parent ? (parent.height - height) / 2 : 0
 
-        // One contentItem that includes both text and buttons
         contentItem: Column {
+            id: warningContent
             spacing: 12
             padding: 16
 
             Text {
-                id: messageText
+                id: warningText
                 text: tableNameWarningDialog.message
                 wrapMode: Text.WordWrap
             }
 
             DialogButtonBox {
-                id: buttonBox
+                id: warningButtons
                 standardButtons: DialogButtonBox.Ok
-                alignment: Qt.AlignRight
+                alignment: Qt.AlignRight   
                 onAccepted: tableNameWarningDialog.close()
+            }
+        }
+    }
+
+    Dialog {
+        id: deleteTableDialog
+        title: qsTr("Delete table")
+        modal: true
+
+        x: parent ? (parent.width - width) / 2 : 0
+        y: parent ? (parent.height - height) / 2 : 0
+
+        contentItem: Column {
+            id: deleteContent
+            spacing: 12
+            padding: 16
+
+            Text {
+                id: deleteText
+                text: qsTr("Are you sure you want to delete \"%1\"?")
+                        .arg(root.tableName)
+                wrapMode: Text.WordWrap
+            }
+
+            DialogButtonBox {
+                id: deleteButtons
+                standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
+                alignment: Qt.AlignRight
+                onAccepted: {
+                    root.tableDeleteRequested(root.tableID)
+                    deleteTableDialog.close()
+                }
+                onRejected: deleteTableDialog.close()
             }
         }
     }
@@ -142,11 +183,32 @@ Rectangle {
         // Label (shown when not editing)
         Text {
             id: tableNameText
-            anchors.centerIn: parent
-            text: root.tableName           // <- follows model.name via binding
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: 8
+            anchors.right: deleteButton.left
+            anchors.rightMargin: 8
+            elide: Text.ElideRight
+
+            text: root.tableName
             font.bold: true
             font.pointSize: 14
             visible: !root.editingName
+        }
+
+        // Small delete button on the right
+        Button {
+            id: deleteButton
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            text: "✕"            // or "X" or an icon if you have one
+            focusPolicy: Qt.NoFocus
+
+            onClicked: {
+                // open a confirmation dialog (defined below)
+                deleteTableDialog.open()
+            }
         }
 
         // Inline editor (shown when editingName == true)
@@ -154,7 +216,7 @@ Rectangle {
             id: nameEditor
             anchors {
                 left: parent.left
-                right: parent.right
+                right: deleteButton.left
                 verticalCenter: parent.verticalCenter
                 leftMargin: 8
                 rightMargin: 8
@@ -163,12 +225,7 @@ Rectangle {
             text: root.tableName
             selectByMouse: true
 
-            Keys.onEscapePressed: {
-                // ESC → cancel, revert, close
-                root.cancelNameEditing()
-            }
-
-            // ENTER → accept & emit, then close
+            Keys.onEscapePressed: root.cancelNameEditing()
             onAccepted: commitName()
 
             function commitName() {
@@ -176,30 +233,26 @@ Rectangle {
                     return
 
                 var trimmed = text.trim()
-
-                // If empty → cancel and revert
                 if (trimmed.length === 0) {
                     root.cancelNameEditing()
                     return
                 }
-
                 if (trimmed !== root.tableName) {
-                    // Just tell C++ to try rename.
-                    // We DO NOT change root.tableName here.
                     root.tableNameChangeRequested(root.tableID, trimmed)
                 }
-
-                // mark editing as finished; if rename succeeded,
-                // TableModel::nameChanged will update tableName via binding
                 root.editingName = false
             }
         }
 
-        //
-        // Double click header to start editing
-        //
+        // Double-click header to start editing
         MouseArea {
-            anchors.fill: parent
+            anchors {
+                left: parent.left
+                right: deleteButton.left
+                top: parent.top
+                bottom: parent.bottom
+            }
+
             acceptedButtons: Qt.LeftButton
             propagateComposedEvents: true
 
@@ -211,9 +264,6 @@ Rectangle {
             }
         }
 
-        //
-        // Drag the whole table by holding the HEADER
-        //
         DragHandler {
             id: headerDrag
             target: root
@@ -221,7 +271,7 @@ Rectangle {
             cursorShape: Qt.DragMoveCursor
             onActiveChanged: {
                 if (!active) {
-                    positionChangeRequested(
+                    root.positionChangeRequested(
                         root.tableID,
                         Qt.point(Math.round(root.x), Math.round(root.y))
                     )
@@ -229,6 +279,7 @@ Rectangle {
             }
         }
     }
+
 
     //
     // ───────────────────── Separator ─────────────────────

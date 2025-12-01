@@ -22,6 +22,7 @@ public:
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPoint& rPoint);
+    void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPoint& rPoint);
 private:
     std::map<int, TableModel*> m_mapTable; 

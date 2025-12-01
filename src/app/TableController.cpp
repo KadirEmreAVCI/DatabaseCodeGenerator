@@ -79,10 +79,35 @@ void TableController::onTablePositionChangeRequested(int iTableID, const QPoint&
         }
     }
 }
+void TableController::onTableDeleteRequested(int iTableID)
+{
+    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    {
+        const auto pTable = iterTable->second;
+        if (pTable != nullptr) 
+        {
+            delete pTable;
+            m_mapTable.erase(iterTable);
+            emit tablesChanged();
+        }
+        else
+        {
+            qDebug() << "Error: TableModel pointer is null.";
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
 void TableController::onCreateNewTable(const QPoint& rPoint)
 {
-    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), rPoint, this);
-    AddTable(pTableModel);
+    int iTableIDOffset = 0;
+    QString sTempNewName = "";
+    do{
+        sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
+    }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
+    AddTable(new TableModel(sTempNewName, rPoint, this));
 }
 QList<QObject*> TableController::GetTables() const
 {
