@@ -27,6 +27,7 @@ Rectangle {
     // Signals
     signal tableNameChangeRequested(int tableID, string newName)
     signal positionChangeRequested(int tableID, point pos)
+    signal tableDeleteRequested(int tableID)
 
     onTableNameChangeRequested: function(tableID, newName) {
         if (typeof tableController !== "undefined" && tableController) {
@@ -41,6 +42,13 @@ Rectangle {
         } else {
             console.warn("tableController is not available in QML context")
         }
+    }
+    onTableDeleteRequested: function(tableID) {
+        if (typeof tableController !== "undefined" && tableController){
+            tableController.onTableDeleteRequested(tableID)
+        } else {
+            console.warn("tableController is not available in QML context")
+        } 
     }
 
     //
@@ -95,21 +103,21 @@ Rectangle {
         x: parent ? (parent.width - width) / 2 : 0
         y: parent ? (parent.height - height) / 2 : 0
 
-        // One contentItem that includes both text and buttons
         contentItem: Column {
+            id: warningContent
             spacing: 12
             padding: 16
 
             Text {
-                id: messageText
+                id: warningText
                 text: tableNameWarningDialog.message
                 wrapMode: Text.WordWrap
             }
 
             DialogButtonBox {
-                id: buttonBox
+                id: warningButtons
                 standardButtons: DialogButtonBox.Ok
-                alignment: Qt.AlignRight
+                alignment: Qt.AlignRight   
                 onAccepted: tableNameWarningDialog.close()
             }
         }
@@ -124,19 +132,21 @@ Rectangle {
         y: parent ? (parent.height - height) / 2 : 0
 
         contentItem: Column {
+            id: deleteContent
             spacing: 12
             padding: 16
 
             Text {
+                id: deleteText
                 text: qsTr("Are you sure you want to delete \"%1\"?")
                         .arg(root.tableName)
                 wrapMode: Text.WordWrap
             }
 
             DialogButtonBox {
+                id: deleteButtons
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
-
                 onAccepted: {
                     root.tableDeleteRequested(root.tableID)
                     deleteTableDialog.close()
