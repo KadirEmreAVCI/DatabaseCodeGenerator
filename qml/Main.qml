@@ -8,8 +8,8 @@ import DatabaseCodeGenerator 1.0
 Window {
     id: mainWindow
     visible: true
-    width: 800
-    height: 600
+    width: 1600
+    height: 1200
 
     GridBackground {
         id: dotGrid
@@ -69,6 +69,14 @@ Window {
                     text: qsTr("Reset Zoom")
                     onTriggered: {
                         zoomLayer.zoom = 1.0
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Fit to Screen")
+                    onTriggered: {
+                        const rect = tableController.GetBoundingRect()
+                        zoomLayer.fitToScreen(rect)
                     }
                 }
             }

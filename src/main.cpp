@@ -11,14 +11,14 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    auto pTournamentTableModel = new TableModel("Tournament", QPoint{100, 150});
+    auto pTournamentTableModel = new TableModel(nullptr, "Tournament", QPoint{100, 150});
     if(pTournamentTableModel->GetColumnListModel() != nullptr)
     {
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Season", "TEXT", true,  false, false));
         pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
     }
 
-    auto pMatchTableModel = new TableModel("Match", QPoint{450, 150});
+    auto pMatchTableModel = new TableModel(nullptr, "Match", QPoint{450, 150});
     if(pMatchTableModel->GetColumnListModel() != nullptr)
     {
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("TournamentID", "INT",  false, false, true));

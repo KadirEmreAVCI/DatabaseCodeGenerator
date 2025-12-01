@@ -107,7 +107,31 @@ void TableController::onCreateNewTable(const QPoint& rPoint)
     do{
         sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
     }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
-    AddTable(new TableModel(sTempNewName, rPoint, this));
+    AddTable(new TableModel(this, sTempNewName, rPoint));
+}
+QRectF TableController::GetBoundingRect() const
+{
+    QRectF rUnitedRect{};
+    bool blFirstRect = true;
+
+    for(const auto &[iID, pTable] : m_mapTable) 
+    {
+        if(!pTable)
+        { 
+            continue;
+        }
+        QRectF rNextRect(pTable->GetPoint().x(), pTable->GetPoint().y(), pTable->GetWidth(), pTable->GetHeight()); 
+        if(blFirstRect) 
+        {
+            rUnitedRect = rNextRect;
+            blFirstRect = false;
+        } 
+        else 
+        {
+            rUnitedRect = rUnitedRect.united(rNextRect);
+        }
+    }
+    return rUnitedRect;
 }
 QList<QObject*> TableController::GetTables() const
 {

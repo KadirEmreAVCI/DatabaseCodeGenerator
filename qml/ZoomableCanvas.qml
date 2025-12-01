@@ -103,4 +103,28 @@ Item {
             content.y = 0;
         }
     }
+
+    // Fit all content into the visible area while preserving aspect ratio
+    function fitToScreen(rect) {
+        if (!rect || rect.width <= 0 || rect.height <= 0)
+            return;
+
+        // Calculate scale needed horizontally and vertically
+        const scaleX = root.width / rect.width;
+        const scaleY = root.height / rect.height;
+
+        // Choose the smaller (preserves aspect ratio)
+        let newZoom = Math.min(scaleX, scaleY);
+
+        // Respect minZoom & maxZoom constraints
+        newZoom = Math.max(root.minZoom, Math.min(root.maxZoom, newZoom));
+
+        // Center content on the screen
+        root.zoom = newZoom;
+
+        // After scaling, we need to reposition content.x/y
+        // so that the bounding rect appears centered
+        content.x = -rect.x * newZoom + (root.width - rect.width * newZoom) / 2;
+        content.y = -rect.y * newZoom + (root.height - rect.height * newZoom) / 2;
+    }
 }
