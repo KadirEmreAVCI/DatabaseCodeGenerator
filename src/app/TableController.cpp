@@ -102,8 +102,12 @@ void TableController::onTableDeleteRequested(int iTableID)
 }
 void TableController::onCreateNewTable(const QPoint& rPoint)
 {
-    const auto pTableModel = new TableModel(QString("Table %1").arg(m_iNextTableID), rPoint, this);
-    AddTable(pTableModel);
+    int iTableIDOffset = 0;
+    QString sTempNewName = "";
+    do{
+        sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
+    }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
+    AddTable(new TableModel(sTempNewName, rPoint, this));
 }
 QList<QObject*> TableController::GetTables() const
 {
