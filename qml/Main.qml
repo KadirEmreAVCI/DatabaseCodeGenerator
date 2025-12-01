@@ -30,7 +30,6 @@ Window {
 
         property point lastRightClickPos: Qt.point(0, 0)
 
-        // Main context menu shown on right click
         Menu {
             id: backgroundMenu
 
@@ -49,6 +48,22 @@ Window {
             Menu {
                 id: zoomSubMenu
                 title: qsTr("Zoom")
+
+                MenuItem {
+                    text: qsTr("Zoom In")
+                    onTriggered: {
+                        const step = 0.1
+                        zoomLayer.zoom = Math.min(zoomLayer.zoom + step, zoomLayer.maxZoom)
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Zoom Out")
+                    onTriggered: {
+                        const step = 0.1
+                        zoomLayer.zoom = Math.max(zoomLayer.zoom - step, zoomLayer.minZoom)
+                    }
+                }
 
                 MenuItem {
                     text: qsTr("Reset Zoom")
