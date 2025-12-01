@@ -24,33 +24,6 @@ Rectangle {
     required property var canvas
     property bool editingName: false
 
-    // Signals
-    signal tableNameChangeRequested(int tableID, string newName)
-    signal positionChangeRequested(int tableID, point pos)
-    signal tableDeleteRequested(int tableID)
-
-    onTableNameChangeRequested: function(tableID, newName) {
-        if (typeof tableController !== "undefined" && tableController) {
-            tableController.onTableNameChangeRequested(tableID, newName)
-        } else {
-            console.warn("tableController is not available in QML context")
-        }
-    }
-    onPositionChangeRequested: function(tableID, pos) {
-        if (typeof tableController !== "undefined" && tableController) {
-            tableController.onTablePositionChangeRequested(tableID, pos)
-        } else {
-            console.warn("tableController is not available in QML context")
-        }
-    }
-    onTableDeleteRequested: function(tableID) {
-        if (typeof tableController !== "undefined" && tableController){
-            tableController.onTableDeleteRequested(tableID)
-        } else {
-            console.warn("tableController is not available in QML context")
-        } 
-    }
-
     //
     // Helper: cancel editing without changing anything
     //
@@ -85,14 +58,13 @@ Rectangle {
             nameEditor.text = root.tableName
             root.editingName = false
 
-            // Show warning to the user
             tableNameWarningDialog.message = reason
             tableNameWarningDialog.open()
         }
     }
 
     //
-    // Dialog for invalid / duplicate name warnings (QtQuick.Controls Dialog)
+    // Dialog for invalid / duplicate name warnings
     //
     Dialog {
         id: tableNameWarningDialog
@@ -117,12 +89,15 @@ Rectangle {
             DialogButtonBox {
                 id: warningButtons
                 standardButtons: DialogButtonBox.Ok
-                alignment: Qt.AlignRight   
+                alignment: Qt.AlignRight
                 onAccepted: tableNameWarningDialog.close()
             }
         }
     }
 
+    //
+    // Dialog for delete confirmation
+    //
     Dialog {
         id: deleteTableDialog
         title: qsTr("Delete table")
@@ -148,7 +123,11 @@ Rectangle {
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
                 onAccepted: {
-                    root.tableDeleteRequested(root.tableID)
+                    if (typeof tableController !== "undefined" && tableController) {
+                        tableController.onTableDeleteRequested(root.tableID)
+                    } else {
+                        console.warn("tableController is not available in QML context")
+                    }
                     deleteTableDialog.close()
                 }
                 onRejected: deleteTableDialog.close()
@@ -202,11 +181,10 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
             anchors.rightMargin: 4
-            text: "✕"            // or "X" or an icon if you have one
+            text: "✕"
             focusPolicy: Qt.NoFocus
 
             onClicked: {
-                // open a confirmation dialog (defined below)
                 deleteTableDialog.open()
             }
         }
@@ -237,9 +215,15 @@ Rectangle {
                     root.cancelNameEditing()
                     return
                 }
+
                 if (trimmed !== root.tableName) {
-                    root.tableNameChangeRequested(root.tableID, trimmed)
+                    if (typeof tableController !== "undefined" && tableController) {
+                        tableController.onTableNameChangeRequested(root.tableID, trimmed)
+                    } else {
+                        console.warn("tableController is not available in QML context")
+                    }
                 }
+
                 root.editingName = false
             }
         }
@@ -264,22 +248,27 @@ Rectangle {
             }
         }
 
+        // Drag the whole table by holding the HEADER
         DragHandler {
             id: headerDrag
             target: root
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.DragMoveCursor
+
             onActiveChanged: {
                 if (!active) {
-                    root.positionChangeRequested(
-                        root.tableID,
-                        Qt.point(Math.round(root.x), Math.round(root.y))
-                    )
+                    if (typeof tableController !== "undefined" && tableController) {
+                        tableController.onTablePositionChangeRequested(
+                            root.tableID,
+                            Qt.point(Math.round(root.x), Math.round(root.y))
+                        )
+                    } else {
+                        console.warn("tableController is not available in QML context")
+                    }
                 }
             }
         }
     }
-
 
     //
     // ───────────────────── Separator ─────────────────────
@@ -339,7 +328,6 @@ Rectangle {
         acceptedButtons: Qt.RightButton
 
         onPressed: function(mouse) {
-            // Just consume the event; in future you can open a table-specific menu here
             mouse.accepted = true
         }
     }
