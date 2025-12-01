@@ -2,6 +2,7 @@
 #define TABLECONTROLLER_H_
 
 #include <QObject>
+#include <QRectF>
 #include <map>
 
 class TableModel;
@@ -24,6 +25,7 @@ public slots:
     void onTablePositionChangeRequested(int iTableID, const QPoint& rPoint);
     void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPoint& rPoint);
+    QRectF GetBoundingRect() const;
 private:
     std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;
