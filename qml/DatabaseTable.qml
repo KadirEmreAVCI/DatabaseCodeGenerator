@@ -228,8 +228,9 @@ Rectangle {
             }
         }
 
-        // Double-click header to start editing
+        // Double-click header to start editing + hover cursor
         MouseArea {
+            id: headerMouseArea
             anchors {
                 left: parent.left
                 right: deleteButton.left
@@ -239,6 +240,15 @@ Rectangle {
 
             acceptedButtons: Qt.LeftButton
             propagateComposedEvents: true
+            hoverEnabled: true
+
+            // Cursor logic:
+            //  - Arrow outside
+            //  - Open hand when hovering
+            //  - Closed hand while pressed (dragging)
+            cursorShape: containsPress
+                        ? Qt.ClosedHandCursor
+                        : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
 
             onDoubleClicked: {
                 root.editingName = true

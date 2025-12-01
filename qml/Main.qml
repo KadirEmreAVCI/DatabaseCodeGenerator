@@ -41,18 +41,38 @@ Window {
                     acceptedButtons: Qt.RightButton
 
                     onPressed: function(mouse) {
-                        if (mouse.button === Qt.RightButton) {
-                            // mouse.x/y are in this Item's coords, which match root
-                            var viewportPoint = Qt.point(mouse.x, mouse.y)
+                        if (mouse.button !== Qt.RightButton)
+                            return;
 
-                            // convert to content coords for table creation
-                            zoomLayer.lastRightClickPos = zoomLayer.toContent(viewportPoint)
+                        // Check if right-click is on top of any table
+                        var overTable = false;
+                        for (var i = 0; i < tableRepeater.count; ++i) {
+                            var t = tableRepeater.itemAt(i);
+                            if (!t)
+                                continue;
 
-                            // menu is in the same overlay, so we can use mouse.x/y directly
-                            backgroundMenu.x = mouse.x
-                            backgroundMenu.y = mouse.y
-                            backgroundMenu.open()
+                            // Map the click to table's local coordinates
+                            var p = t.mapFromItem(zoomLayer, mouse.x, mouse.y);
+                            if (p.x >= 0 && p.x <= t.width &&
+                                p.y >= 0 && p.y <= t.height) {
+                                overTable = true;
+                                break;
+                            }
                         }
+
+                        if (overTable) {
+                            // Do NOT open background menu; swallow the event
+                            mouse.accepted = true;
+                            return;
+                        }
+
+                        // Otherwise, treat it as a background right-click
+                        var viewPos = Qt.point(mouse.x, mouse.y);
+                        zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos);
+
+                        backgroundMenu.x = mouse.x;
+                        backgroundMenu.y = mouse.y;
+                        backgroundMenu.open();
                     }
                 }
 
