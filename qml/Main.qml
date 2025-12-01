@@ -34,15 +34,26 @@ Window {
         Menu {
             id: backgroundMenu
 
-            // This nested Menu becomes a submenu ("New ▶")
             Menu {
                 id: newSubMenu
-                title: "New"
+                title: qsTr("New")
 
                 MenuItem {
-                    text: "Table"
+                    text: qsTr("Table")
                     onTriggered: {
                         tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
+                    }
+                }
+            }
+
+            Menu {
+                id: zoomSubMenu
+                title: qsTr("Zoom")
+
+                MenuItem {
+                    text: qsTr("Reset Zoom")
+                    onTriggered: {
+                        zoomLayer.zoom = 1.0
                     }
                 }
             }
