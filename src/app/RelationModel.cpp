@@ -1,11 +1,12 @@
 #include "RelationModel.h"
+#include <iostream>
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
 RelationModel::RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
     : m_pDestinationTableModel{pDestinationTableModel}, m_pSourceTableModel{pSourceTableModel}, m_sRelationship{sRelationship}, Model{pParent}
 {
-
+    CalculateSourceRowIdx();
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -13,7 +14,7 @@ int RelationModel::GetDestinationRowIdx()const
 }
 int RelationModel::GetDestinationTableID()const
 {
-    return m_pDestinationTableModel->GetID();
+    return (m_pDestinationTableModel != nullptr) ? m_pDestinationTableModel->GetID() : -1;
 }
 int RelationModel::GetSourceRowIdx()const
 {
@@ -21,7 +22,7 @@ int RelationModel::GetSourceRowIdx()const
 }
 int RelationModel::GetSourceTableID()const
 {
-    return m_pSourceTableModel->GetID();
+    return (m_pSourceTableModel != nullptr) ? m_pSourceTableModel->GetID() : -1;
 }
 QString RelationModel::GetRelationship()const
 {
@@ -55,15 +56,22 @@ void RelationModel::SetRelationship(const QString& sRelationship)
 }
 void RelationModel::CalculateSourceRowIdx()
 {
-    m_iSourceRowIdx = 0;
-    const QString sSourceColumnName = m_pSourceTableModel->GetName() + "ID";
-    const ColumnListModel* const pColumnListModel{m_pSourceTableModel->GetColumnListModel()};
-    for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
+    if(m_pSourceTableModel != nullptr)
     {
-        if(pColumnListModel->GetColumn(idx)["name"] == sSourceColumnName)
+        m_iSourceRowIdx = -1;
+        const QString sSourceColumnName = m_pSourceTableModel->GetName() + "ID";
+        const ColumnListModel* const pColumnListModel{m_pSourceTableModel->GetColumnListModel()};
+        for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
         {
-            m_iSourceRowIdx = idx;
-            break;
+            if(pColumnListModel->GetColumn(idx)["name"] == sSourceColumnName)
+            {
+                m_iSourceRowIdx = idx;
+                break;
+            }
         }
+    }
+    else
+    {
+        std::cerr << "RelationModel::CalculateSourceRowIdx m_pSourceTableModel is nullptr!\n";
     }
 }
