@@ -4,7 +4,6 @@
 #include <QPoint>
 #include "Model.h"
 #include "ColumnListModel.h"
-#include "RelationListModel.h"
 
 class TableModel : public Model{
     Q_OBJECT
@@ -14,7 +13,6 @@ class TableModel : public Model{
     Q_PROPERTY(qreal width READ GetWidth NOTIFY widthChanged)
     Q_PROPERTY(qreal height READ GetHeight NOTIFY heightChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
-    Q_PROPERTY(RelationListModel* relationListModel READ GetRelationListModel CONSTANT)
 public:
     TableModel(QObject *parent = nullptr, const QString& sName = "", const QPoint& rPoint = {}, qreal rWidth = 300, qreal rHeight = 200);
     virtual ~TableModel()override = default;
@@ -26,7 +24,6 @@ public:
     qreal GetWidth()const;
     qreal GetHeight()const;
     ColumnListModel* GetColumnListModel() const;
-    RelationListModel* GetRelationListModel() const;
 
     // Setters
     void SetID(int);
@@ -35,7 +32,6 @@ public:
     void SetWidth(qreal);
     void SetHeight(qreal);
     void SetColumnListModel(ColumnListModel* pColumnListModel);
-    void SetRelationListModel(RelationListModel* pRelationListModel);
 private:
     int m_iID;
     QString m_sName;
@@ -43,7 +39,6 @@ private:
     qreal m_rWidth;
     qreal m_rHeight;
     ColumnListModel* m_pColumnListModel;
-    RelationListModel* m_pRelationListModel;
 signals:
     void idChanged();
     void nameChanged();
