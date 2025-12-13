@@ -1,7 +1,7 @@
 #include "TableModel.h"
 
 TableModel::TableModel(QObject *parent, const QString& sName, const QPoint& rPoint, qreal rWidth, qreal rHeight) 
-    : Model(parent), m_sName{sName}, m_rPoint{rPoint}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_pColumnListModel{new ColumnListModel(this)}
+    : Model(parent), m_sName{sName}, m_rPoint{rPoint}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_pColumnListModel{new ColumnListModel(this)}, m_pRelationListModel{new RelationListModel(this)}
 {
 }
 int TableModel::GetID() const
@@ -28,9 +28,9 @@ ColumnListModel* TableModel::GetColumnListModel() const
 {
     return m_pColumnListModel;
 }
-void TableModel::SetColumnListModel(ColumnListModel* pColumnListModel)
+RelationListModel* TableModel::GetRelationListModel() const
 {
-    m_pColumnListModel = pColumnListModel;
+    return m_pRelationListModel;
 }
 void TableModel::SetID(int iID)
 {
@@ -63,4 +63,12 @@ void TableModel::SetWidth(qreal rWidth)
 void TableModel::SetHeight(qreal rHeight)
 {
     m_rHeight = rHeight;
+}
+void TableModel::SetColumnListModel(ColumnListModel* pColumnListModel)
+{
+    m_pColumnListModel = pColumnListModel;
+}
+void TableModel::SetRelationListModel(RelationListModel* pRelationListModel)
+{
+    m_pRelationListModel = pRelationListModel;
 }
