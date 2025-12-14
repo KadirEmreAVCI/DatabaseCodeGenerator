@@ -7,10 +7,25 @@ Item {
     id: root
     anchors.fill: parent
 
-    // Each connection: { from: Item, to: Item }
-    property var connections: []
+    // list of RelationModel QObjects coming from C++
+    property var relations: []       // bound from Main.qml: relations: relationController.relations
 
-    // This Canvas does all the drawing
+    // reference to the tableRepeater in Main.qml
+    property var tableRepeater       // bound from Main.qml: tableRepeater: tableRepeater
+
+    // helper: resolve tableID → DatabaseTable item
+    function findTableItemById(id) {
+        if (!tableRepeater)
+            return null;
+
+        for (let i = 0; i < tableRepeater.count; ++i) {
+            let item = tableRepeater.itemAt(i);
+            if (item && item.tableID === id)
+                return item;
+        }
+        return null;
+    }
+
     Canvas {
         id: canvas
         anchors.fill: parent
@@ -20,86 +35,72 @@ Item {
             ctx.save();
             ctx.clearRect(0, 0, width, height);
 
-            // modern-ish styling
+            // Styling
             ctx.lineWidth = 3;
-            ctx.strokeStyle = "#2d8cff";         // main line color
+            ctx.strokeStyle = "#2d8cff";
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
 
             let curvatureFactor = 0.7;
-            let arrowLength = 15;                // length of chevron arms
-            let arrowAngle = Math.PI / 7;        // ~25.7 degrees
-            let sourceRadius = 10;               // small circle at source
-            let centerLabelOffset = 10;          // distance of center label from curve
+            let arrowLength = 15;
+            let arrowAngle = Math.PI / 7;
+            let sourceRadius = 10;
+            let centerLabelOffset = 10;
 
-            // slightly larger & bold for labels
             ctx.font = "bold 14px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
-            for (var i = 0; i < root.connections.length; ++i) {
-                var c = root.connections[i];
-                if (!c.sourceTable || !c.destinationTable)
+            // 🔹 LOOP OVER RELATIONMODEL OBJECTS
+            for (let i = 0; i < root.relations.length; ++i) {
+                let relationObj = root.relations[i];
+                if (!relationObj)
                     continue;
 
-                let sourceTable = c.sourceTable;
-                let destTable   = c.destinationTable;
+                // Read RelationModel properties (names from RelationModel.h)
+                let srcId  = relationObj.sourceTableID;     // 🔹 use sourceTableIdx
+                let dstId  = relationObj.destinationTableID;
+                let sRow   = relationObj.sourceRowIdx;
+                let dRow   = relationObj.destinationRowIdx;
+                let relStr = relationObj.relationship || "1..*";
 
-                // 🔹 map relationship -> center label
-                // allowed: "1..1" and "1..*"
-                let relation = c.relationship || "1..*";
+                // Resolve TableModel → DatabaseTable QML item
+                let sourceTable = root.findTableItemById(srcId);
+                let destTable   = root.findTableItemById(dstId);
 
-                let midLabel;
-                if (relation === "1..1") {
-                    midLabel = "1:1";
-                } else { // "1..*"
-                    midLabel = "1:*";
-                }
+                if (!sourceTable || !destTable)
+                    continue;
 
-                // 🔹 decide sides dynamically based on relative X positions
+                // Label
+                let midLabel = (relStr === "1..1") ? "1:1" : "1:*";
+
+                // Decide sides based on X position
                 let sourceCenterX = sourceTable.x + sourceTable.width / 2;
-                let destCenterX   = destTable.x   + destTable.width   / 2;
+                let destCenterX   = destTable.x   + destTable.width / 2;
 
-                let sourceSide;
-                let destSide;
+                let sourceSide = (sourceCenterX <= destCenterX) ? "right" : "left";
+                let destSide   = (sourceCenterX <= destCenterX) ? "left"  : "right";
 
-                if (sourceCenterX <= destCenterX) {
-                    // source is left of destination → source.right -> dest.left
-                    sourceSide = "right";
-                    destSide   = "left";
-                } else {
-                    // source is right of destination → source.left -> dest.right
-                    sourceSide = "left";
-                    destSide   = "right";
-                }
+                // 🔹 Determine connector anchor points
+                let p1 = sourceTable.rowEdgePosition(sRow, sourceSide, root);
+                let p2 = destTable.rowEdgePosition(dRow, destSide, root);
 
-                // 🔹 edge points aligned with specific rows
-                var p1 = sourceTable.rowEdgePosition(
-                            c.sourceRow,
-                            sourceSide,
-                            root
-                        );
-
-                var p2 = destTable.rowEdgePosition(
-                            c.destinationRow,
-                            destSide,
-                            root
-                        );
-
-                // ---- curved connector (cubic Bezier) ----
+                // Start bezier curve
                 let dx = (p2.x - p1.x) * curvatureFactor;
                 let cp1x = p1.x + dx;
                 let cp1y = p1.y;
                 let cp2x = p2.x - dx;
                 let cp2y = p2.y;
 
-                // ✅ tangent at start, to offset line from circle center
+                // Offset from circle at start
                 let svx = cp1x - p1.x;
                 let svy = cp1y - p1.y;
+
                 if (svx === 0 && svy === 0) {
                     svx = p2.x - p1.x;
                     svy = p2.y - p1.y;
                 }
+
                 let slen = Math.sqrt(svx * svx + svy * svy);
                 let startX = p1.x;
                 let startY = p1.y;
@@ -111,20 +112,18 @@ Item {
                     startY = p1.y + svy * sourceRadius;
                 }
 
-                // draw main curve
+                // Draw curve
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
                 ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
                 ctx.stroke();
 
-                // ---- modern direction markers ----
-
-                // 1) small outlined circle at source (center at p1)
+                // Draw source circle
                 ctx.beginPath();
                 ctx.arc(p1.x, p1.y, sourceRadius, 0, Math.PI * 2, false);
                 ctx.stroke();
 
-                // 2) open chevron arrow at destination (source -> destination)
+                // Draw destination arrow
                 let vx = p2.x - cp2x;
                 let vy = p2.y - cp2y;
                 if (vx === 0 && vy === 0) {
@@ -139,10 +138,8 @@ Item {
 
                     let angle = Math.atan2(vy, vx);
 
-                    // two small arms, no fill -> “chevron” look
                     let x1 = p2.x - arrowLength * Math.cos(angle - arrowAngle);
                     let y1 = p2.y - arrowLength * Math.sin(angle - arrowAngle);
-
                     let x2 = p2.x - arrowLength * Math.cos(angle + arrowAngle);
                     let y2 = p2.y - arrowLength * Math.sin(angle + arrowAngle);
 
@@ -154,9 +151,7 @@ Item {
                     ctx.stroke();
                 }
 
-                // ---- center relation label (e.g. "1:1" or "1:*") ----
-
-                // cubic Bezier midpoint at t = 0.5
+                // Draw label near curve midpoint
                 let t = 0.5;
                 let it = 1.0 - t;
 
@@ -172,7 +167,6 @@ Item {
                     3*it*t*t * cp2y +
                     t*t*t * p2.y;
 
-                // simple normal based on straight line for offset
                 let lvx = p2.x - p1.x;
                 let lvy = p2.y - p1.y;
                 let llen = Math.sqrt(lvx * lvx + lvy * lvy);
@@ -189,47 +183,43 @@ Item {
                 let labelX = midX + nx * centerLabelOffset;
                 let labelY = midY + ny * centerLabelOffset;
 
-                // 🔹 draw a pill-shaped background + bold label for visibility
+                // Draw pill-shaped bubble
                 ctx.save();
 
-                // measure text width for bubble size
                 let metrics = ctx.measureText(midLabel);
                 let textWidth = metrics.width;
                 let paddingX = 8;
                 let paddingY = 4;
                 let bubbleWidth = textWidth + paddingX * 2;
-                let bubbleHeight = 18 + paddingY;  // ~ font height + padding
+                let bubbleHeight = 18 + paddingY;
 
                 let bubbleX = labelX - bubbleWidth / 2;
                 let bubbleY = labelY - bubbleHeight / 2;
 
-                // bubble background
                 ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
                 ctx.strokeStyle = "#2d8cff";
                 ctx.lineWidth = 2;
 
                 ctx.beginPath();
-                // simple rounded-rect
-                let r = 6;
-                ctx.moveTo(bubbleX + r, bubbleY);
-                ctx.lineTo(bubbleX + bubbleWidth - r, bubbleY);
+                let cornerRadius = 6;   // ✅ renamed from r
+                ctx.moveTo(bubbleX + cornerRadius, bubbleY);
+                ctx.lineTo(bubbleX + bubbleWidth - cornerRadius, bubbleY);
                 ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY,
-                                    bubbleX + bubbleWidth, bubbleY + r);
-                ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - r);
+                                     bubbleX + bubbleWidth, bubbleY + cornerRadius);
+                ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - cornerRadius);
                 ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight,
-                                    bubbleX + bubbleWidth - r, bubbleY + bubbleHeight);
-                ctx.lineTo(bubbleX + r, bubbleY + bubbleHeight);
+                                     bubbleX + bubbleWidth - cornerRadius, bubbleY + bubbleHeight);
+                ctx.lineTo(bubbleX + cornerRadius, bubbleY + bubbleHeight);
                 ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleHeight,
-                                    bubbleX, bubbleY + bubbleHeight - r);
-                ctx.lineTo(bubbleX, bubbleY + r);
+                                     bubbleX, bubbleY + bubbleHeight - cornerRadius);
+                ctx.lineTo(bubbleX, bubbleY + cornerRadius);
                 ctx.quadraticCurveTo(bubbleX, bubbleY,
-                                    bubbleX + r, bubbleY);
+                                     bubbleX + cornerRadius, bubbleY);
                 ctx.closePath();
 
                 ctx.fill();
                 ctx.stroke();
 
-                // label text
                 ctx.fillStyle = "#1f3b57";
                 ctx.fillText(midLabel, labelX, labelY);
 
@@ -240,7 +230,7 @@ Item {
         }
     }
 
-    // 🔹 Call this when table positions change
+    // For external refresh
     function requestRedraw() {
         canvas.requestPaint();
     }

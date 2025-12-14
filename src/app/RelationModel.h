@@ -13,7 +13,7 @@ class RelationModel : public Model{
     Q_PROPERTY(int destinationRowIdx READ GetDestinationRowIdx)
     Q_PROPERTY(int destinationTableID READ GetDestinationTableID NOTIFY destinationTableIDChanged)
     Q_PROPERTY(int sourceRowIdx READ GetSourceRowIdx NOTIFY sourceRowIdxChanged)
-    Q_PROPERTY(int sourceTableIdx READ GetSourceTableID NOTIFY sourceTableIDChanged)
+    Q_PROPERTY(int sourceTableID READ GetSourceTableID NOTIFY sourceTableIDChanged)
     Q_PROPERTY(QString relationship READ GetRelationship NOTIFY relationshipChanged)
 public:
     explicit RelationModel(QObject* pParent = nullptr);

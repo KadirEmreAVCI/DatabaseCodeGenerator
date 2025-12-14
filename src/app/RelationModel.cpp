@@ -6,7 +6,10 @@ RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 RelationModel::RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
     : m_pDestinationTableModel{pDestinationTableModel}, m_pSourceTableModel{pSourceTableModel}, m_sRelationship{sRelationship}, Model{pParent}
 {
-    CalculateSourceRowIdx();
+    if(m_pSourceTableModel != nullptr)
+    {
+        CalculateSourceRowIdx();
+    }
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -59,7 +62,7 @@ void RelationModel::CalculateSourceRowIdx()
     if(m_pSourceTableModel != nullptr)
     {
         m_iSourceRowIdx = -1;
-        const QString sSourceColumnName = m_pSourceTableModel->GetName() + "ID";
+        const QString sSourceColumnName = m_pDestinationTableModel->GetName() + "ID";
         const ColumnListModel* const pColumnListModel{m_pSourceTableModel->GetColumnListModel()};
         for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
         {
