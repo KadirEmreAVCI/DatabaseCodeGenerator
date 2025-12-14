@@ -20,6 +20,10 @@ Item {
     property real worldMaxX: width
     property real worldMaxY: height
 
+    onRelationsChanged: {
+        requestRedraw()
+    }
+
     // tableID -> DatabaseTable item çözümleyici
     function findTableItemById(id) {
         if (!tableRepeater)

@@ -70,6 +70,7 @@ void TableController::onTableDeleteRequested(int iTableID)
         {
             delete pTable;
             m_mapTable.erase(iterTable);
+            emit tableDeleted(iTableID);
             emit tablesChanged();
         }
         else

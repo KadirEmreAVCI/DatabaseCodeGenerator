@@ -35,6 +35,8 @@ int main(int argc, char **argv)
     auto pRelationController = new RelationController;
     pRelationController->AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
     
+    QObject::connect(pTableController, &TableController::tableDeleted, pRelationController, &RelationController::OnTableDeleted);
+
     engine.rootContext()->setContextProperty("tableController", pTableController);
     engine.rootContext()->setContextProperty("relationController", pRelationController);
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
