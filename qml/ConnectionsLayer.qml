@@ -147,6 +147,22 @@ Item {
                 let p1World = sourceTable.rowEdgePosition(sRow, sourceSide, root);
                 let p2World = destTable.rowEdgePosition(dRow, destSide, root);
 
+                // --- GEÇERSİZ / HAZIR OLMAYAN GEOMETRİYİ ATLA ---
+
+                // 1) NaN / Infinity kontrolü
+                if (!isFinite(p1World.x) || !isFinite(p1World.y) ||
+                    !isFinite(p2World.x) || !isFinite(p2World.y)) {
+                    continue;
+                }
+
+                // 2) rowEdgePosition'un (0,0) sentinel'i: tablo gerçekten (0,0)'da değilse atla
+                if ((p1World.x === 0 && p1World.y === 0 &&
+                     (sourceTable.x !== 0 || sourceTable.y !== 0)) ||
+                    (p2World.x === 0 && p2World.y === 0 &&
+                     (destTable.x !== 0 || destTable.y !== 0))) {
+                    continue;
+                }
+
                 // World -> Canvas koordinatlarına çevir
                 let p1x = p1World.x - root.worldMinX;
                 let p1y = p1World.y - root.worldMinY;
