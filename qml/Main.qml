@@ -140,6 +140,18 @@ Window {
             tableRepeater: tableRepeater
         }
 
+        Connections {
+            target: tableController
+
+            function onTablesChanged() {
+                // Delegate'ler hemen hazır olmayabilir → bir tick sonraya atıyoruz
+                Qt.callLater(function() {
+                    links.updateWorldBounds()
+                    links.requestRedraw()
+                })
+            }
+        }
+
         Repeater {
             id: tableRepeater
             model: tableController.tables
