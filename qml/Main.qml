@@ -156,12 +156,19 @@ Window {
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
-                onXChanged: links.requestRedraw()
-                onYChanged: links.requestRedraw()
+                onXChanged: {
+                    links.updateWorldBounds()
+                    links.requestRedraw()
+                }
+                onYChanged: {
+                    links.updateWorldBounds()
+                    links.requestRedraw()
+                }
             }
         }
 
         Component.onCompleted: {
+            links.updateWorldBounds()
             links.requestRedraw()
         }
     }
