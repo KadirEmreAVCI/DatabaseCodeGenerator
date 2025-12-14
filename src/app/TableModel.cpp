@@ -28,10 +28,6 @@ ColumnListModel* TableModel::GetColumnListModel() const
 {
     return m_pColumnListModel;
 }
-void TableModel::SetColumnListModel(ColumnListModel* pColumnListModel)
-{
-    m_pColumnListModel = pColumnListModel;
-}
 void TableModel::SetID(int iID)
 {
     if(m_iID != iID)
@@ -63,4 +59,8 @@ void TableModel::SetWidth(qreal rWidth)
 void TableModel::SetHeight(qreal rHeight)
 {
     m_rHeight = rHeight;
+}
+void TableModel::SetColumnListModel(ColumnListModel* pColumnListModel)
+{
+    m_pColumnListModel = pColumnListModel;
 }

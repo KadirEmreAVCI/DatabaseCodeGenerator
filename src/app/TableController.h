@@ -18,8 +18,6 @@ public:
     QList<QObject*> GetTables()const;
 
     void AddTable(TableModel*);
-    bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
-    QString NormalizeTableName(const QString& sName) const;
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPoint& rPoint);
@@ -27,6 +25,9 @@ public slots:
     void onCreateNewTable(const QPoint& rPoint);
     QRectF GetBoundingRect() const;
 private:
+    bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
+    QString NormalizeTableName(const QString& sName) const;
+
     std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;
 signals:

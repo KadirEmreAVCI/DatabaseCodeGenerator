@@ -4,7 +4,9 @@
 #include <iostream>
 #include "TableModel.h"
 #include "ColumnListModel.h"
+#include "RelationModel.h"
 #include "TableController.h"
+#include "RelationController.h"
 
 int main(int argc, char **argv)
 {
@@ -29,8 +31,12 @@ int main(int argc, char **argv)
     auto pTableController = new TableController;
     pTableController->AddTable(pTournamentTableModel);
     pTableController->AddTable(pMatchTableModel);
+
+    auto pRelationController = new RelationController;
+    pRelationController->AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
     
     engine.rootContext()->setContextProperty("tableController", pTableController);
+    engine.rootContext()->setContextProperty("relationController", pRelationController);
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
 
     if (engine.rootObjects().isEmpty())

@@ -135,6 +135,9 @@ Window {
             id: links
             anchors.fill: parent
             z: -1
+
+            relations: relationController.relations
+            tableRepeater: tableRepeater
         }
 
         Repeater {
@@ -153,12 +156,19 @@ Window {
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
-                onXChanged: links.requestRedraw()
-                onYChanged: links.requestRedraw()
+                onXChanged: {
+                    links.updateWorldBounds()
+                    links.requestRedraw()
+                }
+                onYChanged: {
+                    links.updateWorldBounds()
+                    links.requestRedraw()
+                }
             }
         }
 
         Component.onCompleted: {
+            links.updateWorldBounds()
             links.requestRedraw()
         }
     }
