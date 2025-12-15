@@ -32,6 +32,7 @@ private:
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
+    void tableDeleted(int tableID);
     void tableNameChangeRejected(int tableID, const QString &sWarningMessage);
 };
 

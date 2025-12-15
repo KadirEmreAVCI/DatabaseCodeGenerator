@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QRectF>
 #include <QList>
+#include <memory>
 
 class RelationModel;
 
@@ -19,9 +20,9 @@ public:
 
     void AddRelation(RelationModel*);
 public slots:
-
+    void OnTableDeleted(int iTableID);
 private:
-    std::vector<RelationModel*> m_vecRelation; 
+    std::vector<std::unique_ptr<RelationModel>> m_vecupRelation; 
 signals:
     void relationsChanged();
 };

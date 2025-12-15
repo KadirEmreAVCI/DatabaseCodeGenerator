@@ -20,6 +20,8 @@ public:
     RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent = nullptr);
 
     // Getters
+    TableModel* GetDestinationTableModel()const;
+    TableModel* GetSourceTableModel()const;
     int GetDestinationRowIdx()const;
     int GetDestinationTableID()const;
     int GetSourceRowIdx()const;
@@ -34,7 +36,9 @@ private:
     void CalculateSourceRowIdx();
 
     const static int ms_iDestinationRowIdx{0};
+    int m_iDestinationTableID{-1};
     int m_iSourceRowIdx{-1};
+    int m_iSourceTableID{-1};
     TableModel* m_pDestinationTableModel{nullptr};
     TableModel* m_pSourceTableModel{nullptr};
     QString m_sRelationship{""};

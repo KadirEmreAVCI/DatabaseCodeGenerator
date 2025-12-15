@@ -4,12 +4,24 @@
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
 RelationModel::RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
-    : m_pDestinationTableModel{pDestinationTableModel}, m_pSourceTableModel{pSourceTableModel}, m_sRelationship{sRelationship}, Model{pParent}
+    : m_sRelationship{sRelationship}, Model{pParent}
 {
-    if(m_pSourceTableModel != nullptr)
+    if(pDestinationTableModel != nullptr)
     {
-        CalculateSourceRowIdx();
+        SetDestinationTableModel(pDestinationTableModel);
     }
+    if(pSourceTableModel != nullptr)
+    {
+        SetSourceTableModel(pSourceTableModel);
+    }
+}
+TableModel* RelationModel::GetDestinationTableModel()const
+{
+    return m_pDestinationTableModel;
+}
+TableModel* RelationModel::GetSourceTableModel()const
+{
+    return m_pSourceTableModel;
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -17,7 +29,7 @@ int RelationModel::GetDestinationRowIdx()const
 }
 int RelationModel::GetDestinationTableID()const
 {
-    return (m_pDestinationTableModel != nullptr) ? m_pDestinationTableModel->GetID() : -1;
+    return m_iDestinationTableID;
 }
 int RelationModel::GetSourceRowIdx()const
 {
@@ -25,7 +37,7 @@ int RelationModel::GetSourceRowIdx()const
 }
 int RelationModel::GetSourceTableID()const
 {
-    return (m_pSourceTableModel != nullptr) ? m_pSourceTableModel->GetID() : -1;
+    return m_iSourceTableID;
 }
 QString RelationModel::GetRelationship()const
 {
@@ -36,6 +48,7 @@ void RelationModel::SetDestinationTableModel(TableModel* pDestinationTableModel)
     if(m_pDestinationTableModel != pDestinationTableModel)
     {
         m_pDestinationTableModel = pDestinationTableModel;
+        m_iDestinationTableID = m_pDestinationTableModel->GetID();
         emit destinationTableIDChanged();
     }
 } 
@@ -44,6 +57,7 @@ void RelationModel::SetSourceTableModel(TableModel* pSourceTableModel)
     if(m_pSourceTableModel != pSourceTableModel)
     {
         m_pSourceTableModel = pSourceTableModel;
+        m_iSourceTableID = m_pSourceTableModel->GetID();
         CalculateSourceRowIdx();
         emit sourceRowIdxChanged();
         emit sourceTableIDChanged();
