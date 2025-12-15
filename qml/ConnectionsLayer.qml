@@ -12,7 +12,7 @@ Item {
     property var relations: []
     property var tableRepeater
 
-    // World bounds
+    // World bounds (for existing relations canvas)
     property real worldMinX: 0
     property real worldMinY: 0
     property real worldMaxX: width
@@ -23,6 +23,9 @@ Item {
     property int  creatingSourceTableID: -1
     property point previewStartWorld: Qt.point(0, 0)
     property point previewEndWorld: Qt.point(0, 0)
+
+    // Main.qml overlay tracker will listen to this
+    signal previewTrackingRequested(bool enabled)
 
     signal relationPreviewReleased(int sourceTableID, point endWorld)
 
@@ -37,7 +40,40 @@ Item {
             return
 
         console.log("[ConnectionsLayer] preview cancelled by ESC")
-        stopRelationPreview(previewEndWorld)
+        cancelPreview()
+    }
+
+    function cancelPreview() {
+        if (!creatingRelation)
+            return
+
+        creatingRelation = false
+        creatingSourceTableID = -1
+        previewTrackingRequested(false)
+        requestRedraw()
+    }
+
+    // Called from Main.qml (window-level tracker)
+    function setPreviewEndWorld(pWorld) {
+        if (!creatingRelation)
+            return
+
+        previewEndWorld = Qt.point(pWorld.x, pWorld.y)
+        requestRedraw()
+    }
+
+    // Called from Main.qml on mouse release
+    function finishPreview(pWorld) {
+        if (!creatingRelation)
+            return
+
+        creatingRelation = false
+        previewTrackingRequested(false)
+
+        relationPreviewReleased(creatingSourceTableID, Qt.point(pWorld.x, pWorld.y))
+        creatingSourceTableID = -1
+
+        requestRedraw()
     }
 
     // Resolve table item by tableID
@@ -94,7 +130,7 @@ Item {
         canvas.requestPaint()
     }
 
-    // Public API: start preview
+    // Public API: start preview (called from DatabaseTable)
     function startRelationPreview(sourceTableID, startPointWorld) {
         creatingRelation = true
         creatingSourceTableID = sourceTableID
@@ -102,57 +138,17 @@ Item {
         previewStartWorld = Qt.point(startPointWorld.x, startPointWorld.y)
         previewEndWorld   = Qt.point(startPointWorld.x, startPointWorld.y)
 
-        mouseTracker.enabled = true
-        forceActiveFocus()   // ensure ESC is captured
+        forceActiveFocus() // ensure ESC works
+        previewTrackingRequested(true)
         requestRedraw()
 
         console.log("[ConnectionsLayer] preview started from table:", sourceTableID)
     }
 
-    function stopRelationPreview(releaseWorldPoint) {
-        if (!creatingRelation)
-            return
-
-        creatingRelation = false
-        mouseTracker.enabled = false
-        requestRedraw()
-
-        relationPreviewReleased(creatingSourceTableID, releaseWorldPoint)
-        creatingSourceTableID = -1
-    }
-
-    // Mouse tracking during preview
-    MouseArea {
-        id: mouseTracker
-        anchors.fill: parent
-        hoverEnabled: true
-        enabled: false
-        acceptedButtons: Qt.LeftButton
-        propagateComposedEvents: true
-
-        onPositionChanged: function(mouse) {
-            if (!creatingRelation)
-                return
-
-            previewEndWorld = Qt.point(mouse.x, mouse.y)
-            requestRedraw()
-        }
-
-        onReleased: function(mouse) {
-            if (!creatingRelation)
-                return
-
-            stopRelationPreview(Qt.point(mouse.x, mouse.y))
-        }
-
-        onCanceled: {
-            if (creatingRelation)
-                stopRelationPreview(previewEndWorld)
-        }
-    }
-
     Canvas {
         id: canvas
+
+        // Canvas covers the world area (for existing relations)
         x: worldMinX
         y: worldMinY
         width:  worldMaxX - worldMinX
@@ -163,7 +159,7 @@ Item {
             ctx.save()
             ctx.clearRect(0, 0, width, height)
 
-            // Shared styling
+            // Styling
             ctx.lineWidth = 3
             ctx.strokeStyle = "#2d8cff"
             ctx.lineCap = "round"
@@ -179,11 +175,9 @@ Item {
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
 
-            // -----------------------------
-            // Draw existing relations (restored)
-            // -----------------------------
-            for (let i = 0; i < relations.length; ++i) {
-                let relationObj = relations[i]
+            // Existing relations
+            for (let i = 0; i < root.relations.length; ++i) {
+                let relationObj = root.relations[i]
                 if (!relationObj)
                     continue
 
@@ -196,8 +190,8 @@ Item {
                 if (sRow < 0 || dRow < 0)
                     continue
 
-                let sourceTable = findTableItemById(srcId)
-                let destTable   = findTableItemById(dstId)
+                let sourceTable = root.findTableItemById(srcId)
+                let destTable   = root.findTableItemById(dstId)
                 if (!sourceTable || !destTable)
                     continue
 
@@ -217,13 +211,11 @@ Item {
                     continue
                 }
 
-                // Convert world -> canvas
-                let p1x = p1World.x - worldMinX
-                let p1y = p1World.y - worldMinY
-                let p2x = p2World.x - worldMinX
-                let p2y = p2World.y - worldMinY
+                let p1x = p1World.x - root.worldMinX
+                let p1y = p1World.y - root.worldMinY
+                let p2x = p2World.x - root.worldMinX
+                let p2y = p2World.y - root.worldMinY
 
-                // Bezier control points
                 let dx = (p2x - p1x) * curvatureFactor
                 let cp1x = p1x + dx
                 let cp1y = p1y
@@ -248,18 +240,16 @@ Item {
                     startY = p1y + svy * sourceRadius
                 }
 
-                // Curve
                 ctx.beginPath()
                 ctx.moveTo(startX, startY)
                 ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2x, p2y)
                 ctx.stroke()
 
-                // Source circle
                 ctx.beginPath()
-                ctx.arc(p1x, p1y, sourceRadius, 0, Math.PI * 2)
+                ctx.arc(p1x, p1y, sourceRadius, 0, Math.PI * 2, false)
                 ctx.stroke()
 
-                // Arrow at destination
+                // Destination arrow
                 let vx = p2x - cp2x
                 let vy = p2y - cp2y
                 if (vx === 0 && vy === 0) {
@@ -271,6 +261,7 @@ Item {
                 if (len > 0) {
                     vx /= len
                     vy /= len
+
                     let angle = Math.atan2(vy, vx)
 
                     let x1 = p2x - arrowLength * Math.cos(angle - arrowAngle)
@@ -286,7 +277,7 @@ Item {
                     ctx.stroke()
                 }
 
-                // Label bubble
+                // Label bubble (unchanged)
                 let t = 0.5
                 let it = 1.0 - t
 
@@ -319,6 +310,7 @@ Item {
                 let labelY = midY + ny * centerLabelOffset
 
                 ctx.save()
+
                 let metrics = ctx.measureText(midLabel)
                 let textWidth = metrics.width
                 let paddingX = 8
@@ -355,67 +347,8 @@ Item {
 
                 ctx.fillStyle = "#1f3b57"
                 ctx.fillText(midLabel, labelX, labelY)
+
                 ctx.restore()
-            }
-
-            // -----------------------------
-            // Draw preview relation (kept) + arrow at cursor
-            // -----------------------------
-            if (creatingRelation) {
-                let p1x = previewStartWorld.x - worldMinX
-                let p1y = previewStartWorld.y - worldMinY
-                let p2x = previewEndWorld.x   - worldMinX
-                let p2y = previewEndWorld.y   - worldMinY
-
-                let dx = (p2x - p1x) * curvatureFactor
-                let cp1x = p1x + dx
-                let cp1y = p1y
-                let cp2x = p2x - dx
-                let cp2y = p2y
-
-                // Dashed curve
-                ctx.save()
-                ctx.setLineDash([7, 6])
-
-                ctx.beginPath()
-                ctx.moveTo(p1x, p1y)
-                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2x, p2y)
-                ctx.stroke()
-
-                ctx.setLineDash([])
-                ctx.restore()
-
-                // Source circle
-                ctx.beginPath()
-                ctx.arc(p1x, p1y, sourceRadius, 0, Math.PI * 2)
-                ctx.stroke()
-
-                // Arrow at cursor (restored)
-                let vx = p2x - cp2x
-                let vy = p2y - cp2y
-                if (vx === 0 && vy === 0) {
-                    vx = p2x - p1x
-                    vy = p2y - p1y
-                }
-
-                let len = Math.sqrt(vx * vx + vy * vy)
-                if (len > 0) {
-                    vx /= len
-                    vy /= len
-                    let angle = Math.atan2(vy, vx)
-
-                    let x1 = p2x - arrowLength * Math.cos(angle - arrowAngle)
-                    let y1 = p2y - arrowLength * Math.sin(angle - arrowAngle)
-                    let x2 = p2x - arrowLength * Math.cos(angle + arrowAngle)
-                    let y2 = p2y - arrowLength * Math.sin(angle + arrowAngle)
-
-                    ctx.beginPath()
-                    ctx.moveTo(p2x, p2y)
-                    ctx.lineTo(x1, y1)
-                    ctx.moveTo(p2x, p2y)
-                    ctx.lineTo(x2, y2)
-                    ctx.stroke()
-                }
             }
 
             ctx.restore()
@@ -424,5 +357,7 @@ Item {
 
     function requestRedraw() {
         canvas.requestPaint()
+        // Preview is drawn in Main.qml overlay canvas, which repaints on signals
+        // The signal is emitted by Main.qml connections to our properties changes.
     }
 }
