@@ -30,7 +30,7 @@ Window {
 
         property point lastRightClickPos: Qt.point(0, 0)
 
-        // 🔹 Everything inside this array goes to the NON-SCALED overlay
+        // Everything inside this array goes to the non-scaled overlay
         overlayChildren: [
             Item {
                 anchors.fill: parent
@@ -42,37 +42,37 @@ Window {
 
                     onPressed: function(mouse) {
                         if (mouse.button !== Qt.RightButton)
-                            return;
+                            return
 
                         // Check if right-click is on top of any table
-                        var overTable = false;
+                        var overTable = false
                         for (var i = 0; i < tableRepeater.count; ++i) {
-                            var t = tableRepeater.itemAt(i);
+                            var t = tableRepeater.itemAt(i)
                             if (!t)
-                                continue;
+                                continue
 
                             // Map the click to table's local coordinates
-                            var p = t.mapFromItem(zoomLayer, mouse.x, mouse.y);
+                            var p = t.mapFromItem(zoomLayer, mouse.x, mouse.y)
                             if (p.x >= 0 && p.x <= t.width &&
                                 p.y >= 0 && p.y <= t.height) {
-                                overTable = true;
-                                break;
+                                overTable = true
+                                break
                             }
                         }
 
                         if (overTable) {
-                            // Do NOT open background menu; swallow the event
-                            mouse.accepted = true;
-                            return;
+                            // Do not open background menu; swallow the event
+                            mouse.accepted = true
+                            return
                         }
 
                         // Otherwise, treat it as a background right-click
-                        var viewPos = Qt.point(mouse.x, mouse.y);
-                        zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos);
+                        var viewPos = Qt.point(mouse.x, mouse.y)
+                        zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos)
 
-                        backgroundMenu.x = mouse.x;
-                        backgroundMenu.y = mouse.y;
-                        backgroundMenu.open();
+                        backgroundMenu.x = mouse.x
+                        backgroundMenu.y = mouse.y
+                        backgroundMenu.open()
                     }
                 }
 
@@ -130,7 +130,7 @@ Window {
             }
         ]
 
-        // 🔹 These stay in the zoomed content
+        // These stay in the zoomed content
         ConnectionsLayer {
             id: links
             anchors.fill: parent
@@ -144,7 +144,7 @@ Window {
             target: tableController
 
             function onTablesChanged() {
-                // Delegate'ler hemen hazır olmayabilir → bir tick sonraya atıyoruz
+                // Delegates may not be ready immediately, defer by one tick
                 Qt.callLater(function() {
                     links.updateWorldBounds()
                     links.requestRedraw()
@@ -161,6 +161,7 @@ Window {
                 required property var modelData
 
                 canvas: zoomLayer
+                connectionsLayer: links   // ✅ NEW: enables preview start for every table
 
                 tableID:     modelData.ID
                 x:           modelData.point.x

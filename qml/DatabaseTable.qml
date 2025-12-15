@@ -9,10 +9,8 @@ Rectangle {
     width: 300
     visible: true
 
-    // Use thinner, cleaner border similar to the hold area
     border.color: "#2b2b2b"
     border.width: 2
-
     radius: 10
     color: "white"
     clip: false   // allow visuals outside the table bounds
@@ -25,26 +23,25 @@ Rectangle {
     required property var columnModel            // external model provided from Main.qml
 
     required property var canvas
+    property var connectionsLayer: null          // OPTIONAL: set from Main.qml if available
+
     property bool editingName: false
 
     //
     // Relation creation UX
     //
-    // Only emits a signal. Preview drawing and hit testing will be handled elsewhere.
-    signal relationCreationRequested(int sourceTableID, point startPointInCanvas)
+    signal relationCreationRequested(int sourceTableID, point startPointInWorld)
 
-    // Returns the center of the handle circle in CANVAS coordinates
-    function relationHandleCenterInCanvas() {
+    // Returns the center of the handle circle in ConnectionsLayer/world coordinates
+    function relationHandleCenterInWorld() {
+        var target = connectionsLayer ? connectionsLayer : root
         var p = relationHandleCircle.mapToItem(
-                    canvas,
+                    target,
                     relationHandleCircle.width / 2,
                     relationHandleCircle.height / 2)
         return Qt.point(p.x, p.y)
     }
 
-    //
-    // Helper: cancel name editing without changing the value
-    //
     function cancelNameEditing() {
         if (!editingName)
             return
@@ -52,9 +49,6 @@ Rectangle {
         root.editingName = false
     }
 
-    //
-    // Listen to ZoomableCanvas clicks to close the inline editor
-    //
     Connections {
         target: canvas
         function onWorkspaceClicked() {
@@ -62,9 +56,6 @@ Rectangle {
         }
     }
 
-    //
-    // Listen to C++ rejection of table name change (duplicate name, invalid name, etc.)
-    //
     Connections {
         target: tableController
 
@@ -80,9 +71,6 @@ Rectangle {
         }
     }
 
-    //
-    // Dialog for invalid / duplicate table name warnings
-    //
     Dialog {
         id: tableNameWarningDialog
         title: qsTr("Invalid table name")
@@ -109,9 +97,6 @@ Rectangle {
         }
     }
 
-    //
-    // Dialog for delete confirmation
-    //
     Dialog {
         id: deleteTableDialog
         title: qsTr("Delete table")
@@ -146,9 +131,6 @@ Rectangle {
         }
     }
 
-    //
-    // Total height = border + header + separator + content + bottom border
-    //
     implicitHeight: root.border.width
                     + table_header.height
                     + separator.height
@@ -166,7 +148,7 @@ Rectangle {
 
         anchors {
             horizontalCenter: root.horizontalCenter
-            bottom: root.top   // shares only the edge with the table
+            bottom: root.top
         }
 
         Canvas {
@@ -176,7 +158,7 @@ Rectangle {
 
             property real strokeWidth: 1.5
             property color strokeColor: "#2b2b2b"
-            property color fillColor: "#e6f2ff"   // matches the header palette
+            property color fillColor: "#e6f2ff"
 
             onPaint: {
                 var ctx = getContext("2d")
@@ -292,18 +274,18 @@ Rectangle {
                 root.cancelNameEditing()
                 mouse.accepted = true
 
-                console.log("[RelationHold] left click pressed - tableID:", root.tableID)
+                var startWorld = root.relationHandleCenterInWorld()
 
-                root.relationCreationRequested(
-                    root.tableID,
-                    root.relationHandleCenterInCanvas()
-                )
-            }
+                console.log("[RelationHold] clicked - tableID:", root.tableID,
+                            " startWorld:", startWorld.x, startWorld.y)
 
-            onReleased: function(mouse) {
-                if (mouse.button !== Qt.LeftButton)
-                    return
-                console.log("[RelationHold] left click released - tableID:", root.tableID)
+                root.relationCreationRequested(root.tableID, startWorld)
+
+                if (connectionsLayer && connectionsLayer.startRelationPreview) {
+                    connectionsLayer.startRelationPreview(root.tableID, startWorld)
+                } else {
+                    console.warn("[RelationHold] connectionsLayer is not set or has no startRelationPreview()")
+                }
             }
         }
     }
@@ -405,9 +387,6 @@ Rectangle {
         }
     }
 
-    //
-    // ───────────────────── Separator ─────────────────────
-    //
     Rectangle {
         id: separator
         anchors {
@@ -419,9 +398,6 @@ Rectangle {
         color: root.border.color
     }
 
-    //
-    // ───────────────────── Content area for columns ─────────────────────
-    //
     Rectangle {
         id: table_content
         color: "transparent"
@@ -455,8 +431,6 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.RightButton
-        onPressed: function(mouse) {
-            mouse.accepted = true
-        }
+        onPressed: function(mouse) { mouse.accepted = true }
     }
 }
