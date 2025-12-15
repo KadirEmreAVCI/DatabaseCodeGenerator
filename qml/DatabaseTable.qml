@@ -8,35 +8,52 @@ Rectangle {
     id: root
     width: 300
     visible: true
-    border.color: "black"
-    border.width: 3
+
+    // Use thinner, cleaner border similar to the hold area
+    border.color: "#2b2b2b"
+    border.width: 2
+
     radius: 10
     color: "white"
-    clip: true
+    clip: false   // allow visuals outside the table bounds
 
     //
     // ───────────────────── Exposed properties ─────────────────────
     //
     property int tableID: -1
-    property string tableName: "Default Table"   // <- bound from outside: model.name
+    property string tableName: "Default Table"   // bound from outside: model.name
     required property var columnModel            // external model provided from Main.qml
 
     required property var canvas
     property bool editingName: false
 
     //
-    // Helper: cancel editing without changing anything
+    // Relation creation UX
+    //
+    // Only emits a signal. Preview drawing and hit testing will be handled elsewhere.
+    signal relationCreationRequested(int sourceTableID, point startPointInCanvas)
+
+    // Returns the center of the handle circle in CANVAS coordinates
+    function relationHandleCenterInCanvas() {
+        var p = relationHandleCircle.mapToItem(
+                    canvas,
+                    relationHandleCircle.width / 2,
+                    relationHandleCircle.height / 2)
+        return Qt.point(p.x, p.y)
+    }
+
+    //
+    // Helper: cancel name editing without changing the value
     //
     function cancelNameEditing() {
         if (!editingName)
-            return;
-        // Just restore editor from current bound name
+            return
         nameEditor.text = root.tableName
         root.editingName = false
     }
 
     //
-    // Listen to ZoomableCanvas clicks to close editor
+    // Listen to ZoomableCanvas clicks to close the inline editor
     //
     Connections {
         target: canvas
@@ -46,7 +63,7 @@ Rectangle {
     }
 
     //
-    // Listen to C++ rejection of name change (duplicate name etc.)
+    // Listen to C++ rejection of table name change (duplicate name, invalid name, etc.)
     //
     Connections {
         target: tableController
@@ -64,7 +81,7 @@ Rectangle {
     }
 
     //
-    // Dialog for invalid / duplicate name warnings
+    // Dialog for invalid / duplicate table name warnings
     //
     Dialog {
         id: tableNameWarningDialog
@@ -76,18 +93,15 @@ Rectangle {
         y: parent ? (parent.height - height) / 2 : 0
 
         contentItem: Column {
-            id: warningContent
             spacing: 12
             padding: 16
 
             Text {
-                id: warningText
                 text: tableNameWarningDialog.message
                 wrapMode: Text.WordWrap
             }
 
             DialogButtonBox {
-                id: warningButtons
                 standardButtons: DialogButtonBox.Ok
                 alignment: Qt.AlignRight
                 onAccepted: tableNameWarningDialog.close()
@@ -107,19 +121,16 @@ Rectangle {
         y: parent ? (parent.height - height) / 2 : 0
 
         contentItem: Column {
-            id: deleteContent
             spacing: 12
             padding: 16
 
             Text {
-                id: deleteText
                 text: qsTr("Are you sure you want to delete \"%1\"?")
                         .arg(root.tableName)
                 wrapMode: Text.WordWrap
             }
 
             DialogButtonBox {
-                id: deleteButtons
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
                 onAccepted: {
@@ -145,6 +156,159 @@ Rectangle {
                     + root.border.width
 
     //
+    // ───────────────────── Relation hold area (OUTSIDE the table) ─────────────────────
+    //
+    Item {
+        id: relationHoldArea
+        width: 138
+        height: 26
+        z: 50
+
+        anchors {
+            horizontalCenter: root.horizontalCenter
+            bottom: root.top   // shares only the edge with the table
+        }
+
+        Canvas {
+            id: holdShape
+            anchors.fill: parent
+            antialiasing: true
+
+            property real strokeWidth: 1.5
+            property color strokeColor: "#2b2b2b"
+            property color fillColor: "#e6f2ff"   // matches the header palette
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                var topWidth = width * 0.45
+                var topLeftX = (width - topWidth) / 2
+                var topRightX = topLeftX + topWidth
+
+                ctx.beginPath()
+                ctx.moveTo(topLeftX, 0)
+                ctx.lineTo(topRightX, 0)
+                ctx.lineTo(width, height)
+                ctx.lineTo(0, height)
+                ctx.closePath()
+
+                ctx.fillStyle = fillColor
+                ctx.fill()
+
+                ctx.lineWidth = strokeWidth
+                ctx.strokeStyle = strokeColor
+                ctx.stroke()
+            }
+
+            Component.onCompleted: requestPaint()
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+        }
+
+        Canvas {
+            anchors.fill: parent
+            antialiasing: true
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                var topWidth = width * 0.45
+                var topLeftX = (width - topWidth) / 2
+                var topRightX = topLeftX + topWidth
+
+                ctx.beginPath()
+                ctx.moveTo(topLeftX + 1.5, 2)
+                ctx.lineTo(topRightX - 1.5, 2)
+                ctx.lineTo(width - 3, height - 2)
+                ctx.lineTo(3, height - 2)
+                ctx.closePath()
+
+                ctx.lineWidth = 1
+                ctx.strokeStyle = "#ffffff"
+                ctx.stroke()
+            }
+
+            Component.onCompleted: requestPaint()
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+        }
+
+        Rectangle {
+            id: relationHandleCircle
+            width: 12
+            height: 12
+            radius: 6
+            anchors.centerIn: parent
+            antialiasing: true
+            border.width: 2
+            border.color: "#2b2b2b"
+            color: "#ffffff"
+            z: 10
+        }
+
+        Rectangle {
+            width: 4
+            height: 4
+            radius: 2
+            anchors.centerIn: relationHandleCircle
+            color: "#2b2b2b"
+            antialiasing: true
+            z: 11
+        }
+
+        Rectangle {
+            id: hoverRing
+            anchors.centerIn: relationHandleCircle
+            width: relationHandleCircle.width + 12
+            height: relationHandleCircle.height + 12
+            radius: width / 2
+            color: "transparent"
+            border.width: 2
+            border.color: relationHandleMouse.containsPress ? "#1f6feb"
+                         : (relationHandleMouse.containsMouse ? "#7aa7ff" : "transparent")
+            antialiasing: true
+            visible: relationHandleMouse.containsMouse || relationHandleMouse.containsPress
+            z: 9
+        }
+
+        MouseArea {
+            id: relationHandleMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            preventStealing: true
+            propagateComposedEvents: false
+
+            cursorShape: containsPress
+                         ? Qt.ClosedHandCursor
+                         : (containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor)
+
+            onPressed: function(mouse) {
+                if (mouse.button !== Qt.LeftButton)
+                    return
+
+                root.cancelNameEditing()
+                mouse.accepted = true
+
+                console.log("[RelationHold] left click pressed - tableID:", root.tableID)
+
+                root.relationCreationRequested(
+                    root.tableID,
+                    root.relationHandleCenterInCanvas()
+                )
+            }
+
+            onReleased: function(mouse) {
+                if (mouse.button !== Qt.LeftButton)
+                    return
+                console.log("[RelationHold] left click released - tableID:", root.tableID)
+            }
+        }
+    }
+
+    //
     // ───────────────────── Header ─────────────────────
     //
     Rectangle {
@@ -159,23 +323,19 @@ Rectangle {
         height: 40
         antialiasing: true
 
-        // Label (shown when not editing)
         Text {
-            id: tableNameText
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.right: deleteButton.left
             anchors.rightMargin: 8
             elide: Text.ElideRight
-
             text: root.tableName
             font.bold: true
             font.pointSize: 14
             visible: !root.editingName
         }
 
-        // Small delete button on the right
         Button {
             id: deleteButton
             anchors.verticalCenter: parent.verticalCenter
@@ -183,13 +343,9 @@ Rectangle {
             anchors.rightMargin: 4
             text: "✕"
             focusPolicy: Qt.NoFocus
-
-            onClicked: {
-                deleteTableDialog.open()
-            }
+            onClicked: deleteTableDialog.open()
         }
 
-        // Inline editor (shown when editingName == true)
         TextField {
             id: nameEditor
             anchors {
@@ -223,47 +379,16 @@ Rectangle {
                         console.warn("tableController is not available in QML context")
                     }
                 }
-
                 root.editingName = false
             }
         }
 
-        // Double-click header to start editing + hover cursor
-        MouseArea {
-            id: headerMouseArea
-            anchors {
-                left: parent.left
-                right: deleteButton.left
-                top: parent.top
-                bottom: parent.bottom
-            }
-
-            acceptedButtons: Qt.LeftButton
-            propagateComposedEvents: true
-            hoverEnabled: true
-
-            // Cursor logic:
-            //  - Arrow outside
-            //  - Open hand when hovering
-            //  - Closed hand while pressed (dragging)
-            cursorShape: containsPress
-                        ? Qt.ClosedHandCursor
-                        : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
-
-            onDoubleClicked: {
-                root.editingName = true
-                nameEditor.text = root.tableName
-                nameEditor.forceActiveFocus()
-                nameEditor.selectAll()
-            }
-        }
-
-        // Drag the whole table by holding the HEADER
         DragHandler {
             id: headerDrag
             target: root
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.DragMoveCursor
+            enabled: !relationHandleMouse.pressed
 
             onActiveChanged: {
                 if (!active) {
@@ -310,7 +435,6 @@ Rectangle {
         antialiasing: true
         clip: true
 
-        // height comes from DatabaseTableContent
         height: tableContent.implicitHeight
 
         DatabaseTableContent {
@@ -320,23 +444,17 @@ Rectangle {
                 left: parent.left
                 right: parent.right
             }
-
             externalModel: root.columnModel
         }
     }
 
-    //
-    // Exposed helper: get a point on table content edge aligned with a given row
-    //
     function rowEdgePosition(rowIndex, side, targetItem) {
-        return tableContent.rowEdgePosition(rowIndex, side, targetItem);
+        return tableContent.rowEdgePosition(rowIndex, side, targetItem)
     }
 
-    // Swallow right-clicks on the table so background menu won't show
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.RightButton
-
         onPressed: function(mouse) {
             mouse.accepted = true
         }
