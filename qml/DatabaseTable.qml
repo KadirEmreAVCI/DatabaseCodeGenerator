@@ -116,14 +116,13 @@ Item {
 
     //
     // ───────────────────── Relation hold area ─────────────────────
-    // Changes:
-    // 1) Center circle is always visible.
-    // 2) Handle is narrower and a bit taller.
+    // Requirement:
+    //  - Outer trapezoid behaves like the table header (drag + double click edit).
+    //  - Only the center circle can start relation creation.
     //
     Item {
         id: relationHandle
 
-        // Narrower + taller (direct values)
         width: Math.round(wrapper.width * 0.68)
         height: 24
 
@@ -194,7 +193,49 @@ Item {
         }
 
         //
-        // Center circle (always visible)
+        // Outer area: header-like behavior (NO MouseArea here)
+        // Use Pointer Handlers to avoid blocking drag.
+        //
+        TapHandler {
+            id: handleTap
+            acceptedButtons: Qt.LeftButton
+            // Double click on trapezoid should start name editing (like header)
+            onDoubleTapped: {
+                wrapper.editingName = true
+                nameEditor.text = wrapper.tableName
+                nameEditor.forceActiveFocus()
+                nameEditor.selectAll()
+            }
+        }
+
+        DragHandler {
+            id: handleDrag
+            target: wrapper
+            acceptedButtons: Qt.LeftButton
+            cursorShape: Qt.DragMoveCursor
+
+            // Prevent canvas/grid from taking over this drag
+            grabPermissions: PointerHandler.TakeOverForbidden
+
+            // Do not drag the table if the circle is being used
+            enabled: !circleMouse.pressed
+
+            onActiveChanged: {
+                if (!active) {
+                    if (typeof tableController !== "undefined" && tableController) {
+                        tableController.onTablePositionChangeRequested(
+                            wrapper.tableID,
+                            Qt.point(Math.round(wrapper.x), Math.round(wrapper.y))
+                        )
+                    } else {
+                        console.warn("tableController is not available in QML context")
+                    }
+                }
+            }
+        }
+
+        //
+        // Center circle (relation creation ONLY)
         //
         Rectangle {
             id: centerRing
@@ -206,6 +247,7 @@ Item {
             color: Qt.rgba(1, 1, 1, 0.85)
             border.color: "#2d8cff"
             border.width: 2
+            z: 20
         }
 
         Rectangle {
@@ -215,48 +257,59 @@ Item {
             height: 6
             radius: width / 2
             color: "#2d8cff"
+            z: 21
         }
 
-        // Optional hover glow (can stay, but circle is always visible now)
         Rectangle {
             id: hoverGlow
-            anchors.centerIn: parent
+            anchors.centerIn: centerRing
             width: 24
             height: 24
             radius: width / 2
             color: "#2d8cff"
-            opacity: handleMouse.containsMouse ? 0.14 : 0.0
+            opacity: circleMouse.containsMouse ? 0.14 : 0.0
             visible: opacity > 0
+            z: 19
             Behavior on opacity { NumberAnimation { duration: 120 } }
         }
 
         MouseArea {
-            id: handleMouse
-            anchors.fill: parent
+            id: circleMouse
+            anchors.fill: centerRing
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
+
+            // Prevent background/grid from stealing the drag
+            preventStealing: true
+            propagateComposedEvents: false
+            z: 30
 
             cursorShape: containsPress
                          ? Qt.ClosedHandCursor
                          : (containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor)
 
             onPressed: function(mouse) {
-                console.log("[DatabaseTable] relation handle clicked on table:", wrapper.tableID)
+                mouse.accepted = true
+                console.log("[DatabaseTable] relation circle pressed on table:", wrapper.tableID)
 
                 if (connectionsLayer) {
-                    var startWorld = handleMouse.mapToItem(connectionsLayer,
-                                                           handleMouse.width / 2,
-                                                           handleMouse.height / 2)
+                    var startWorld = circleMouse.mapToItem(connectionsLayer,
+                                                           circleMouse.width / 2,
+                                                           circleMouse.height / 2)
                     connectionsLayer.startRelationPreview(wrapper.tableID, startWorld)
                 } else {
-                    console.warn("[DatabaseTable] connectionsLayer is not available in QML context")
+                    console.warn("connectionsLayer is not available in QML context")
                 }
-
-                mouse.accepted = true
             }
+
+            onPositionChanged: function(mouse) { mouse.accepted = true }
+            onReleased: function(mouse) { mouse.accepted = true }
         }
     }
 
+    //
+    // ───────────────────── Table rect ─────────────────────
+    //
     Rectangle {
         id: tableRect
         x: 0
