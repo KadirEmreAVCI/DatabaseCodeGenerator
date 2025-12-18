@@ -119,6 +119,7 @@ Item {
     // Requirement:
     //  - Outer trapezoid behaves like the table header (drag + double click edit).
     //  - Only the center circle can start relation creation.
+    //  - While preview is active, table dragging must be blocked.
     //
     Item {
         id: relationHandle
@@ -199,7 +200,9 @@ Item {
         TapHandler {
             id: handleTap
             acceptedButtons: Qt.LeftButton
-            // Double click on trapezoid should start name editing (like header)
+
+            enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
+
             onDoubleTapped: {
                 wrapper.editingName = true
                 nameEditor.text = wrapper.tableName
@@ -217,8 +220,8 @@ Item {
             // Prevent canvas/grid from taking over this drag
             grabPermissions: PointerHandler.TakeOverForbidden
 
-            // Do not drag the table if the circle is being used
-            enabled: !circleMouse.pressed
+            // Block dragging while preview is active or while the circle is pressed
+            enabled: !(connectionsLayer && connectionsLayer.creatingRelation) && !circleMouse.pressed
 
             onActiveChanged: {
                 if (!active) {
@@ -290,6 +293,12 @@ Item {
 
             onPressed: function(mouse) {
                 mouse.accepted = true
+
+                if (connectionsLayer && connectionsLayer.creatingRelation) {
+                    // Ignore re-entrance: preview is already active
+                    return
+                }
+
                 console.log("[DatabaseTable] relation circle pressed on table:", wrapper.tableID)
 
                 if (connectionsLayer) {
@@ -421,6 +430,8 @@ Item {
                             ? Qt.ClosedHandCursor
                             : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
 
+                enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
+
                 onDoubleClicked: {
                     wrapper.editingName = true
                     nameEditor.text = wrapper.tableName
@@ -434,6 +445,9 @@ Item {
                 target: wrapper
                 acceptedButtons: Qt.LeftButton
                 cursorShape: Qt.DragMoveCursor
+
+                // Block table dragging while preview is active
+                enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
                 onActiveChanged: {
                     if (!active) {
@@ -500,7 +514,6 @@ Item {
                 mouse.accepted = true
             }
         }
-
     }
 
     function rowEdgePosition(rowIndex, side, targetItem) {

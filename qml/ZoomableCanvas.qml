@@ -13,6 +13,9 @@ Item {
     property real minZoom: 0.3
     property real maxZoom: 3.0
 
+    // When true, panning / workspace taps are blocked (used during relation preview).
+    property bool inputLocked: false
+
     // internal: starting position for panning
     property real panStartX: 0
     property real panStartY: 0
@@ -41,30 +44,23 @@ Item {
     // Fit a given bounding rect (in content/world coordinates) into the viewport
     function fitToScreen(rect) {
         if (!rect || rect.width <= 0 || rect.height <= 0)
-            return;
+            return
 
-        // Compute scale factors for width and height
-        var scaleX = root.width  / rect.width;
-        var scaleY = root.height / rect.height;
+        var scaleX = root.width  / rect.width
+        var scaleY = root.height / rect.height
 
-        // Preserve aspect ratio: choose smaller scale
-        var newZoom = Math.min(scaleX, scaleY);
+        var newZoom = Math.min(scaleX, scaleY)
+        newZoom = Math.max(root.minZoom, Math.min(root.maxZoom, newZoom))
 
-        // Respect min/max zoom limits
-        newZoom = Math.max(root.minZoom, Math.min(root.maxZoom, newZoom));
+        root.zoom = newZoom
 
-        root.zoom = newZoom;
-
-        // Center the rect in the viewport after scaling
-        content.x = -rect.x * newZoom + (root.width  - rect.width  * newZoom) / 2;
-        content.y = -rect.y * newZoom + (root.height - rect.height * newZoom) / 2;
+        content.x = -rect.x * newZoom + (root.width  - rect.width  * newZoom) / 2
+        content.y = -rect.y * newZoom + (root.height - rect.height * newZoom) / 2
     }
 
     //
     // ───────────────────── Zoomed content layer ─────────────────────
     //
-    // This item is the "world" that gets zoomed and panned. All tables, links, etc.
-    // are children of this item (via contentChildren alias).
     Item {
         id: content
         width: root.width
@@ -79,8 +75,6 @@ Item {
     //
     // ───────────────────── Overlay (non-zoomed) layer ─────────────────────
     //
-    // Anything that should stay fixed relative to the window (context menus,
-    // full-screen mouse areas, HUD, etc.) goes here (via overlayChildren alias).
     Item {
         id: overlay
         anchors.fill: parent
@@ -96,24 +90,27 @@ Item {
         id: wheelHandler
         target: root
 
-        onWheel: (event) => {
-            const oldZoom = root.zoom;
-            const delta = event.angleDelta.y;
-            if (!delta)
-                return;
+        // Optional: keep zoom enabled even when locked.
+        // If you want zoom to be locked too, set enabled: !root.inputLocked
+        enabled: true
 
-            // gentle zoom: ~4% per wheel step
-            const steps = delta / 120.0;   // 120 = one wheel notch
-            const base = 1.04;
-            const factor = Math.pow(base, steps);
+        onWheel: (event) => {
+            const oldZoom = root.zoom
+            const delta = event.angleDelta.y
+            if (!delta)
+                return
+
+            const steps = delta / 120.0
+            const base = 1.04
+            const factor = Math.pow(base, steps)
 
             const newZoom = Math.max(root.minZoom,
-                                     Math.min(root.maxZoom, oldZoom * factor));
+                                     Math.min(root.maxZoom, oldZoom * factor))
             if (newZoom === oldZoom)
-                return;
+                return
 
-            root.zoom = newZoom;
-            event.accepted = true;
+            root.zoom = newZoom
+            event.accepted = true
         }
     }
 
@@ -123,23 +120,23 @@ Item {
         target: null
         acceptedButtons: Qt.LeftButton
 
+        enabled: !root.inputLocked
+
         onActiveChanged: {
             if (active) {
-                // remember where content was when pan started
-                root.panStartX = content.x;
-                root.panStartY = content.y;
-                cursorShape = Qt.ClosedHandCursor;
+                root.panStartX = content.x
+                root.panStartY = content.y
+                cursorShape = Qt.ClosedHandCursor
             } else {
-                cursorShape = Qt.ArrowCursor;
+                cursorShape = Qt.ArrowCursor
             }
         }
 
         onTranslationChanged: {
             if (active) {
-                // translation is read-only; we just use it
-                content.x = root.panStartX + translation.x;
-                content.y = root.panStartY + translation.y;
-                cursorShape = Qt.ClosedHandCursor;
+                content.x = root.panStartX + translation.x
+                content.y = root.panStartY + translation.y
+                cursorShape = Qt.ClosedHandCursor
             }
         }
     }
@@ -149,16 +146,16 @@ Item {
         acceptedButtons: Qt.LeftButton
         gesturePolicy: TapHandler.DragThreshold
 
-        // Single tap → notify listeners (e.g., to cancel editing)
+        enabled: !root.inputLocked
+
         onTapped: function(point, button) {
             root.workspaceClicked()
         }
 
-        // Double-tap → reset view
         onDoubleTapped: {
-            root.zoom = 1.0;
-            content.x = 0;
-            content.y = 0;
+            root.zoom = 1.0
+            content.x = 0
+            content.y = 0
         }
     }
 }
