@@ -490,8 +490,17 @@ Item {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
-            onPressed: function(mouse) { mouse.accepted = true }
+
+            onPressed: function(mouse) {
+                // Cancel preview even if right-click happens on a table.
+                if (connectionsLayer && connectionsLayer.creatingRelation) {
+                    console.log("[DatabaseTable] preview cancelled by right-click on table")
+                    connectionsLayer.cancelPreview()
+                }
+                mouse.accepted = true
+            }
         }
+
     }
 
     function rowEdgePosition(rowIndex, side, targetItem) {

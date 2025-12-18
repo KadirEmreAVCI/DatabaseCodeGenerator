@@ -160,6 +160,14 @@ Window {
                     acceptedButtons: Qt.RightButton
 
                     onPressed: function(mouse) {
+                        // If a relation preview is active, right-click cancels it (no menu).
+                        if (links && links.creatingRelation) {
+                            console.log("[Main.qml] preview cancelled by right-click")
+                            links.cancelPreview()
+                            mouse.accepted = true
+                            return
+                        }
+                        
                         if (mouse.button !== Qt.RightButton)
                             return
 
