@@ -25,6 +25,31 @@ Item {
                                                 && connectionsLayer.hoveredDestinationTableID === wrapper.tableID
                                                 && connectionsLayer.creatingSourceTableID !== wrapper.tableID)
 
+    //
+    // Hit-test function used by ConnectionsLayer:
+    // pWorld is in ConnectionsLayer (world) coordinates.
+    // We consider BOTH the table body and the relation handle as valid drop areas.
+    //
+    function isWorldPointInsideDropArea(pWorld, worldItem) {
+        if (!worldItem)
+            return false
+
+        // Convert world point into wrapper local coordinates
+        var local = wrapper.mapFromItem(worldItem, pWorld.x, pWorld.y)
+
+        // 1) Table body area (tableRect)
+        var inBody =
+                (local.x >= tableRect.x && local.x <= tableRect.x + tableRect.width) &&
+                (local.y >= tableRect.y && local.y <= tableRect.y + tableRect.height)
+
+        // 2) Relation handle area (relationHandle)
+        var inHandle =
+                (local.x >= relationHandle.x && local.x <= relationHandle.x + relationHandle.width) &&
+                (local.y >= relationHandle.y && local.y <= relationHandle.y + relationHandle.height)
+
+        return inBody || inHandle
+    }
+
     function cancelNameEditing() {
         if (!editingName)
             return
@@ -146,8 +171,10 @@ Item {
         readonly property int shadowDy: 2
 
         Canvas {
+            id: handleCanvas
             anchors.fill: parent
             antialiasing: true
+            z: 10
 
             onPaint: {
                 var ctx = getContext("2d")
@@ -167,12 +194,14 @@ Item {
                     ctx.closePath()
                 }
 
+                // Shadow
                 ctx.save()
                 ctx.fillStyle = relationHandle.shadowColor
                 tracePath(relationHandle.shadowDy)
                 ctx.fill()
                 ctx.restore()
 
+                // Gradient fill
                 var g = ctx.createLinearGradient(0, 0, 0, h)
                 g.addColorStop(0.0, relationHandle.gradTop)
                 g.addColorStop(0.55, relationHandle.gradMiddle)
@@ -183,8 +212,64 @@ Item {
                 ctx.fillStyle = g
                 ctx.fill()
 
+                // Border
                 ctx.lineWidth = stroke
                 ctx.strokeStyle = relationHandle.borderColor
+                ctx.lineJoin = "round"
+                ctx.stroke()
+                ctx.restore()
+            }
+
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+        }
+
+        //
+        // Hold area highlight (instant show/hide)
+        //
+        Canvas {
+            id: handleHighlightCanvas
+            anchors.fill: parent
+            antialiasing: true
+            z: 50
+            visible: wrapper.isPreviewDropTarget
+
+            onVisibleChanged: {
+                if (visible)
+                    requestPaint()
+            }
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                var w = Math.round(width)
+                var h = Math.round(height)
+                var inset = relationHandle.topInset
+
+                function tracePath() {
+                    ctx.beginPath()
+                    ctx.moveTo(inset, 0)
+                    ctx.lineTo(w - inset, 0)
+                    ctx.lineTo(w, h)
+                    ctx.lineTo(0, h)
+                    ctx.closePath()
+                }
+
+                // Overlay fill
+                ctx.save()
+                tracePath()
+                ctx.fillStyle = "rgba(45, 140, 255, 0.12)"
+                ctx.fill()
+                ctx.restore()
+
+                // Accent stroke
+                ctx.save()
+                tracePath()
+                ctx.lineWidth = 2
+                ctx.strokeStyle = "rgba(45, 140, 255, 0.95)"
                 ctx.lineJoin = "round"
                 ctx.stroke()
                 ctx.restore()
@@ -192,6 +277,7 @@ Item {
         }
 
         TapHandler {
+            id: handleTap
             acceptedButtons: Qt.LeftButton
             enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
@@ -204,6 +290,7 @@ Item {
         }
 
         DragHandler {
+            id: handleDrag
             target: wrapper
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.DragMoveCursor
@@ -233,19 +320,21 @@ Item {
             color: Qt.rgba(1, 1, 1, 0.85)
             border.color: "#2d8cff"
             border.width: 2
-            z: 20
+            z: 80
         }
 
         Rectangle {
+            id: centerDot
             anchors.centerIn: centerRing
             width: 6
             height: 6
             radius: width / 2
             color: "#2d8cff"
-            z: 21
+            z: 81
         }
 
         Rectangle {
+            id: hoverGlow
             anchors.centerIn: centerRing
             width: 24
             height: 24
@@ -253,7 +342,7 @@ Item {
             color: "#2d8cff"
             opacity: circleMouse.containsMouse ? 0.14 : 0.0
             visible: opacity > 0
-            z: 19
+            z: 79
             Behavior on opacity { NumberAnimation { duration: 120 } }
         }
 
@@ -264,7 +353,7 @@ Item {
             acceptedButtons: Qt.LeftButton
             preventStealing: true
             propagateComposedEvents: false
-            z: 30
+            z: 90
 
             cursorShape: containsPress
                          ? Qt.ClosedHandCursor
@@ -272,7 +361,6 @@ Item {
 
             onPressed: function(mouse) {
                 mouse.accepted = true
-
                 if (connectionsLayer && connectionsLayer.creatingRelation)
                     return
 
@@ -293,6 +381,9 @@ Item {
         }
     }
 
+    //
+    // ───────────────────── Table rect ─────────────────────
+    //
     Rectangle {
         id: tableRect
         x: 0
@@ -312,7 +403,7 @@ Item {
                         + table_content.height
                         + border.width
 
-        // Destination highlight overlay
+        // Destination highlight overlay (instant show/hide)
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0.176, 0.549, 1.0, 0.08)
@@ -320,9 +411,7 @@ Item {
             border.width: 3
             radius: tableRect.radius
             visible: wrapper.isPreviewDropTarget
-            opacity: visible ? 1.0 : 0.0
             z: 999
-            Behavior on opacity { NumberAnimation { duration: 120 } }
         }
 
         Rectangle {
@@ -338,6 +427,7 @@ Item {
             antialiasing: true
 
             Text {
+                id: tableNameText
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 8
@@ -400,6 +490,7 @@ Item {
             }
 
             MouseArea {
+                id: headerMouseArea
                 anchors {
                     left: parent.left
                     right: deleteButton.left
@@ -425,6 +516,7 @@ Item {
             }
 
             DragHandler {
+                id: headerDrag
                 target: wrapper
                 acceptedButtons: Qt.LeftButton
                 cursorShape: Qt.DragMoveCursor

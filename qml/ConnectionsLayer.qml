@@ -30,7 +30,7 @@ Item {
     // Main.qml overlay tracker will listen to this
     signal previewTrackingRequested(bool enabled)
 
-    // Existing signal (kept for compatibility)
+    // Optional legacy signal
     signal relationPreviewReleased(int sourceTableID, point endWorld)
 
     // New: emitted only when a valid destination table is dropped on
@@ -61,41 +61,6 @@ Item {
         requestRedraw()
     }
 
-    // Resolve table item by tableID
-    function findTableItemById(id) {
-        if (!tableRepeater)
-            return null
-
-        for (let i = 0; i < tableRepeater.count; ++i) {
-            let item = tableRepeater.itemAt(i)
-            if (item && item.tableID === id)
-                return item
-        }
-        return null
-    }
-
-    // Return the destination tableID under the given world point, excluding the source table.
-    // Returns -1 if not over any table.
-    function findTableIdAtWorldPoint(pWorld, excludedTableID) {
-        if (!tableRepeater)
-            return -1
-
-        for (let i = 0; i < tableRepeater.count; ++i) {
-            let t = tableRepeater.itemAt(i)
-            if (!t)
-                continue
-
-            if (t.tableID === excludedTableID)
-                continue
-
-            if (pWorld.x >= t.x && pWorld.x <= (t.x + t.width) &&
-                pWorld.y >= t.y && pWorld.y <= (t.y + t.height)) {
-                return t.tableID
-            }
-        }
-        return -1
-    }
-
     // Called from Main.qml (window-level tracker)
     function setPreviewEndWorld(pWorld) {
         if (!creatingRelation)
@@ -114,7 +79,6 @@ Item {
         if (!creatingRelation)
             return
 
-        // Determine drop target BEFORE we clear preview state
         let endPoint = Qt.point(pWorld.x, pWorld.y)
         let destId = findTableIdAtWorldPoint(endPoint, creatingSourceTableID)
 
@@ -139,15 +103,51 @@ Item {
             return
         }
 
-        // ✅ Emit signal and log at the emission point (requested)
+        // Emit signal and log at the emission point (requested)
         console.log("[ConnectionsLayer] newRelationEstablished emitted. source:", creatingSourceTableID, "destination:", destId)
         newRelationEstablished(creatingSourceTableID, destId)
 
-        // Keep old signal too (if you still use it elsewhere)
+        // Keep legacy signal too (if you still use it elsewhere)
         relationPreviewReleased(creatingSourceTableID, endPoint)
 
         creatingSourceTableID = -1
         requestRedraw()
+    }
+
+    // Resolve table item by tableID
+    function findTableItemById(id) {
+        if (!tableRepeater)
+            return null
+
+        for (let i = 0; i < tableRepeater.count; ++i) {
+            let item = tableRepeater.itemAt(i)
+            if (item && item.tableID === id)
+                return item
+        }
+        return null
+    }
+
+    //
+    // ✅ UPDATED: destination detection includes BOTH table body and relation hold area
+    // We delegate the hit-test to DatabaseTable (stable and future-proof).
+    //
+    function findTableIdAtWorldPoint(pWorld, excludedTableID) {
+        if (!tableRepeater)
+            return -1
+
+        for (let i = 0; i < tableRepeater.count; ++i) {
+            let t = tableRepeater.itemAt(i)
+            if (!t)
+                continue
+
+            if (t.tableID === excludedTableID)
+                continue
+
+            if (t.isWorldPointInsideDropArea && t.isWorldPointInsideDropArea(pWorld, root))
+                return t.tableID
+        }
+
+        return -1
     }
 
     // Update world bounds (used by Main.qml)
@@ -195,7 +195,6 @@ Item {
     function startRelationPreview(sourceTableID, startPointWorld) {
         creatingRelation = true
         creatingSourceTableID = sourceTableID
-        hoveredDestinationTableID = -1
 
         previewStartWorld = Qt.point(startPointWorld.x, startPointWorld.y)
         previewEndWorld   = Qt.point(startPointWorld.x, startPointWorld.y)
@@ -339,8 +338,78 @@ Item {
                     ctx.stroke()
                 }
 
-                // Label bubble part intentionally unchanged...
-                // (kept exactly as your stable version)
+                // Label bubble
+                let t = 0.5
+                let it = 1.0 - t
+
+                let midX =
+                    it*it*it * p1x +
+                    3*it*it*t * cp1x +
+                    3*it*t*t * cp2x +
+                    t*t*t * p2x
+
+                let midY =
+                    it*it*it * p1y +
+                    3*it*it*t * cp1y +
+                    3*it*t*t * cp2y +
+                    t*t*t * p2y
+
+                let lvx = p2x - p1x
+                let lvy = p2y - p1y
+                let llen = Math.sqrt(lvx * lvx + lvy * lvy)
+
+                let nx = 0
+                let ny = -1
+                if (llen > 0) {
+                    lvx /= llen
+                    lvy /= llen
+                    nx = -lvy
+                    ny = lvx
+                }
+
+                let labelX = midX + nx * centerLabelOffset
+                let labelY = midY + ny * centerLabelOffset
+
+                ctx.save()
+
+                let metrics = ctx.measureText(midLabel)
+                let textWidth = metrics.width
+                let paddingX = 8
+                let paddingY = 4
+                let bubbleWidth = textWidth + paddingX * 2
+                let bubbleHeight = 18 + paddingY
+
+                let bubbleX = labelX - bubbleWidth / 2
+                let bubbleY = labelY - bubbleHeight / 2
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.92)"
+                ctx.strokeStyle = "#2d8cff"
+                ctx.lineWidth = 2
+
+                ctx.beginPath()
+                let cornerRadius = 6
+                ctx.moveTo(bubbleX + cornerRadius, bubbleY)
+                ctx.lineTo(bubbleX + bubbleWidth - cornerRadius, bubbleY)
+                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY,
+                                     bubbleX + bubbleWidth, bubbleY + cornerRadius)
+                ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - cornerRadius)
+                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight,
+                                     bubbleX + bubbleWidth - cornerRadius, bubbleY + bubbleHeight)
+                ctx.lineTo(bubbleX + cornerRadius, bubbleY + bubbleHeight)
+                ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleHeight,
+                                     bubbleX, bubbleY + bubbleHeight - cornerRadius)
+                ctx.lineTo(bubbleX, bubbleY + cornerRadius)
+                ctx.quadraticCurveTo(bubbleX, bubbleY,
+                                     bubbleX + cornerRadius, bubbleY)
+                ctx.closePath()
+
+                ctx.fill()
+                ctx.stroke()
+
+                ctx.fillStyle = "#1f3b57"
+                ctx.fillText(midLabel, labelX, labelY)
+
+                ctx.restore()
             }
 
             ctx.restore()
@@ -349,6 +418,5 @@ Item {
 
     function requestRedraw() {
         canvas.requestPaint()
-        // Preview is drawn elsewhere in your project as-is.
     }
 }
