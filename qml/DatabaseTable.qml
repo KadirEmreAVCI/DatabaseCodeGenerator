@@ -19,6 +19,12 @@ Item {
 
     implicitHeight: relationHandle.height + tableRect.implicitHeight
 
+    // True only when this table is a valid drop target for the preview
+    readonly property bool isPreviewDropTarget: (connectionsLayer
+                                                && connectionsLayer.creatingRelation
+                                                && connectionsLayer.hoveredDestinationTableID === wrapper.tableID
+                                                && connectionsLayer.creatingSourceTableID !== wrapper.tableID)
+
     function cancelNameEditing() {
         if (!editingName)
             return
@@ -116,10 +122,6 @@ Item {
 
     //
     // ───────────────────── Relation hold area ─────────────────────
-    // Requirement:
-    //  - Outer trapezoid behaves like the table header (drag + double click edit).
-    //  - Only the center circle can start relation creation.
-    //  - While preview is active, table dragging must be blocked.
     //
     Item {
         id: relationHandle
@@ -144,7 +146,6 @@ Item {
         readonly property int shadowDy: 2
 
         Canvas {
-            id: handleCanvas
             anchors.fill: parent
             antialiasing: true
 
@@ -166,14 +167,12 @@ Item {
                     ctx.closePath()
                 }
 
-                // Shadow
                 ctx.save()
                 ctx.fillStyle = relationHandle.shadowColor
                 tracePath(relationHandle.shadowDy)
                 ctx.fill()
                 ctx.restore()
 
-                // Gradient fill
                 var g = ctx.createLinearGradient(0, 0, 0, h)
                 g.addColorStop(0.0, relationHandle.gradTop)
                 g.addColorStop(0.55, relationHandle.gradMiddle)
@@ -184,7 +183,6 @@ Item {
                 ctx.fillStyle = g
                 ctx.fill()
 
-                // Border
                 ctx.lineWidth = stroke
                 ctx.strokeStyle = relationHandle.borderColor
                 ctx.lineJoin = "round"
@@ -193,14 +191,8 @@ Item {
             }
         }
 
-        //
-        // Outer area: header-like behavior (NO MouseArea here)
-        // Use Pointer Handlers to avoid blocking drag.
-        //
         TapHandler {
-            id: handleTap
             acceptedButtons: Qt.LeftButton
-
             enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
             onDoubleTapped: {
@@ -212,15 +204,10 @@ Item {
         }
 
         DragHandler {
-            id: handleDrag
             target: wrapper
             acceptedButtons: Qt.LeftButton
             cursorShape: Qt.DragMoveCursor
-
-            // Prevent canvas/grid from taking over this drag
             grabPermissions: PointerHandler.TakeOverForbidden
-
-            // Block dragging while preview is active or while the circle is pressed
             enabled: !(connectionsLayer && connectionsLayer.creatingRelation) && !circleMouse.pressed
 
             onActiveChanged: {
@@ -237,16 +224,12 @@ Item {
             }
         }
 
-        //
-        // Center circle (relation creation ONLY)
-        //
         Rectangle {
             id: centerRing
             anchors.centerIn: parent
             width: 14
             height: 14
             radius: width / 2
-
             color: Qt.rgba(1, 1, 1, 0.85)
             border.color: "#2d8cff"
             border.width: 2
@@ -254,7 +237,6 @@ Item {
         }
 
         Rectangle {
-            id: centerDot
             anchors.centerIn: centerRing
             width: 6
             height: 6
@@ -264,7 +246,6 @@ Item {
         }
 
         Rectangle {
-            id: hoverGlow
             anchors.centerIn: centerRing
             width: 24
             height: 24
@@ -281,8 +262,6 @@ Item {
             anchors.fill: centerRing
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
-
-            // Prevent background/grid from stealing the drag
             preventStealing: true
             propagateComposedEvents: false
             z: 30
@@ -294,10 +273,8 @@ Item {
             onPressed: function(mouse) {
                 mouse.accepted = true
 
-                if (connectionsLayer && connectionsLayer.creatingRelation) {
-                    // Ignore re-entrance: preview is already active
+                if (connectionsLayer && connectionsLayer.creatingRelation)
                     return
-                }
 
                 console.log("[DatabaseTable] relation circle pressed on table:", wrapper.tableID)
 
@@ -316,9 +293,6 @@ Item {
         }
     }
 
-    //
-    // ───────────────────── Table rect ─────────────────────
-    //
     Rectangle {
         id: tableRect
         x: 0
@@ -338,6 +312,19 @@ Item {
                         + table_content.height
                         + border.width
 
+        // Destination highlight overlay
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0.176, 0.549, 1.0, 0.08)
+            border.color: "#2d8cff"
+            border.width: 3
+            radius: tableRect.radius
+            visible: wrapper.isPreviewDropTarget
+            opacity: visible ? 1.0 : 0.0
+            z: 999
+            Behavior on opacity { NumberAnimation { duration: 120 } }
+        }
+
         Rectangle {
             id: table_header
             color: "#cfe8ff"
@@ -351,7 +338,6 @@ Item {
             antialiasing: true
 
             Text {
-                id: tableNameText
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 8
@@ -414,7 +400,6 @@ Item {
             }
 
             MouseArea {
-                id: headerMouseArea
                 anchors {
                     left: parent.left
                     right: deleteButton.left
@@ -425,12 +410,11 @@ Item {
                 acceptedButtons: Qt.LeftButton
                 propagateComposedEvents: true
                 hoverEnabled: true
+                enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
                 cursorShape: containsPress
                             ? Qt.ClosedHandCursor
                             : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
-
-                enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
                 onDoubleClicked: {
                     wrapper.editingName = true
@@ -441,12 +425,9 @@ Item {
             }
 
             DragHandler {
-                id: headerDrag
                 target: wrapper
                 acceptedButtons: Qt.LeftButton
                 cursorShape: Qt.DragMoveCursor
-
-                // Block table dragging while preview is active
                 enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
                 onActiveChanged: {
@@ -506,7 +487,6 @@ Item {
             acceptedButtons: Qt.RightButton
 
             onPressed: function(mouse) {
-                // Cancel preview even if right-click happens on a table.
                 if (connectionsLayer && connectionsLayer.creatingRelation) {
                     console.log("[DatabaseTable] preview cancelled by right-click on table")
                     connectionsLayer.cancelPreview()
