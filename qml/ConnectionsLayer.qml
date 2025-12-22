@@ -31,36 +31,19 @@ Item {
     // emitted when valid drop happens
     signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
-    onRelationsChanged: requestRedraw()
+    onRelationsChanged: {
+        // New relations can arrive before delegate geometry settles.
+        // Delay bounds + repaint by one tick.
+        Qt.callLater(function() {
+            updateWorldBounds()
+            requestRedraw()
+        })
 
-    // -------------------------------------------------------------------------
-    // DEBUG (Drawing)
-    // Turn this on/off while testing.
-    // -------------------------------------------------------------------------
-    property bool debugDrawLogs: true
-    property int  debugMaxLogsPerPaint: 30
-
-    // Avoid repeating same message every repaint
-    property var _debugPrinted: ({})    // key -> true
-    function _debugKey(key) { return String(key) }
-
-    function debugRelationPrintKey(key, msg) {
-        if (!debugDrawLogs)
-            return
-
-        key = _debugKey(key)
-        if (_debugPrinted[key])
-            return
-
-        _debugPrinted[key] = true
-        console.log(msg)
+        // Extra safety: repaint again on next tick.
+        Qt.callLater(function() {
+            requestRedraw()
+        })
     }
-
-    // Call this when you want to see logs again (e.g., after a big change)
-    function resetDebugDrawLogsCache() {
-        _debugPrinted = ({})
-    }
-    // -------------------------------------------------------------------------
 
     focus: true
     Keys.onEscapePressed: {
@@ -228,36 +211,20 @@ Item {
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
 
-            // ---------------- DEBUG: per-paint summary counters ----------------
-            var dbgTotal = 0
-            var dbgDrawn = 0
-            var dbgSkippedNullObj = 0
-            var dbgSkippedBadRows = 0
-            var dbgSkippedMissingTable = 0
-            var dbgSkippedBadPoints = 0
-            var dbgSkippedNoRowPosFunc = 0
-            var dbgLogged = 0
-
-            function dbgLogOnce(key, message) {
-                if (!root.debugDrawLogs)
-                    return
-                if (dbgLogged >= root.debugMaxLogsPerPaint)
-                    return
-                root.debugRelationPrintKey(key, message)
-                dbgLogged++
+            function isPointInsideTable(p, tableItem) {
+                const margin = 2
+                return (p.x >= tableItem.x - margin &&
+                        p.x <= tableItem.x + tableItem.width + margin &&
+                        p.y >= tableItem.y - margin &&
+                        p.y <= tableItem.y + tableItem.height + margin)
             }
-            // ------------------------------------------------------------------
+
+            var needsRetry = false
 
             for (let i = 0; i < root.relations.length; ++i) {
-                dbgTotal++
-
                 let relationObj = root.relations[i]
-                if (!relationObj) {
-                    dbgSkippedNullObj++
-                    dbgLogOnce("rel_null_" + i,
-                               "[ConnectionsLayer][DRAW] relation[" + i + "] is null -> skipped")
+                if (!relationObj)
                     continue
-                }
 
                 let srcId  = relationObj.sourceTableID
                 let dstId  = relationObj.destinationTableID
@@ -265,44 +232,16 @@ Item {
                 let dRow   = relationObj.destinationRowIdx
                 let relStr = relationObj.relationship || "1..*"
 
-                // Log the raw values once (per unique relation signature)
-                dbgLogOnce("rel_vals_" + srcId + "_" + dstId + "_" + sRow + "_" + dRow,
-                           "[ConnectionsLayer][DRAW] relation values: srcId=" + srcId +
-                           " dstId=" + dstId +
-                           " sRow=" + sRow +
-                           " dRow=" + dRow +
-                           " rel=" + relStr)
-
-                if (sRow < 0 || dRow < 0) {
-                    dbgSkippedBadRows++
-                    dbgLogOnce("rel_badrows_" + srcId + "_" + dstId + "_" + sRow + "_" + dRow,
-                               "[ConnectionsLayer][DRAW] skipped بسبب rows: sRow=" + sRow +
-                               " dRow=" + dRow +
-                               " (must be >= 0). srcId=" + srcId + " dstId=" + dstId)
+                if (sRow < 0 || dRow < 0)
                     continue
-                }
 
                 let sourceTable = root.findTableItemById(srcId)
                 let destTable   = root.findTableItemById(dstId)
-                if (!sourceTable || !destTable) {
-                    dbgSkippedMissingTable++
-                    dbgLogOnce("rel_missingTable_" + srcId + "_" + dstId,
-                               "[ConnectionsLayer][DRAW] skipped because table item missing. " +
-                               "sourceTable=" + (sourceTable ? "OK" : "NULL") +
-                               " destTable=" + (destTable ? "OK" : "NULL") +
-                               " srcId=" + srcId + " dstId=" + dstId +
-                               " (check tableRepeater mapping / IDs)")
+                if (!sourceTable || !destTable)
                     continue
-                }
 
-                if (!sourceTable.rowEdgePosition || !destTable.rowEdgePosition) {
-                    dbgSkippedNoRowPosFunc++
-                    dbgLogOnce("rel_noRowEdgeFn_" + srcId + "_" + dstId,
-                               "[ConnectionsLayer][DRAW] skipped because rowEdgePosition() missing on table item(s). " +
-                               "srcHas=" + (!!sourceTable.rowEdgePosition) +
-                               " dstHas=" + (!!destTable.rowEdgePosition))
+                if (!sourceTable.rowEdgePosition || !destTable.rowEdgePosition)
                     continue
-                }
 
                 let midLabel = (relStr === "1..1") ? "1:1" : "1:*"
 
@@ -317,12 +256,12 @@ Item {
 
                 if (!isFinite(p1World.x) || !isFinite(p1World.y) ||
                     !isFinite(p2World.x) || !isFinite(p2World.y)) {
-                    dbgSkippedBadPoints++
-                    dbgLogOnce("rel_badPoints_" + srcId + "_" + dstId + "_" + sRow + "_" + dRow,
-                               "[ConnectionsLayer][DRAW] skipped because rowEdgePosition produced invalid points. " +
-                               "p1=(" + p1World.x + "," + p1World.y + ") " +
-                               "p2=(" + p2World.x + "," + p2World.y + "). " +
-                               "srcSide=" + sourceSide + " dstSide=" + destSide)
+                    continue
+                }
+
+                // Reject early/dummy points until geometry settles (prevents 0,0-origin lines)
+                if (!isPointInsideTable(p1World, sourceTable) || !isPointInsideTable(p2World, destTable)) {
+                    needsRetry = true
                     continue
                 }
 
@@ -467,24 +406,12 @@ Item {
                 ctx.fillText(midLabel, labelX, labelY)
 
                 ctx.restore()
-
-                dbgDrawn++
             }
 
             ctx.restore()
 
-            if (root.debugDrawLogs) {
-                // Print summary once per unique canvas size/bounds/relations count
-                dbgLogOnce("draw_summary_" + root.relations.length + "_" + width + "_" + height + "_" + root.worldMinX + "_" + root.worldMinY,
-                           "[ConnectionsLayer][DRAW][SUMMARY] total=" + dbgTotal +
-                           " drawn=" + dbgDrawn +
-                           " skipped(null)=" + dbgSkippedNullObj +
-                           " skipped(rows<0)=" + dbgSkippedBadRows +
-                           " skipped(missingTable)=" + dbgSkippedMissingTable +
-                           " skipped(noRowEdgeFn)=" + dbgSkippedNoRowPosFunc +
-                           " skipped(invalidPoints)=" + dbgSkippedBadPoints +
-                           " worldMin=(" + root.worldMinX + "," + root.worldMinY + ")" +
-                           " canvasSize=(" + width + "x" + height + ")")
+            if (needsRetry) {
+                Qt.callLater(function() { root.requestRedraw() })
             }
         }
     }
