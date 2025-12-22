@@ -11,6 +11,18 @@ Window {
     width: 1600
     height: 1200
 
+    property var commandBus: (typeof uiCommandBus !== "undefined" && uiCommandBus) ? uiCommandBus : qmlFallbackBus
+
+    QtObject {
+        id: qmlFallbackBus
+        // ---------------- Controller command signals ----------------
+        signal tableDeleteRequested(int tableID)
+        signal tableNameChangeRequested(int tableID, string newName)
+        signal tablePositionChangeRequested(int tableID, point newPos)
+        signal newRelationEstablished(int sourceTableID, int destinationTableID)
+        // ------------------------------------------------------------
+    }
+
     GridBackground {
         id: dotGrid
         anchors.fill: parent
@@ -32,47 +44,50 @@ Window {
 
         overlayChildren: [
             Item {
+                id: overlayRoot
                 anchors.fill: parent
 
                 //
-                // Window-level tracker for preview (works outside content rectangle),
-                // but coordinates are converted using mapFromItem to links (no toContent needed).
+                // ───────────────────── Preview tracker (LEFT move/release) ─────────────────────
                 //
                 MouseArea {
                     id: previewTracker
                     anchors.fill: parent
                     hoverEnabled: true
-                    enabled: false
                     acceptedButtons: Qt.LeftButton
-                    propagateComposedEvents: true
+                    enabled: links && links.creatingRelation
+                    z: 5000
 
                     onPositionChanged: function(mouse) {
-                        if (!links || !links.creatingRelation)
+                        if (!enabled)
                             return
-
-                        // Overlay(view) -> links(world/content) conversion
-                        var pWorld = links.mapFromItem(previewOverlayCanvas, mouse.x, mouse.y)
-                        links.setPreviewEndWorld(pWorld)
-                        previewOverlayCanvas.requestPaint()
+                        var world = zoomLayer.toContent(Qt.point(mouse.x, mouse.y))
+                        links.setPreviewEndWorld(world)
+                        previewCanvas.requestPaint()
                     }
 
                     onReleased: function(mouse) {
-                        if (!links || !links.creatingRelation)
+                        if (!enabled)
                             return
-
-                        var pWorld = links.mapFromItem(previewOverlayCanvas, mouse.x, mouse.y)
-                        links.finishPreview(pWorld)
-                        previewOverlayCanvas.requestPaint()
+                        var world = zoomLayer.toContent(Qt.point(mouse.x, mouse.y))
+                        links.finishPreview(world)
+                        previewCanvas.requestPaint()
                     }
                 }
 
                 //
-                // Preview overlay canvas (not clipped by content rectangle)
+                // ───────────────────── Preview overlay canvas (DASHED) ─────────────────────
                 //
                 Canvas {
-                    id: previewOverlayCanvas
+                    id: previewCanvas
                     anchors.fill: parent
-                    z: 9999
+                    z: 4000
+                    visible: links && links.creatingRelation
+
+                    onVisibleChanged: {
+                        if (visible)
+                            requestPaint()
+                    }
 
                     onPaint: {
                         var ctx = getContext("2d")
@@ -84,67 +99,80 @@ Window {
                             return
                         }
 
-                        // links(world/content) -> overlay(view) conversion
-                        var p1View = links.mapToItem(previewOverlayCanvas,
-                                                     links.previewStartWorld.x,
-                                                     links.previewStartWorld.y)
-                        var p2View = links.mapToItem(previewOverlayCanvas,
-                                                     links.previewEndWorld.x,
-                                                     links.previewEndWorld.y)
+                        // world -> view mapping: use content item transform
+                        function worldToView(pWorld) {
+                            var p = zoomLayer.contentChildren[0] // not reliable
+                            // safer: map via content item directly
+                            var v = zoomLayer.mapFromItem(zoomLayer.contentChildrenItem ? zoomLayer.contentChildrenItem : zoomLayer,
+                                                          pWorld.x, pWorld.y)
+                            return Qt.point(v.x, v.y)
+                        }
 
-                        // Styling
+                        // We can map using content item directly:
+                        // content is the zoomed Item inside ZoomableCanvas, but not accessible by id here.
+                        // So we use zoomLayer.children search fallback.
+                        var contentItem = null
+                        for (var i = 0; i < zoomLayer.children.length; ++i) {
+                            if (zoomLayer.children[i] && zoomLayer.children[i].scale === zoomLayer.zoom) {
+                                contentItem = zoomLayer.children[i]
+                                break
+                            }
+                        }
+                        if (!contentItem) {
+                            // last resort: draw nothing
+                            console.warn("[Main][PreviewCanvas] contentItem not found")
+                            ctx.restore()
+                            return
+                        }
+
+                        function worldToOverlay(pWorld) {
+                            var p = overlayRoot.mapFromItem(contentItem, pWorld.x, pWorld.y)
+                            return Qt.point(p.x, p.y)
+                        }
+
+                        var p1 = worldToOverlay(links.previewStartWorld)
+                        var p2 = worldToOverlay(links.previewEndWorld)
+
                         ctx.lineWidth = 3
                         ctx.strokeStyle = "#2d8cff"
                         ctx.lineCap = "round"
                         ctx.lineJoin = "round"
 
+                        // dashed
+                        ctx.setLineDash([8, 6])
+
                         var curvatureFactor = 0.7
+                        var dx = (p2.x - p1.x) * curvatureFactor
+                        var cp1x = p1.x + dx
+                        var cp1y = p1.y
+                        var cp2x = p2.x - dx
+                        var cp2y = p2.y
+
+                        ctx.beginPath()
+                        ctx.moveTo(p1.x, p1.y)
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
+                        ctx.stroke()
+
+                        // arrow head solid
+                        ctx.setLineDash([])
                         var arrowLength = 15
                         var arrowAngle = Math.PI / 7
-                        var sourceRadius = 10
-
-                        var dx = (p2View.x - p1View.x) * curvatureFactor
-                        var cp1x = p1View.x + dx
-                        var cp1y = p1View.y
-                        var cp2x = p2View.x - dx
-                        var cp2y = p2View.y
-
-                        // Dashed curve
-                        ctx.setLineDash([7, 6])
-                        ctx.beginPath()
-                        ctx.moveTo(p1View.x, p1View.y)
-                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2View.x, p2View.y)
-                        ctx.stroke()
-                        ctx.setLineDash([])
-
-                        // Source circle
-                        ctx.beginPath()
-                        ctx.arc(p1View.x, p1View.y, sourceRadius, 0, Math.PI * 2, false)
-                        ctx.stroke()
-
-                        // Arrow at cursor
-                        var vx = p2View.x - cp2x
-                        var vy = p2View.y - cp2y
-                        if (vx === 0 && vy === 0) {
-                            vx = p2View.x - p1View.x
-                            vy = p2View.y - p1View.y
-                        }
-
+                        var vx = p2.x - cp2x
+                        var vy = p2.y - cp2y
                         var len = Math.sqrt(vx * vx + vy * vy)
                         if (len > 0) {
                             vx /= len
                             vy /= len
                             var angle = Math.atan2(vy, vx)
-
-                            var x1 = p2View.x - arrowLength * Math.cos(angle - arrowAngle)
-                            var y1 = p2View.y - arrowLength * Math.sin(angle - arrowAngle)
-                            var x2 = p2View.x - arrowLength * Math.cos(angle + arrowAngle)
-                            var y2 = p2View.y - arrowLength * Math.sin(angle + arrowAngle)
+                            var x1 = p2.x - arrowLength * Math.cos(angle - arrowAngle)
+                            var y1 = p2.y - arrowLength * Math.sin(angle - arrowAngle)
+                            var x2 = p2.x - arrowLength * Math.cos(angle + arrowAngle)
+                            var y2 = p2.y - arrowLength * Math.sin(angle + arrowAngle)
 
                             ctx.beginPath()
-                            ctx.moveTo(p2View.x, p2View.y)
+                            ctx.moveTo(p2.x, p2.y)
                             ctx.lineTo(x1, y1)
-                            ctx.moveTo(p2View.x, p2View.y)
+                            ctx.moveTo(p2.x, p2.y)
                             ctx.lineTo(x2, y2)
                             ctx.stroke()
                         }
@@ -153,23 +181,24 @@ Window {
                     }
                 }
 
-                // Background right-click area (unchanged)
+                //
+                // Right click area (background menu + preview cancel)
+                //
                 MouseArea {
                     id: backgroundRightClickArea
                     anchors.fill: parent
                     acceptedButtons: Qt.RightButton
+                    z: 100
 
                     onPressed: function(mouse) {
-                        // If a relation preview is active, right-click cancels it (no menu).
+                        if (mouse.button !== Qt.RightButton)
+                            return
+
                         if (links && links.creatingRelation) {
-                            console.log("[Main.qml] preview cancelled by right-click")
                             links.cancelPreview()
                             mouse.accepted = true
                             return
                         }
-                        
-                        if (mouse.button !== Qt.RightButton)
-                            return
 
                         var overTable = false
                         for (var i = 0; i < tableRepeater.count; ++i) {
@@ -190,7 +219,6 @@ Window {
                             return
                         }
 
-                        // Keep your original logic for creating a new table
                         var viewPos = Qt.point(mouse.x, mouse.y)
                         zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos)
 
@@ -209,9 +237,7 @@ Window {
 
                         MenuItem {
                             text: qsTr("Table")
-                            onTriggered: {
-                                tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
-                            }
+                            onTriggered: tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
                         }
                     }
 
@@ -239,6 +265,7 @@ Window {
                             text: qsTr("Reset Zoom")
                             onTriggered: {
                                 zoomLayer.zoom = 1.0
+                                // İstersen pan reset de ekleyebiliriz ama şimdilik dokunmuyorum.
                             }
                         }
 
@@ -254,23 +281,24 @@ Window {
             }
         ]
 
-        // Zoomed content
+        // zoomed content
         ConnectionsLayer {
             id: links
             anchors.fill: parent
             z: -1
-
             relations: relationController.relations
             tableRepeater: tableRepeater
+        }
 
-            onPreviewTrackingRequested: function(enabled) {
-                previewTracker.enabled = enabled
-                previewOverlayCanvas.requestPaint()
+        // forward new relation to bus
+        Connections {
+            target: links
+            function onNewRelationEstablished(sourceTableID, destinationTableID) {
+                commandBus.newRelationEstablished(sourceTableID, destinationTableID)
             }
-
-            onPreviewStartWorldChanged: previewOverlayCanvas.requestPaint()
-            onPreviewEndWorldChanged: previewOverlayCanvas.requestPaint()
-            onCreatingRelationChanged: previewOverlayCanvas.requestPaint()
+            function onPreviewTrackingRequested(enabled) {
+                previewCanvas.requestPaint()
+            }
         }
 
         Connections {
@@ -300,14 +328,12 @@ Window {
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
-                onXChanged: {
-                    links.updateWorldBounds()
-                    links.requestRedraw()
-                }
-                onYChanged: {
-                    links.updateWorldBounds()
-                    links.requestRedraw()
-                }
+                onXChanged: { links.updateWorldBounds(); links.requestRedraw() }
+                onYChanged: { links.updateWorldBounds(); links.requestRedraw() }
+
+                onTableDeleteRequested: function(id) { commandBus.tableDeleteRequested(id) }
+                onTableNameChangeRequested: function(id, newName) { commandBus.tableNameChangeRequested(id, newName) }
+                onTablePositionChangeRequested: function(id, pos) { commandBus.tablePositionChangeRequested(id, pos) }
             }
         }
 

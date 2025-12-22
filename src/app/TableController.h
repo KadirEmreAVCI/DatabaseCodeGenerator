@@ -20,9 +20,9 @@ public:
     void AddTable(TableModel*);
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
-    void onTablePositionChangeRequested(int iTableID, const QPoint& rPoint);
+    void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onTableDeleteRequested(int iTableID);
-    void onCreateNewTable(const QPoint& rPoint);
+    void onCreateNewTable(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;

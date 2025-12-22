@@ -8,11 +8,10 @@ Item {
     anchors.fill: parent
     clip: false
 
-    // RelationModel QObjects coming from C++
     property var relations: []
     property var tableRepeater
 
-    // World bounds (for existing relations canvas)
+    // World bounds (existing relations canvas)
     property real worldMinX: 0
     property real worldMinY: 0
     property real worldMaxX: width
@@ -27,26 +26,17 @@ Item {
     // Hover state for destination highlighting
     property int hoveredDestinationTableID: -1
 
-    // Main.qml overlay tracker will listen to this
     signal previewTrackingRequested(bool enabled)
 
-    // Optional legacy signal
-    signal relationPreviewReleased(int sourceTableID, point endWorld)
-
-    // New: emitted only when a valid destination table is dropped on
+    // emitted when valid drop happens
     signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
     onRelationsChanged: requestRedraw()
 
-    //
-    // Cancel preview with ESC
-    //
     focus: true
     Keys.onEscapePressed: {
         if (!creatingRelation)
             return
-
-        console.log("[ConnectionsLayer] preview cancelled by ESC")
         cancelPreview()
     }
 
@@ -61,64 +51,68 @@ Item {
         requestRedraw()
     }
 
-    // Called from Main.qml (window-level tracker)
+    // called from Main.qml tracker
     function setPreviewEndWorld(pWorld) {
         if (!creatingRelation)
             return
 
         previewEndWorld = Qt.point(pWorld.x, pWorld.y)
 
-        // Update hovered destination for highlight
-        hoveredDestinationTableID = findTableIdAtWorldPoint(previewEndWorld, creatingSourceTableID)
+        hoveredDestinationTableID =
+                findTableIdAtWorldPoint(previewEndWorld, creatingSourceTableID)
 
         requestRedraw()
     }
 
-    // Called from Main.qml on mouse release
+    // called from Main.qml on mouse release
     function finishPreview(pWorld) {
         if (!creatingRelation)
             return
 
         let endPoint = Qt.point(pWorld.x, pWorld.y)
-        let destId = findTableIdAtWorldPoint(endPoint, creatingSourceTableID)
+        let srcId = creatingSourceTableID
+        let dstId = findTableIdAtWorldPoint(endPoint, srcId)
 
-        // Stop preview tracking first
         creatingRelation = false
         previewTrackingRequested(false)
-
-        // Reset hover state
         hoveredDestinationTableID = -1
 
-        if (destId < 0) {
-            console.log("[ConnectionsLayer] preview released, but no destination table was under cursor -> ignored")
+        if (dstId < 0) {
             creatingSourceTableID = -1
             requestRedraw()
             return
         }
 
-        if (destId === creatingSourceTableID) {
-            console.log("[ConnectionsLayer] invalid drop: source and destination tables are the same -> cancelled")
+        if (dstId === srcId) {
             creatingSourceTableID = -1
             requestRedraw()
             return
         }
 
-        // Emit signal and log at the emission point (requested)
-        console.log("[ConnectionsLayer] newRelationEstablished emitted. source:", creatingSourceTableID, "destination:", destId)
-        newRelationEstablished(creatingSourceTableID, destId)
-
-        // Keep legacy signal too (if you still use it elsewhere)
-        relationPreviewReleased(creatingSourceTableID, endPoint)
+        newRelationEstablished(srcId, dstId)
 
         creatingSourceTableID = -1
         requestRedraw()
     }
 
-    // Resolve table item by tableID
+    function startRelationPreview(sourceTableID, startPointWorld) {
+        if (creatingRelation)
+            return
+
+        creatingRelation = true
+        creatingSourceTableID = sourceTableID
+        previewStartWorld = Qt.point(startPointWorld.x, startPointWorld.y)
+        previewEndWorld   = Qt.point(startPointWorld.x, startPointWorld.y)
+        hoveredDestinationTableID = -1
+
+        forceActiveFocus()
+        previewTrackingRequested(true)
+        requestRedraw()
+    }
+
     function findTableItemById(id) {
         if (!tableRepeater)
             return null
-
         for (let i = 0; i < tableRepeater.count; ++i) {
             let item = tableRepeater.itemAt(i)
             if (item && item.tableID === id)
@@ -127,10 +121,6 @@ Item {
         return null
     }
 
-    //
-    // ✅ UPDATED: destination detection includes BOTH table body and relation hold area
-    // We delegate the hit-test to DatabaseTable (stable and future-proof).
-    //
     function findTableIdAtWorldPoint(pWorld, excludedTableID) {
         if (!tableRepeater)
             return -1
@@ -139,25 +129,17 @@ Item {
             let t = tableRepeater.itemAt(i)
             if (!t)
                 continue
-
             if (t.tableID === excludedTableID)
                 continue
 
             if (t.isWorldPointInsideDropArea && t.isWorldPointInsideDropArea(pWorld, root))
                 return t.tableID
         }
-
         return -1
     }
 
-    // Update world bounds (used by Main.qml)
     function updateWorldBounds() {
-        if (!tableRepeater) {
-            canvas.requestPaint()
-            return
-        }
-
-        if (tableRepeater.count === 0) {
+        if (!tableRepeater || tableRepeater.count === 0) {
             worldMinX = 0
             worldMinY = 0
             worldMaxX = width
@@ -175,7 +157,6 @@ Item {
             var t = tableRepeater.itemAt(i)
             if (!t)
                 continue
-
             minX = Math.min(minX, t.x)
             minY = Math.min(minY, t.y)
             maxX = Math.max(maxX, t.x + t.width)
@@ -191,25 +172,8 @@ Item {
         canvas.requestPaint()
     }
 
-    // Public API: start preview (called from DatabaseTable)
-    function startRelationPreview(sourceTableID, startPointWorld) {
-        creatingRelation = true
-        creatingSourceTableID = sourceTableID
-
-        previewStartWorld = Qt.point(startPointWorld.x, startPointWorld.y)
-        previewEndWorld   = Qt.point(startPointWorld.x, startPointWorld.y)
-
-        forceActiveFocus() // ensure ESC works
-        previewTrackingRequested(true)
-        requestRedraw()
-
-        console.log("[ConnectionsLayer] preview started from table:", sourceTableID)
-    }
-
     Canvas {
         id: canvas
-
-        // Canvas covers the world area (for existing relations)
         x: worldMinX
         y: worldMinY
         width:  worldMaxX - worldMinX
@@ -220,7 +184,6 @@ Item {
             ctx.save()
             ctx.clearRect(0, 0, width, height)
 
-            // Styling
             ctx.lineWidth = 3
             ctx.strokeStyle = "#2d8cff"
             ctx.lineCap = "round"
@@ -236,7 +199,6 @@ Item {
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
 
-            // Existing relations
             for (let i = 0; i < root.relations.length; ++i) {
                 let relationObj = root.relations[i]
                 if (!relationObj)
@@ -283,7 +245,6 @@ Item {
                 let cp2x = p2x - dx
                 let cp2y = p2y
 
-                // Start slightly after the source circle center
                 let svx = cp1x - p1x
                 let svy = cp1y - p1y
                 if (svx === 0 && svy === 0) {
@@ -310,7 +271,6 @@ Item {
                 ctx.arc(p1x, p1y, sourceRadius, 0, Math.PI * 2, false)
                 ctx.stroke()
 
-                // Destination arrow
                 let vx = p2x - cp2x
                 let vy = p2y - cp2y
                 if (vx === 0 && vy === 0) {
@@ -324,7 +284,6 @@ Item {
                     vy /= len
 
                     let angle = Math.atan2(vy, vx)
-
                     let x1 = p2x - arrowLength * Math.cos(angle - arrowAngle)
                     let y1 = p2y - arrowLength * Math.sin(angle - arrowAngle)
                     let x2 = p2x - arrowLength * Math.cos(angle + arrowAngle)
@@ -338,7 +297,7 @@ Item {
                     ctx.stroke()
                 }
 
-                // Label bubble
+                // label bubble unchanged...
                 let t = 0.5
                 let it = 1.0 - t
 

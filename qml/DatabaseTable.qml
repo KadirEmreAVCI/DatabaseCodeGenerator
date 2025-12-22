@@ -19,11 +19,26 @@ Item {
 
     implicitHeight: relationHandle.height + tableRect.implicitHeight
 
+    // -------------------------------------------------------------------------
+    // Controller command signals (emitted by UI; C++ controllers should listen)
+    // -------------------------------------------------------------------------
+    signal tableDeleteRequested(int tableID)
+    signal tableNameChangeRequested(int tableID, string newName)
+    signal tablePositionChangeRequested(int tableID, point newPos)
+    // -------------------------------------------------------------------------
+
     // True only when this table is a valid drop target for the preview
     readonly property bool isPreviewDropTarget: (connectionsLayer
                                                 && connectionsLayer.creatingRelation
                                                 && connectionsLayer.hoveredDestinationTableID === wrapper.tableID
                                                 && connectionsLayer.creatingSourceTableID !== wrapper.tableID)
+
+    function emitTablePositionChanged() {
+        tablePositionChangeRequested(
+            wrapper.tableID,
+            Qt.point(Math.round(wrapper.x), Math.round(wrapper.y))
+        )
+    }
 
     //
     // Hit-test function used by ConnectionsLayer:
@@ -65,6 +80,11 @@ Item {
         }
     }
 
+    //
+    // NOTE:
+    // This is controller-to-view feedback. We keep it for now to avoid breaking behavior.
+    // Later, we can move this feedback to UiCommandBus (or a UiEventBus) too.
+    //
     Connections {
         target: tableController
 
@@ -133,11 +153,8 @@ Item {
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
                 onAccepted: {
-                    if (typeof tableController !== "undefined" && tableController) {
-                        tableController.onTableDeleteRequested(wrapper.tableID)
-                    } else {
-                        console.warn("tableController is not available in QML context")
-                    }
+                    // Emit signal (bus-ready)
+                    tableDeleteRequested(wrapper.tableID)
                     deleteTableDialog.close()
                 }
                 onRejected: deleteTableDialog.close()
@@ -299,18 +316,14 @@ Item {
 
             onActiveChanged: {
                 if (!active) {
-                    if (typeof tableController !== "undefined" && tableController) {
-                        tableController.onTablePositionChangeRequested(
-                            wrapper.tableID,
-                            Qt.point(Math.round(wrapper.x), Math.round(wrapper.y))
-                        )
-                    } else {
-                        console.warn("tableController is not available in QML context")
-                    }
+                    emitTablePositionChanged()
                 }
             }
         }
 
+        //
+        // Center circle (relation creation ONLY)
+        //
         Rectangle {
             id: centerRing
             anchors.centerIn: parent
@@ -363,8 +376,6 @@ Item {
                 mouse.accepted = true
                 if (connectionsLayer && connectionsLayer.creatingRelation)
                     return
-
-                console.log("[DatabaseTable] relation circle pressed on table:", wrapper.tableID)
 
                 if (connectionsLayer) {
                     var startWorld = circleMouse.mapToItem(connectionsLayer,
@@ -478,11 +489,8 @@ Item {
                     }
 
                     if (trimmed !== wrapper.tableName) {
-                        if (typeof tableController !== "undefined" && tableController) {
-                            tableController.onTableNameChangeRequested(wrapper.tableID, trimmed)
-                        } else {
-                            console.warn("tableController is not available in QML context")
-                        }
+                        // Emit signal (bus-ready)
+                        tableNameChangeRequested(wrapper.tableID, trimmed)
                     }
 
                     wrapper.editingName = false
@@ -504,8 +512,8 @@ Item {
                 enabled: !(connectionsLayer && connectionsLayer.creatingRelation)
 
                 cursorShape: containsPress
-                            ? Qt.ClosedHandCursor
-                            : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
+                             ? Qt.ClosedHandCursor
+                             : (containsMouse ? Qt.OpenHandCursor : Qt.ArrowCursor)
 
                 onDoubleClicked: {
                     wrapper.editingName = true
@@ -524,14 +532,7 @@ Item {
 
                 onActiveChanged: {
                     if (!active) {
-                        if (typeof tableController !== "undefined" && tableController) {
-                            tableController.onTablePositionChangeRequested(
-                                wrapper.tableID,
-                                Qt.point(Math.round(wrapper.x), Math.round(wrapper.y))
-                            )
-                        } else {
-                            console.warn("tableController is not available in QML context")
-                        }
+                        emitTablePositionChanged()
                     }
                 }
             }
@@ -580,7 +581,6 @@ Item {
 
             onPressed: function(mouse) {
                 if (connectionsLayer && connectionsLayer.creatingRelation) {
-                    console.log("[DatabaseTable] preview cancelled by right-click on table")
                     connectionsLayer.cancelPreview()
                 }
                 mouse.accepted = true
