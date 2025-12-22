@@ -17,11 +17,11 @@ class RelationModel : public Model{
     Q_PROPERTY(QString relationship READ GetRelationship NOTIFY relationshipChanged)
 public:
     explicit RelationModel(QObject* pParent = nullptr);
-    RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent = nullptr);
+    RelationModel(const TableModel* pDestinationTableModel, const TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent = nullptr);
 
     // Getters
-    TableModel* GetDestinationTableModel()const;
-    TableModel* GetSourceTableModel()const;
+    const TableModel* GetDestinationTableModel()const;
+    const TableModel* GetSourceTableModel()const;
     int GetDestinationRowIdx()const;
     int GetDestinationTableID()const;
     int GetSourceRowIdx()const;
@@ -29,8 +29,8 @@ public:
     QString GetRelationship()const;
 
     // Setters
-    void SetDestinationTableModel(TableModel*);
-    void SetSourceTableModel(TableModel*);
+    void SetDestinationTableModel(const TableModel*);
+    void SetSourceTableModel(const TableModel*);
     void SetRelationship(const QString&);
 private:
     void CalculateSourceRowIdx();
@@ -39,8 +39,8 @@ private:
     int m_iDestinationTableID{-1};
     int m_iSourceRowIdx{-1};
     int m_iSourceTableID{-1};
-    TableModel* m_pDestinationTableModel{nullptr};
-    TableModel* m_pSourceTableModel{nullptr};
+    const TableModel* m_pDestinationTableModel{nullptr};
+    const TableModel* m_pSourceTableModel{nullptr};
     QString m_sRelationship{""};
 signals:
     void destinationTableIDChanged();

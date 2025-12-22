@@ -31,31 +31,23 @@ int main(int argc, char **argv)
         pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Time", "TEXT", true,  false, false));
     }
 
-    auto pTableController = new TableController;
-    pTableController->AddTable(pTournamentTableModel);
-    pTableController->AddTable(pMatchTableModel);
+    TableController::GetInstance().AddTable(pTournamentTableModel);
+    TableController::GetInstance().AddTable(pMatchTableModel);
 
-    auto pRelationController = new RelationController;
-    pRelationController->AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
+    RelationController::GetInstance().AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
 
     // Keep your existing controller-to-controller connection
-    QObject::connect(pTableController, &TableController::tableDeleted,
-                     pRelationController, &RelationController::OnTableDeleted);
-
+    QObject::connect(&TableController::GetInstance(), &TableController::tableDeleted, &RelationController::GetInstance(), &RelationController::OnTableDeleted);
     auto pUiCommandBus = new UiCommandBus;
 
-    QObject::connect(pUiCommandBus, &UiCommandBus::tableDeleteRequested,
-                     pTableController, &TableController::onTableDeleteRequested);
-
-    QObject::connect(pUiCommandBus, &UiCommandBus::tableNameChangeRequested,
-                     pTableController, &TableController::onTableNameChangeRequested);
-
-    QObject::connect(pUiCommandBus, &UiCommandBus::tablePositionChangeRequested,
-                     pTableController, &TableController::onTablePositionChangeRequested);
+    QObject::connect(pUiCommandBus, &UiCommandBus::tableDeleteRequested, &TableController::GetInstance(), &TableController::onTableDeleteRequested);
+    QObject::connect(pUiCommandBus, &UiCommandBus::tableNameChangeRequested, &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
+    QObject::connect(pUiCommandBus, &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
+    QObject::connect(pUiCommandBus, &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
 
     // Expose to QML
-    engine.rootContext()->setContextProperty("tableController", pTableController);
-    engine.rootContext()->setContextProperty("relationController", pRelationController);
+    engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());
+    engine.rootContext()->setContextProperty("relationController", &RelationController::GetInstance());
     engine.rootContext()->setContextProperty("uiCommandBus", pUiCommandBus);
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
 

@@ -1,8 +1,14 @@
 #include "RelationController.h"
 #include "RelationModel.h"
+#include "TableController.h"
 #include <QDebug>
 #include <algorithm>
 
+RelationController& RelationController::GetInstance()
+{
+    static RelationController instance;
+    return instance;
+}
 RelationController::RelationController(QObject *parent)
     : QObject{parent}
 {
@@ -47,3 +53,15 @@ void RelationController::OnTableDeleted(int iTableID)
         emit relationsChanged();
     }
 }   
+void RelationController::onNewRelationEstablished(int iSourceTableID, int iDestinationTableID)
+{
+    if(!std::any_of(m_vecupRelation.begin(), m_vecupRelation.end(), [iSourceTableID, iDestinationTableID](const auto& upRelation){ return upRelation != nullptr && upRelation->GetSourceTableID() == iSourceTableID && upRelation->GetDestinationTableID() == iDestinationTableID; }))
+    {
+        m_vecupRelation.emplace_back(std::make_unique<RelationModel>(TableController::GetInstance().GetTable(iSourceTableID), TableController::GetInstance().GetTable(iDestinationTableID), "1..*"));
+        emit relationsChanged();
+    }
+    else
+    {
+        qDebug() << "Error: Relation between Source Table ID" << iSourceTableID << "and Destination Table ID" << iDestinationTableID << "already exists.";
+    }
+}

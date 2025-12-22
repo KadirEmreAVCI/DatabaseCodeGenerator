@@ -11,11 +11,14 @@ class TableController : public QObject {
     Q_OBJECT
     Q_PROPERTY(QList<QObject*> tables READ GetTables NOTIFY tablesChanged)
 public:
-    TableController(QObject *parent = nullptr);
+    static TableController& GetInstance();
+    TableController(const TableController&) = delete;
+    TableController& operator=(const TableController&) = delete;
     ~TableController() = default;
 
     // Getters
     QList<QObject*> GetTables()const;
+    const TableModel* GetTable(int iTableID)const;
 
     void AddTable(TableModel*);
 public slots:
@@ -25,6 +28,7 @@ public slots:
     void onCreateNewTable(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
+    TableController(QObject *parent = nullptr);
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
 

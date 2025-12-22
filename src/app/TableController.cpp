@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <QDebug>
 
+TableController& TableController::GetInstance()
+{
+    static TableController instance;
+    return instance;
+}
 TableController::TableController(QObject *parent)
     : QObject{parent}
 {
@@ -150,4 +155,13 @@ QList<QObject*> TableController::GetTables() const
         }
     }
     return lsTable;
+}
+const TableModel* TableController::GetTable(int iTableID)const
+{
+    TableModel* pTableModel = nullptr;
+    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    {
+        pTableModel = iterTable->second;
+    }
+    return pTableModel;
 }

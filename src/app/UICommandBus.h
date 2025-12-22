@@ -18,6 +18,7 @@ signals:
     void tableDeleteRequested(int tableID);
     void tableNameChangeRequested(int tableID, const QString& newName);
     void tablePositionChangeRequested(int tableID, const QPointF& newPos);
+    void newRelationEstablished(int sourceTableID, int destinationTableID);
     // -------------------------------------------------------------------------
 };
 
