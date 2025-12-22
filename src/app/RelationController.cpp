@@ -37,6 +37,7 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
     {
         m_vecupRelation.emplace_back(pRelationModel);
         emit relationsChanged();
+        qDebug() << "RelationController::AddRelation::emit relationsChanged";
     }
     else
     {
@@ -55,13 +56,26 @@ void RelationController::OnTableDeleted(int iTableID)
 }   
 void RelationController::onNewRelationEstablished(int iSourceTableID, int iDestinationTableID)
 {
-    if(!std::any_of(m_vecupRelation.begin(), m_vecupRelation.end(), [iSourceTableID, iDestinationTableID](const auto& upRelation){ return upRelation != nullptr && upRelation->GetSourceTableID() == iSourceTableID && upRelation->GetDestinationTableID() == iDestinationTableID; }))
+    if(!IsRelationExists(iSourceTableID, iDestinationTableID))
     {
-        m_vecupRelation.emplace_back(std::make_unique<RelationModel>(TableController::GetInstance().GetTable(iSourceTableID), TableController::GetInstance().GetTable(iDestinationTableID), "1..*"));
-        emit relationsChanged();
+        TableController::GetInstance().NewRelationEstablished(iSourceTableID, iDestinationTableID);
+        AddRelation(new RelationModel(
+            TableController::GetInstance().GetTable(iDestinationTableID),
+            TableController::GetInstance().GetTable(iSourceTableID),
+            "1..*"));
     }
     else
     {
-        qDebug() << "Error: Relation between Source Table ID" << iSourceTableID << "and Destination Table ID" << iDestinationTableID << "already exists.";
+        qDebug() << "Warning: Relation already exists between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
     }
+}
+bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
+{
+    return std::any_of(m_vecupRelation.cbegin(), m_vecupRelation.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
+        if(upRelation != nullptr)
+        {
+            return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
+        }
+        return false;
+    });
 }

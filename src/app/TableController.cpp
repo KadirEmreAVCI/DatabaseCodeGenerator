@@ -158,10 +158,29 @@ QList<QObject*> TableController::GetTables() const
 }
 const TableModel* TableController::GetTable(int iTableID)const
 {
-    TableModel* pTableModel = nullptr;
+    const TableModel* pTableModel = nullptr;
     if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
     {
         pTableModel = iterTable->second;
     }
     return pTableModel;
+}
+void TableController::NewRelationEstablished(int iSourceTableID, int iDestinationTableID)
+{
+    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    {
+        if(auto iterDestinationTable = m_mapTable.find(iDestinationTableID); iterDestinationTable != m_mapTable.end() && iterDestinationTable->second != nullptr)
+        {
+            const QString sSourceColumnName = iterDestinationTable->second->GetName() + "ID";
+            iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(sSourceColumnName, "INT", false, false, true));
+        }
+        else
+        {
+            qDebug() << "Error: Destination Table ID not found.";
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Source Table ID not found.";
+    }
 }

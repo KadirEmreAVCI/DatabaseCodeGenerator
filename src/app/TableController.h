@@ -19,6 +19,7 @@ public:
     // Getters
     QList<QObject*> GetTables()const;
     const TableModel* GetTable(int iTableID)const;
+    void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
     void AddTable(TableModel*);
 public slots:

@@ -49,6 +49,7 @@ void RelationModel::SetDestinationTableModel(const TableModel* pDestinationTable
     {
         m_pDestinationTableModel = pDestinationTableModel;
         m_iDestinationTableID = m_pDestinationTableModel->GetID();
+        emit destinationRowIdxChanged();
         emit destinationTableIDChanged();
     }
 } 

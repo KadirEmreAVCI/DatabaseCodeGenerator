@@ -26,6 +26,7 @@ public slots:
     void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 private:
     RelationController(QObject *parent = nullptr);
+    bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
     std::vector<std::unique_ptr<RelationModel>> m_vecupRelation; 
 signals:
     void relationsChanged();

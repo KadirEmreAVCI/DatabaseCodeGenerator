@@ -9,8 +9,12 @@ class UiCommandBus final : public QObject
 {
     Q_OBJECT
 public:
-    explicit UiCommandBus(QObject* parent = nullptr) : QObject(parent) {}
-
+    static UiCommandBus& GetInstance();
+    UiCommandBus(const UiCommandBus&) = delete;
+    UiCommandBus& operator=(const UiCommandBus&) = delete;
+    ~UiCommandBus() = default;
+private:
+    explicit UiCommandBus(QObject* parent = nullptr);
 signals:
     // -------------------------------------------------------------------------
     // Controller command signals (emitted by QML; controllers/services listen)

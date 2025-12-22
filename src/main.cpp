@@ -36,19 +36,17 @@ int main(int argc, char **argv)
 
     RelationController::GetInstance().AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
 
-    // Keep your existing controller-to-controller connection
     QObject::connect(&TableController::GetInstance(), &TableController::tableDeleted, &RelationController::GetInstance(), &RelationController::OnTableDeleted);
-    auto pUiCommandBus = new UiCommandBus;
 
-    QObject::connect(pUiCommandBus, &UiCommandBus::tableDeleteRequested, &TableController::GetInstance(), &TableController::onTableDeleteRequested);
-    QObject::connect(pUiCommandBus, &UiCommandBus::tableNameChangeRequested, &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
-    QObject::connect(pUiCommandBus, &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
-    QObject::connect(pUiCommandBus, &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableDeleteRequested, &TableController::GetInstance(), &TableController::onTableDeleteRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested, &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
 
     // Expose to QML
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());
     engine.rootContext()->setContextProperty("relationController", &RelationController::GetInstance());
-    engine.rootContext()->setContextProperty("uiCommandBus", pUiCommandBus);
+    engine.rootContext()->setContextProperty("uiCommandBus", &UiCommandBus::GetInstance());
     engine.loadFromModule("DatabaseCodeGenerator", "Main");
 
     if (engine.rootObjects().isEmpty())
