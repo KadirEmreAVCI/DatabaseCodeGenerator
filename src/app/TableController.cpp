@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <QDebug>
 
+TableController& TableController::GetInstance()
+{
+    static TableController instance;
+    return instance;
+}
 TableController::TableController(QObject *parent)
     : QObject{parent}
 {
@@ -50,14 +55,14 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
         qDebug() << "Error: Table ID not found.";
     }
 }
-void TableController::onTablePositionChangeRequested(int iTableID, const QPoint& rPoint)
+void TableController::onTablePositionChangeRequested(int iTableID, const QPointF& rPointF)
 {
     if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
     {
         const auto pTable = iterTable->second;
         if (pTable != nullptr) 
         {
-            pTable->SetPoint(rPoint);
+            pTable->SetPoint(rPointF);
         }
     }
 }
@@ -83,14 +88,14 @@ void TableController::onTableDeleteRequested(int iTableID)
         qDebug() << "Error: Table ID not found.";
     }
 }
-void TableController::onCreateNewTable(const QPoint& rPoint)
+void TableController::onCreateNewTable(const QPointF& rPointF)
 {
     int iTableIDOffset = 0;
     QString sTempNewName = "";
     do{
         sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
     }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
-    AddTable(new TableModel(this, sTempNewName, rPoint));
+    AddTable(new TableModel(this, sTempNewName, rPointF));
 }
 QRectF TableController::GetBoundingRect() const
 {
@@ -103,7 +108,7 @@ QRectF TableController::GetBoundingRect() const
         { 
             continue;
         }
-        QRectF rNextRect(pTable->GetPoint().x(), pTable->GetPoint().y(), pTable->GetWidth(), pTable->GetHeight()); 
+        QRectF rNextRect(pTable->GetPointF().x(), pTable->GetPointF().y(), pTable->GetWidth(), pTable->GetHeight()); 
         if(blFirstRect) 
         {
             rUnitedRect = rNextRect;
@@ -150,4 +155,32 @@ QList<QObject*> TableController::GetTables() const
         }
     }
     return lsTable;
+}
+const TableModel* TableController::GetTable(int iTableID)const
+{
+    const TableModel* pTableModel = nullptr;
+    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    {
+        pTableModel = iterTable->second;
+    }
+    return pTableModel;
+}
+void TableController::NewRelationEstablished(int iSourceTableID, int iDestinationTableID)
+{
+    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    {
+        if(auto iterDestinationTable = m_mapTable.find(iDestinationTableID); iterDestinationTable != m_mapTable.end() && iterDestinationTable->second != nullptr)
+        {
+            const QString sSourceColumnName = iterDestinationTable->second->GetName() + "ID";
+            iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(sSourceColumnName, "INT", false, false, true));
+        }
+        else
+        {
+            qDebug() << "Error: Destination Table ID not found.";
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Source Table ID not found.";
+    }
 }

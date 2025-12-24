@@ -3,7 +3,7 @@
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
-RelationModel::RelationModel(TableModel* pDestinationTableModel, TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
+RelationModel::RelationModel(const TableModel* pDestinationTableModel, const TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
     : m_sRelationship{sRelationship}, Model{pParent}
 {
     if(pDestinationTableModel != nullptr)
@@ -15,11 +15,11 @@ RelationModel::RelationModel(TableModel* pDestinationTableModel, TableModel* pSo
         SetSourceTableModel(pSourceTableModel);
     }
 }
-TableModel* RelationModel::GetDestinationTableModel()const
+const TableModel* RelationModel::GetDestinationTableModel()const
 {
     return m_pDestinationTableModel;
 }
-TableModel* RelationModel::GetSourceTableModel()const
+const TableModel* RelationModel::GetSourceTableModel()const
 {
     return m_pSourceTableModel;
 }
@@ -43,7 +43,7 @@ QString RelationModel::GetRelationship()const
 {
     return m_sRelationship;
 }
-void RelationModel::SetDestinationTableModel(TableModel* pDestinationTableModel)
+void RelationModel::SetDestinationTableModel(const TableModel* pDestinationTableModel)
 {
     if(m_pDestinationTableModel != pDestinationTableModel)
     {
@@ -52,7 +52,7 @@ void RelationModel::SetDestinationTableModel(TableModel* pDestinationTableModel)
         emit destinationTableIDChanged();
     }
 } 
-void RelationModel::SetSourceTableModel(TableModel* pSourceTableModel)
+void RelationModel::SetSourceTableModel(const TableModel* pSourceTableModel)
 {
     if(m_pSourceTableModel != pSourceTableModel)
     {

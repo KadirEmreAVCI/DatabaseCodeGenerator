@@ -1,7 +1,7 @@
 #ifndef TABLEMODEL_H_
 #define TABLEMODEL_H_
 
-#include <QPoint>
+#include <QPointF>
 #include "Model.h"
 #include "ColumnListModel.h"
 
@@ -9,18 +9,18 @@ class TableModel : public Model{
     Q_OBJECT
     Q_PROPERTY(int ID READ GetID NOTIFY idChanged)
     Q_PROPERTY(QString name READ GetName NOTIFY nameChanged)
-    Q_PROPERTY(QPoint point READ GetPoint NOTIFY pointChanged)
+    Q_PROPERTY(QPointF point READ GetPointF NOTIFY pointChanged)
     Q_PROPERTY(qreal width READ GetWidth NOTIFY widthChanged)
     Q_PROPERTY(qreal height READ GetHeight NOTIFY heightChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
-    TableModel(QObject *parent = nullptr, const QString& sName = "", const QPoint& rPoint = {}, qreal rWidth = 300, qreal rHeight = 200);
+    TableModel(QObject *parent = nullptr, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200);
     virtual ~TableModel()override = default;
 
     // Getters
     int GetID() const;
     QString GetName() const;
-    QPoint GetPoint()const;
+    QPointF GetPointF()const;
     qreal GetWidth()const;
     qreal GetHeight()const;
     ColumnListModel* GetColumnListModel() const;
@@ -28,14 +28,14 @@ public:
     // Setters
     void SetID(int);
     void SetName(const QString &name);
-    void SetPoint(const QPoint&);
+    void SetPoint(const QPointF&);
     void SetWidth(qreal);
     void SetHeight(qreal);
     void SetColumnListModel(ColumnListModel* pColumnListModel);
 private:
     int m_iID;
     QString m_sName;
-    QPoint m_rPoint;
+    QPointF m_rPointF;
     qreal m_rWidth;
     qreal m_rHeight;
     ColumnListModel* m_pColumnListModel;

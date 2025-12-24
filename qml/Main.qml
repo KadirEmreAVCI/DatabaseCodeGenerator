@@ -11,6 +11,18 @@ Window {
     width: 1600
     height: 1200
 
+    property var commandBus: (typeof uiCommandBus !== "undefined" && uiCommandBus) ? uiCommandBus : qmlFallbackBus
+
+    QtObject {
+        id: qmlFallbackBus
+        // ---------------- Controller command signals ----------------
+        signal tableDeleteRequested(int tableID)
+        signal tableNameChangeRequested(int tableID, string newName)
+        signal tablePositionChangeRequested(int tableID, point newPos)
+        signal newRelationEstablished(int sourceTableID, int destinationTableID)
+        // ------------------------------------------------------------
+    }
+
     GridBackground {
         id: dotGrid
         anchors.fill: parent
@@ -30,49 +42,189 @@ Window {
 
         property point lastRightClickPos: Qt.point(0, 0)
 
-        // 🔹 Everything inside this array goes to the NON-SCALED overlay
         overlayChildren: [
             Item {
+                id: overlayRoot
                 anchors.fill: parent
 
+                //
+                // ───────────────────── Preview tracker (LEFT move/release) ─────────────────────
+                //
+                MouseArea {
+                    id: previewTracker
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    enabled: links && links.creatingRelation
+                    z: 5000
+
+                    onPositionChanged: function(mouse) {
+                        if (!enabled)
+                            return
+                        var world = zoomLayer.toContent(Qt.point(mouse.x, mouse.y))
+                        links.setPreviewEndWorld(world)
+                        previewCanvas.requestPaint()
+                    }
+
+                    onReleased: function(mouse) {
+                        if (!enabled)
+                            return
+                        var world = zoomLayer.toContent(Qt.point(mouse.x, mouse.y))
+                        links.finishPreview(world)
+                        previewCanvas.requestPaint()
+                    }
+                }
+
+                //
+                // ───────────────────── Preview overlay canvas (DASHED) ─────────────────────
+                //
+                Canvas {
+                    id: previewCanvas
+                    anchors.fill: parent
+                    z: 4000
+                    visible: links && links.creatingRelation
+
+                    onVisibleChanged: {
+                        if (visible)
+                            requestPaint()
+                    }
+
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.save()
+                        ctx.clearRect(0, 0, width, height)
+
+                        if (!links || !links.creatingRelation) {
+                            ctx.restore()
+                            return
+                        }
+
+                        // world -> view mapping: use content item transform
+                        function worldToView(pWorld) {
+                            var p = zoomLayer.contentChildren[0] // not reliable
+                            // safer: map via content item directly
+                            var v = zoomLayer.mapFromItem(zoomLayer.contentChildrenItem ? zoomLayer.contentChildrenItem : zoomLayer,
+                                                          pWorld.x, pWorld.y)
+                            return Qt.point(v.x, v.y)
+                        }
+
+                        // We can map using content item directly:
+                        // content is the zoomed Item inside ZoomableCanvas, but not accessible by id here.
+                        // So we use zoomLayer.children search fallback.
+                        var contentItem = null
+                        for (var i = 0; i < zoomLayer.children.length; ++i) {
+                            if (zoomLayer.children[i] && zoomLayer.children[i].scale === zoomLayer.zoom) {
+                                contentItem = zoomLayer.children[i]
+                                break
+                            }
+                        }
+                        if (!contentItem) {
+                            // last resort: draw nothing
+                            console.warn("[Main][PreviewCanvas] contentItem not found")
+                            ctx.restore()
+                            return
+                        }
+
+                        function worldToOverlay(pWorld) {
+                            var p = overlayRoot.mapFromItem(contentItem, pWorld.x, pWorld.y)
+                            return Qt.point(p.x, p.y)
+                        }
+
+                        var p1 = worldToOverlay(links.previewStartWorld)
+                        var p2 = worldToOverlay(links.previewEndWorld)
+
+                        ctx.lineWidth = 3
+                        ctx.strokeStyle = "#2d8cff"
+                        ctx.lineCap = "round"
+                        ctx.lineJoin = "round"
+
+                        // dashed
+                        ctx.setLineDash([8, 6])
+
+                        var curvatureFactor = 0.7
+                        var dx = (p2.x - p1.x) * curvatureFactor
+                        var cp1x = p1.x + dx
+                        var cp1y = p1.y
+                        var cp2x = p2.x - dx
+                        var cp2y = p2.y
+
+                        ctx.beginPath()
+                        ctx.moveTo(p1.x, p1.y)
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
+                        ctx.stroke()
+
+                        // arrow head solid
+                        ctx.setLineDash([])
+                        var arrowLength = 15
+                        var arrowAngle = Math.PI / 7
+                        var vx = p2.x - cp2x
+                        var vy = p2.y - cp2y
+                        var len = Math.sqrt(vx * vx + vy * vy)
+                        if (len > 0) {
+                            vx /= len
+                            vy /= len
+                            var angle = Math.atan2(vy, vx)
+                            var x1 = p2.x - arrowLength * Math.cos(angle - arrowAngle)
+                            var y1 = p2.y - arrowLength * Math.sin(angle - arrowAngle)
+                            var x2 = p2.x - arrowLength * Math.cos(angle + arrowAngle)
+                            var y2 = p2.y - arrowLength * Math.sin(angle + arrowAngle)
+
+                            ctx.beginPath()
+                            ctx.moveTo(p2.x, p2.y)
+                            ctx.lineTo(x1, y1)
+                            ctx.moveTo(p2.x, p2.y)
+                            ctx.lineTo(x2, y2)
+                            ctx.stroke()
+                        }
+
+                        ctx.restore()
+                    }
+                }
+
+                //
+                // Right click area (background menu + preview cancel)
+                //
                 MouseArea {
                     id: backgroundRightClickArea
                     anchors.fill: parent
                     acceptedButtons: Qt.RightButton
+                    z: 100
 
                     onPressed: function(mouse) {
                         if (mouse.button !== Qt.RightButton)
-                            return;
+                            return
 
-                        // Check if right-click is on top of any table
-                        var overTable = false;
+                        if (links && links.creatingRelation) {
+                            links.cancelPreview()
+                            mouse.accepted = true
+                            return
+                        }
+
+                        var overTable = false
                         for (var i = 0; i < tableRepeater.count; ++i) {
-                            var t = tableRepeater.itemAt(i);
+                            var t = tableRepeater.itemAt(i)
                             if (!t)
-                                continue;
+                                continue
 
-                            // Map the click to table's local coordinates
-                            var p = t.mapFromItem(zoomLayer, mouse.x, mouse.y);
+                            var p = t.mapFromItem(zoomLayer, mouse.x, mouse.y)
                             if (p.x >= 0 && p.x <= t.width &&
                                 p.y >= 0 && p.y <= t.height) {
-                                overTable = true;
-                                break;
+                                overTable = true
+                                break
                             }
                         }
 
                         if (overTable) {
-                            // Do NOT open background menu; swallow the event
-                            mouse.accepted = true;
-                            return;
+                            mouse.accepted = true
+                            return
                         }
 
-                        // Otherwise, treat it as a background right-click
-                        var viewPos = Qt.point(mouse.x, mouse.y);
-                        zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos);
+                        var viewPos = Qt.point(mouse.x, mouse.y)
+                        zoomLayer.lastRightClickPos = zoomLayer.toContent(viewPos)
 
-                        backgroundMenu.x = mouse.x;
-                        backgroundMenu.y = mouse.y;
-                        backgroundMenu.open();
+                        backgroundMenu.x = mouse.x
+                        backgroundMenu.y = mouse.y
+                        backgroundMenu.open()
                     }
                 }
 
@@ -85,9 +237,7 @@ Window {
 
                         MenuItem {
                             text: qsTr("Table")
-                            onTriggered: {
-                                tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
-                            }
+                            onTriggered: tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
                         }
                     }
 
@@ -115,6 +265,7 @@ Window {
                             text: qsTr("Reset Zoom")
                             onTriggered: {
                                 zoomLayer.zoom = 1.0
+                                // İstersen pan reset de ekleyebiliriz ama şimdilik dokunmuyorum.
                             }
                         }
 
@@ -130,21 +281,29 @@ Window {
             }
         ]
 
-        // 🔹 These stay in the zoomed content
+        // zoomed content
         ConnectionsLayer {
             id: links
             anchors.fill: parent
             z: -1
-
             relations: relationController.relations
             tableRepeater: tableRepeater
         }
 
+        // forward new relation to bus
+        Connections {
+            target: links
+            function onNewRelationEstablished(sourceTableID, destinationTableID) {
+                commandBus.newRelationEstablished(sourceTableID, destinationTableID)
+            }
+            function onPreviewTrackingRequested(enabled) {
+                previewCanvas.requestPaint()
+            }
+        }
+
         Connections {
             target: tableController
-
             function onTablesChanged() {
-                // Delegate'ler hemen hazır olmayabilir → bir tick sonraya atıyoruz
                 Qt.callLater(function() {
                     links.updateWorldBounds()
                     links.requestRedraw()
@@ -161,6 +320,7 @@ Window {
                 required property var modelData
 
                 canvas: zoomLayer
+                connectionsLayer: links
 
                 tableID:     modelData.ID
                 x:           modelData.point.x
@@ -168,14 +328,12 @@ Window {
                 tableName:   modelData.name
                 columnModel: modelData.columnListModel
 
-                onXChanged: {
-                    links.updateWorldBounds()
-                    links.requestRedraw()
-                }
-                onYChanged: {
-                    links.updateWorldBounds()
-                    links.requestRedraw()
-                }
+                onXChanged: { links.updateWorldBounds(); links.requestRedraw() }
+                onYChanged: { links.updateWorldBounds(); links.requestRedraw() }
+
+                onTableDeleteRequested: function(id) { commandBus.tableDeleteRequested(id) }
+                onTableNameChangeRequested: function(id, newName) { commandBus.tableNameChangeRequested(id, newName) }
+                onTablePositionChangeRequested: function(id, pos) { commandBus.tablePositionChangeRequested(id, pos) }
             }
         }
 
