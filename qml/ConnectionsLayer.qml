@@ -1,6 +1,8 @@
 // ConnectionsLayer.qml
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
+import QtQml
 import DatabaseCodeGenerator 1.0
 
 Item {
@@ -26,20 +28,26 @@ Item {
     // Hover state for destination highlighting
     property int hoveredDestinationTableID: -1
 
+    // Label overlay cache (interactive relationship bubbles)
+    property var _labelData: []   // array of { relObj, x, y, key }
+
     signal previewTrackingRequested(bool enabled)
 
     // emitted when valid drop happens
     signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
+    // emitted when user changes relationship from UI (handle in C++/Controller)
+    signal relationshipChangeRequested(int sourceTableID,
+                                      int destinationTableID,
+                                      int sourceRowIdx,
+                                      int destinationRowIdx,
+                                      string relationship) // values: "1..1" or "1..*"
+
     onRelationsChanged: {
-        // New relations can arrive before delegate geometry settles.
-        // Delay bounds + repaint by one tick.
         Qt.callLater(function() {
             updateWorldBounds()
             requestRedraw()
         })
-
-        // Extra safety: repaint again on next tick.
         Qt.callLater(function() {
             requestRedraw()
         })
@@ -184,6 +192,120 @@ Item {
         canvas.requestPaint()
     }
 
+    function _toDisplayLabel(relStr) {
+        return (relStr === "1..1") ? "1:1" : "1:*"
+    }
+
+    function _toStorageRelationship(displayLabel) {
+        return (displayLabel === "1:1") ? "1..1" : "1..*"
+    }
+
+    function _isPointInsideTable(p, tableItem) {
+        const margin = 2
+        return (p.x >= tableItem.x - margin &&
+                p.x <= tableItem.x + tableItem.width + margin &&
+                p.y >= tableItem.y - margin &&
+                p.y <= tableItem.y + tableItem.height + margin)
+    }
+
+    // Recompute interactive label positions (world coordinates, placed on top of canvas)
+    function recomputeLabelData() {
+        let curvatureFactor = 0.7
+        let centerLabelOffset = 10
+
+        let data = []
+        if (!root.relations || root.relations.length === 0 || !tableRepeater) {
+            root._labelData = data
+            return
+        }
+
+        for (let i = 0; i < root.relations.length; ++i) {
+            let relationObj = root.relations[i]
+            if (!relationObj)
+                continue
+
+            let srcId  = relationObj.sourceTableID
+            let dstId  = relationObj.destinationTableID
+            let sRow   = relationObj.sourceRowIdx
+            let dRow   = relationObj.destinationRowIdx
+            if (sRow < 0 || dRow < 0)
+                continue
+
+            let sourceTable = root.findTableItemById(srcId)
+            let destTable   = root.findTableItemById(dstId)
+            if (!sourceTable || !destTable)
+                continue
+            if (!sourceTable.rowEdgePosition || !destTable.rowEdgePosition)
+                continue
+
+            let sourceCenterX = sourceTable.x + sourceTable.width / 2
+            let destCenterX   = destTable.x   + destTable.width / 2
+            let sourceSide = (sourceCenterX <= destCenterX) ? "right" : "left"
+            let destSide   = (sourceCenterX <= destCenterX) ? "left"  : "right"
+
+            let p1World = sourceTable.rowEdgePosition(sRow, sourceSide, root)
+            let p2World = destTable.rowEdgePosition(dRow, destSide, root)
+
+            if (!isFinite(p1World.x) || !isFinite(p1World.y) ||
+                !isFinite(p2World.x) || !isFinite(p2World.y)) {
+                continue
+            }
+
+            if (!_isPointInsideTable(p1World, sourceTable) || !_isPointInsideTable(p2World, destTable)) {
+                continue
+            }
+
+            // Control points in WORLD space
+            let dx = (p2World.x - p1World.x) * curvatureFactor
+            let cp1x = p1World.x + dx
+            let cp1y = p1World.y
+            let cp2x = p2World.x - dx
+            let cp2y = p2World.y
+
+            // Midpoint on cubic Bezier (t = 0.5)
+            let t = 0.5
+            let it = 1.0 - t
+
+            let midX =
+                it*it*it * p1World.x +
+                3*it*it*t * cp1x +
+                3*it*t*t * cp2x +
+                t*t*t * p2World.x
+
+            let midY =
+                it*it*it * p1World.y +
+                3*it*it*t * cp1y +
+                3*it*t*t * cp2y +
+                t*t*t * p2World.y
+
+            // Normal for offset
+            let lvx = p2World.x - p1World.x
+            let lvy = p2World.y - p1World.y
+            let llen = Math.sqrt(lvx * lvx + lvy * lvy)
+
+            let nx = 0
+            let ny = -1
+            if (llen > 0) {
+                lvx /= llen
+                lvy /= llen
+                nx = -lvy
+                ny = lvx
+            }
+
+            let labelWorldX = midX + nx * centerLabelOffset
+            let labelWorldY = midY + ny * centerLabelOffset
+
+            data.push({
+                relObj: relationObj,
+                x: labelWorldX,
+                y: labelWorldY,
+                key: "" + srcId + ":" + dstId + ":" + sRow + ":" + dRow
+            })
+        }
+
+        root._labelData = data
+    }
+
     Canvas {
         id: canvas
         x: worldMinX
@@ -205,19 +327,6 @@ Item {
             let arrowLength = 15
             let arrowAngle = Math.PI / 7
             let sourceRadius = 10
-            let centerLabelOffset = 10
-
-            ctx.font = "bold 14px sans-serif"
-            ctx.textAlign = "center"
-            ctx.textBaseline = "middle"
-
-            function isPointInsideTable(p, tableItem) {
-                const margin = 2
-                return (p.x >= tableItem.x - margin &&
-                        p.x <= tableItem.x + tableItem.width + margin &&
-                        p.y >= tableItem.y - margin &&
-                        p.y <= tableItem.y + tableItem.height + margin)
-            }
 
             var needsRetry = false
 
@@ -230,7 +339,6 @@ Item {
                 let dstId  = relationObj.destinationTableID
                 let sRow   = relationObj.sourceRowIdx
                 let dRow   = relationObj.destinationRowIdx
-                let relStr = relationObj.relationship || "1..*"
 
                 if (sRow < 0 || dRow < 0)
                     continue
@@ -242,8 +350,6 @@ Item {
 
                 if (!sourceTable.rowEdgePosition || !destTable.rowEdgePosition)
                     continue
-
-                let midLabel = (relStr === "1..1") ? "1:1" : "1:*"
 
                 let sourceCenterX = sourceTable.x + sourceTable.width / 2
                 let destCenterX   = destTable.x   + destTable.width / 2
@@ -259,8 +365,7 @@ Item {
                     continue
                 }
 
-                // Reject early/dummy points until geometry settles (prevents 0,0-origin lines)
-                if (!isPointInsideTable(p1World, sourceTable) || !isPointInsideTable(p2World, destTable)) {
+                if (!_isPointInsideTable(p1World, sourceTable) || !_isPointInsideTable(p2World, destTable)) {
                     needsRetry = true
                     continue
                 }
@@ -333,79 +438,6 @@ Item {
                     ctx.lineTo(x2, y2)
                     ctx.stroke()
                 }
-
-                // Label bubble
-                let t = 0.5
-                let it = 1.0 - t
-
-                let midX =
-                    it*it*it * p1x +
-                    3*it*it*t * cp1x +
-                    3*it*t*t * cp2x +
-                    t*t*t * p2x
-
-                let midY =
-                    it*it*it * p1y +
-                    3*it*it*t * cp1y +
-                    3*it*t*t * cp2y +
-                    t*t*t * p2y
-
-                let lvx = p2x - p1x
-                let lvy = p2y - p1y
-                let llen = Math.sqrt(lvx * lvx + lvy * lvy)
-
-                let nx = 0
-                let ny = -1
-                if (llen > 0) {
-                    lvx /= llen
-                    lvy /= llen
-                    nx = -lvy
-                    ny = lvx
-                }
-
-                let labelX = midX + nx * centerLabelOffset
-                let labelY = midY + ny * centerLabelOffset
-
-                ctx.save()
-
-                let metrics = ctx.measureText(midLabel)
-                let textWidth = metrics.width
-                let paddingX = 8
-                let paddingY = 4
-                let bubbleWidth = textWidth + paddingX * 2
-                let bubbleHeight = 18 + paddingY
-
-                let bubbleX = labelX - bubbleWidth / 2
-                let bubbleY = labelY - bubbleHeight / 2
-
-                ctx.fillStyle = "rgba(255, 255, 255, 0.92)"
-                ctx.strokeStyle = "#2d8cff"
-                ctx.lineWidth = 2
-
-                ctx.beginPath()
-                let cornerRadius = 6
-                ctx.moveTo(bubbleX + cornerRadius, bubbleY)
-                ctx.lineTo(bubbleX + bubbleWidth - cornerRadius, bubbleY)
-                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY,
-                                     bubbleX + bubbleWidth, bubbleY + cornerRadius)
-                ctx.lineTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight - cornerRadius)
-                ctx.quadraticCurveTo(bubbleX + bubbleWidth, bubbleY + bubbleHeight,
-                                     bubbleX + bubbleWidth - cornerRadius, bubbleY + bubbleHeight)
-                ctx.lineTo(bubbleX + cornerRadius, bubbleY + bubbleHeight)
-                ctx.quadraticCurveTo(bubbleX, bubbleY + bubbleHeight,
-                                     bubbleX, bubbleY + bubbleHeight - cornerRadius)
-                ctx.lineTo(bubbleX, bubbleY + cornerRadius)
-                ctx.quadraticCurveTo(bubbleX, bubbleY,
-                                     bubbleX + cornerRadius, bubbleY)
-                ctx.closePath()
-
-                ctx.fill()
-                ctx.stroke()
-
-                ctx.fillStyle = "#1f3b57"
-                ctx.fillText(midLabel, labelX, labelY)
-
-                ctx.restore()
             }
 
             ctx.restore()
@@ -416,7 +448,176 @@ Item {
         }
     }
 
+    // Interactive relationship labels (hover highlight + double click combobox)
+    Repeater {
+        id: labelRepeater
+        model: root._labelData
+
+        delegate: Item {
+            id: labelRoot
+            required property var modelData
+
+            property real centerX: modelData.x
+            property real centerY: modelData.y
+            property var relObj: modelData.relObj
+
+            property string relStr: (relObj && relObj.relationship) ? relObj.relationship : "1..*"
+            property string displayLabel: root._toDisplayLabel(relStr)
+
+            property bool hovered: false
+            property bool editing: false
+
+            TextMetrics {
+                id: tm
+                font.pixelSize: 14
+                font.bold: true
+                text: labelRoot.displayLabel
+            }
+
+            readonly property real paddingX: 8
+            readonly property real paddingY: 4
+            readonly property real bubbleHeight: 18 + paddingY
+            readonly property real bubbleWidth: tm.width + paddingX * 2
+
+            x: centerX - bubbleWidth / 2
+            y: centerY - bubbleHeight / 2
+            width: bubbleWidth
+            height: bubbleHeight
+            z: 999
+
+            // ✅ IMPORTANT FIX:
+            // Use OPAQUE background so it looks EXACTLY like the original canvas bubble.
+            Rectangle {
+                id: bubble
+                anchors.fill: parent
+                radius: 6
+                visible: !labelRoot.editing
+
+                // Original look (not theme-dependent)
+                color: labelRoot.hovered ? "#E6F4FF" : "#FFFFFF"
+                border.width: 2
+                border.color: labelRoot.hovered ? "#1a6fbf" : "#2d8cff"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: labelRoot.displayLabel
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#1f3b57" // same as original canvas
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton
+                    cursorShape: Qt.PointingHandCursor
+
+                    onEntered: labelRoot.hovered = true
+                    onExited:  labelRoot.hovered = false
+
+                    onDoubleClicked: {
+                        labelRoot.editing = true
+                        combo.currentIndex = (labelRoot.displayLabel === "1:1") ? 0 : 1
+                        combo.forceActiveFocus()
+                        combo.popup.open()
+                    }
+                }
+            }
+
+            ComboBox {
+                id: combo
+                anchors.fill: parent
+                visible: labelRoot.editing
+                model: ["1:1", "1:*"]
+                currentIndex: (labelRoot.displayLabel === "1:1") ? 0 : 1
+                font.pixelSize: 14
+
+                // Force light look (avoid dark/black style/palette)
+                background: Rectangle {
+                    radius: 6
+                    border.width: 2
+                    border.color: "#1a6fbf"
+                    color: "#FFFFFF"
+                }
+
+                contentItem: Text {
+                    leftPadding: 8
+                    rightPadding: 8
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: combo.displayText
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: "#1f3b57"
+                }
+
+                popup: Popup {
+                    y: combo.height
+                    width: combo.width
+                    padding: 0
+
+                    background: Rectangle {
+                        radius: 6
+                        border.width: 1
+                        border.color: "#1a6fbf"
+                        color: "#FFFFFF"
+                    }
+
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: contentHeight
+                        model: combo.popup.visible ? combo.delegateModel : null
+                        currentIndex: combo.highlightedIndex
+
+                        delegate: ItemDelegate {
+                            width: combo.width
+                            text: modelData
+                            highlighted: hovered || ListView.isCurrentItem
+
+                            contentItem: Text {
+                                text: parent.text
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: "#1f3b57"
+                            }
+
+                            background: Rectangle {
+                                color: parent.highlighted ? "#E6F4FF" : "transparent"
+                            }
+                        }
+                    }
+
+                    onClosed: labelRoot.editing = false
+                }
+
+                onActivated: function(index) {
+                    let chosen = combo.model[index]
+                    let newRel = root._toStorageRelationship(chosen)
+
+                    if (labelRoot.relObj) {
+                        root.relationshipChangeRequested(
+                                    labelRoot.relObj.sourceTableID,
+                                    labelRoot.relObj.destinationTableID,
+                                    labelRoot.relObj.sourceRowIdx,
+                                    labelRoot.relObj.destinationRowIdx,
+                                    newRel)
+                    }
+
+                    labelRoot.editing = false
+                }
+
+                Keys.onEscapePressed: {
+                    labelRoot.editing = false
+                    combo.popup.close()
+                }
+            }
+        }
+    }
+
     function requestRedraw() {
+        recomputeLabelData()
         canvas.requestPaint()
     }
 }
