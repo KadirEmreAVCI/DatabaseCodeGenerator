@@ -30,12 +30,17 @@ Item {
     // Label overlay cache (interactive relationship bubbles)
     property var _labelData: []   // array of { relObj, x, y, key }
 
+    // Confirm dialog state
+    property bool relationshipConfirmVisible: false
+    property string pendingRelationship: ""      // "1..1" or "1..*"
+    property var pendingRelationObj: null        // relation object
+
     signal previewTrackingRequested(bool enabled)
 
     // emitted when valid drop happens
     signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
-    // emitted when user changes relationship from UI (handle in C++/Controller)
+    // emitted when user confirms relationship change (handle in C++/Controller)
     signal relationshipChangeRequested(int sourceTableID,
                                       int destinationTableID,
                                       string relationship) // values: "1..1" or "1..*"
@@ -455,6 +460,9 @@ Item {
             property bool hovered: false
             property bool editing: false
 
+            // used for confirm compare
+            property string originalRelStr: "1..*"
+
             TextMetrics {
                 id: tm
                 font.pixelSize: 14
@@ -489,7 +497,7 @@ Item {
                     text: labelRoot.displayLabel
                     font.pixelSize: 14
                     font.bold: true
-                    color: "#1f3b57" // same as original canvas label text
+                    color: "#1f3b57"
                 }
 
                 MouseArea {
@@ -502,15 +510,19 @@ Item {
                     onExited:  labelRoot.hovered = false
 
                     onDoubleClicked: {
+                        labelRoot.originalRelStr = (labelRoot.relObj && labelRoot.relObj.relationship)
+                                ? labelRoot.relObj.relationship
+                                : "1..*"
+
                         labelRoot.editing = true
-                        combo.currentIndex = (labelRoot.displayLabel === "1:1") ? 0 : 1
+                        combo.currentIndex = (root._toDisplayLabel(labelRoot.originalRelStr) === "1:1") ? 0 : 1
                         combo.forceActiveFocus()
                         combo.popup.open()
                     }
                 }
             }
 
-            // ✅ FIX: No contentItem/background/popup overrides → NO warning on native style
+            // No contentItem/background/popup overrides → NO warning on native style
             ComboBox {
                 id: combo
                 anchors.fill: parent
@@ -522,19 +534,22 @@ Item {
                 // Ensure popup same width as label
                 popup.width: combo.width
 
-                // Optional: make it feel like the old label height
                 implicitHeight: labelRoot.height
 
                 onActivated: function(index) {
-                    let chosen = combo.model[index]
-                    let newRel = root._toStorageRelationship(chosen)
+                    let chosenDisplay = combo.model[index] // "1:1" / "1:*"
+                    let chosenRelStr  = root._toStorageRelationship(chosenDisplay) // "1..1" / "1..*"
 
-                    if (labelRoot.relObj) {
-                        root.relationshipChangeRequested(
-                                    labelRoot.relObj.sourceTableID,
-                                    labelRoot.relObj.destinationTableID,
-                                    newRel)
+                    // unchanged -> just close edit
+                    if (chosenRelStr === labelRoot.originalRelStr) {
+                        labelRoot.editing = false
+                        return
                     }
+
+                    // changed -> ask confirm
+                    root.pendingRelationship = chosenRelStr
+                    root.pendingRelationObj = labelRoot.relObj
+                    root.relationshipConfirmVisible = true
 
                     labelRoot.editing = false
                 }
@@ -544,11 +559,87 @@ Item {
                     combo.popup.close()
                 }
 
-                // Click-away closes: when popup closes (native)
                 popup.onClosed: {
+                    // if user clicks away while editing
                     labelRoot.editing = false
                 }
             }
+        }
+    }
+
+    Popup {
+        id: confirmPopup
+        modal: true
+        focus: true
+        visible: root.relationshipConfirmVisible
+        closePolicy: Popup.NoAutoClose
+
+        // Center on screen
+        x: (root.width  - width)  / 2
+        y: (root.height - height) / 2
+
+        width: 340
+        padding: 16
+
+        background: Rectangle {
+            radius: 12
+            color: "white"
+            border.width: 2
+            border.color: "#2d8cff"
+        }
+
+        Column {
+            spacing: 16
+            width: parent.width
+
+            Text {
+                width: parent.width
+                text: "Do you want to change the relationship?"
+                font.pixelSize: 16
+                font.bold: true
+                color: "#1f3b57"
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+            }
+
+            Row {
+                spacing: 12
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Button {
+                    text: "Cancel"
+                    onClicked: {
+                        root.relationshipConfirmVisible = false
+                        root.pendingRelationship = ""
+                        root.pendingRelationObj = null
+                        confirmPopup.close()
+                    }
+                }
+
+                Button {
+                    text: "Confirm"
+                    onClicked: {
+                        if (root.pendingRelationObj) {
+                            root.relationshipChangeRequested(
+                                        root.pendingRelationObj.sourceTableID,
+                                        root.pendingRelationObj.destinationTableID,
+                                        root.pendingRelationship)
+                        }
+
+                        root.relationshipConfirmVisible = false
+                        root.pendingRelationship = ""
+                        root.pendingRelationObj = null
+                        confirmPopup.close()
+                    }
+                }
+            }
+        }
+
+        onClosed: {
+            // Safety cleanup
+            root.relationshipConfirmVisible = false
+            root.pendingRelationship = ""
+            root.pendingRelationObj = null
         }
     }
 

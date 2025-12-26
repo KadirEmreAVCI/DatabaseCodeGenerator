@@ -37,7 +37,6 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
     {
         m_vecupRelation.emplace_back(pRelationModel);
         emit relationsChanged();
-        qDebug() << "RelationController::AddRelation::emit relationsChanged";
     }
     else
     {
