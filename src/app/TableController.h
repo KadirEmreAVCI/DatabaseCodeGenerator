@@ -27,11 +27,13 @@ public slots:
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPointF& rPointF);
+    void onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
+    QString FindRelationColumnName(int iDestinationTableID) const;
 
     std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;

@@ -39,12 +39,14 @@ int main(int argc, char **argv)
 
     QObject::connect(&TableController::GetInstance(), &TableController::tableDeleted, &RelationController::GetInstance(), &RelationController::OnTableDeleted);
 
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableDeleteRequested, &TableController::GetInstance(), &TableController::onTableDeleteRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested, &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableDeleteRequested,         &TableController::GetInstance(), &TableController::onTableDeleteRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested,     &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested, &RelationController::GetInstance(), &RelationController::onRelationshipChangeRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested, &RelationController::GetInstance(), &RelationController::onRelationshipDeleteRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested,  &TableController::GetInstance(), &TableController::onRelationshipDeleteRequested);
+
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished,       &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested,  &RelationController::GetInstance(), &RelationController::onRelationshipChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested,  &RelationController::GetInstance(), &RelationController::onRelationshipDeleteRequested);
 
     // Expose to QML
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());
