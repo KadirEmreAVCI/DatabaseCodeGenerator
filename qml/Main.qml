@@ -15,17 +15,17 @@ Window {
 
     QtObject {
         id: qmlFallbackBus
-        // ---------------- Controller command signals ----------------
         signal tableDeleteRequested(int tableID)
         signal tableNameChangeRequested(int tableID, string newName)
         signal tablePositionChangeRequested(int tableID, point newPos)
         signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
-        // ✅ NEW: relationship change
         signal relationshipChangeRequested(int sourceTableID,
                                            int destinationTableID,
                                            string relationship)
-        // ------------------------------------------------------------
+
+        signal relationshipDeleteRequested(int sourceTableID,
+                                           int destinationTableID)
     }
 
     GridBackground {
@@ -52,9 +52,6 @@ Window {
                 id: overlayRoot
                 anchors.fill: parent
 
-                //
-                // ───────────────────── Preview tracker (LEFT move/release) ─────────────────────
-                //
                 MouseArea {
                     id: previewTracker
                     anchors.fill: parent
@@ -80,9 +77,6 @@ Window {
                     }
                 }
 
-                //
-                // ───────────────────── Preview overlay canvas (DASHED) ─────────────────────
-                //
                 Canvas {
                     id: previewCanvas
                     anchors.fill: parent
@@ -170,9 +164,6 @@ Window {
                     }
                 }
 
-                //
-                // Right click area (background menu + preview cancel)
-                //
                 MouseArea {
                     id: backgroundRightClickArea
                     anchors.fill: parent
@@ -269,7 +260,6 @@ Window {
             }
         ]
 
-        // zoomed content
         ConnectionsLayer {
             id: links
             anchors.fill: parent
@@ -278,7 +268,6 @@ Window {
             tableRepeater: tableRepeater
         }
 
-        // forward signals from ConnectionsLayer to bus
         Connections {
             target: links
 
@@ -286,9 +275,12 @@ Window {
                 commandBus.newRelationEstablished(sourceTableID, destinationTableID)
             }
 
-            // ✅ NEW: forward relationship change
-            function onRelationshipChangeRequested(sourceTableID, destinationTableID, sourceRowIdx, destinationRowIdx, relationship) {
-                commandBus.relationshipChangeRequested(sourceTableID, destinationTableID, sourceRowIdx, destinationRowIdx, relationship)
+            function onRelationshipChangeRequested(sourceTableID, destinationTableID, relationship) {
+                commandBus.relationshipChangeRequested(sourceTableID, destinationTableID, relationship)
+            }
+
+            function onRelationshipDeleteRequested(sourceTableID, destinationTableID) {
+                commandBus.relationshipDeleteRequested(sourceTableID, destinationTableID)
             }
 
             function onPreviewTrackingRequested(enabled) {

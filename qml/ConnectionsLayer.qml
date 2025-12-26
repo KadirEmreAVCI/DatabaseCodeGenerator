@@ -45,6 +45,10 @@ Item {
                                       int destinationTableID,
                                       string relationship) // values: "1..1" or "1..*"
 
+    // emitted when user clicks delete button on relation label
+    signal relationshipDeleteRequested(int sourceTableID,
+                                       int destinationTableID)
+
     onRelationsChanged: {
         Qt.callLater(function() {
             updateWorldBounds()
@@ -441,7 +445,7 @@ Item {
         }
     }
 
-    // Interactive relationship labels (hover highlight + double click combobox)
+    // Interactive relationship labels (hover highlight + double click combobox + delete button)
     Repeater {
         id: labelRepeater
         model: root._labelData
@@ -460,6 +464,9 @@ Item {
             property bool hovered: false
             property bool editing: false
 
+            property bool deleteHovered: false
+            property bool deleteAreaHovered: false
+
             // used for confirm compare
             property string originalRelStr: "1..*"
 
@@ -471,15 +478,23 @@ Item {
             }
 
             readonly property real paddingX: 8
-            readonly property real paddingY: 4
             readonly property real bubbleHeight: 22
             readonly property real bubbleWidth: tm.width + paddingX * 2
+
+            readonly property real deleteGap: 8
+            readonly property real deleteSize: 20
+            readonly property real hoverTopPad: 6
 
             x: centerX - bubbleWidth / 2
             y: centerY - bubbleHeight / 2
             width: bubbleWidth
             height: bubbleHeight
             z: 999
+            clip: false
+
+            function updateHoverState() {
+                labelRoot.hovered = labelRoot.deleteAreaHovered || labelRoot.deleteHovered
+            }
 
             Rectangle {
                 id: bubble
@@ -487,7 +502,6 @@ Item {
                 radius: 6
                 visible: !labelRoot.editing
 
-                // first-file look (opaque white)
                 color: labelRoot.hovered ? "#E6F4FF" : "#FFFFFF"
                 border.width: 2
                 border.color: labelRoot.hovered ? "#1a6fbf" : "#2d8cff"
@@ -506,8 +520,8 @@ Item {
                     acceptedButtons: Qt.LeftButton
                     cursorShape: Qt.PointingHandCursor
 
-                    onEntered: labelRoot.hovered = true
-                    onExited:  labelRoot.hovered = false
+                    onEntered: { labelRoot.deleteAreaHovered = true; labelRoot.updateHoverState() }
+                    onExited:  { labelRoot.deleteAreaHovered = false; labelRoot.updateHoverState() }
 
                     onDoubleClicked: {
                         labelRoot.originalRelStr = (labelRoot.relObj && labelRoot.relObj.relationship)
@@ -522,7 +536,64 @@ Item {
                 }
             }
 
-            // No contentItem/background/popup overrides → NO warning on native style
+            // Hover catcher that also covers the delete button area above the label
+            MouseArea {
+                id: topHoverCatcher
+                hoverEnabled: true
+                acceptedButtons: Qt.NoButton
+
+                x: 0
+                y: -(labelRoot.deleteSize + labelRoot.deleteGap + labelRoot.hoverTopPad)
+                width: labelRoot.width
+                height: labelRoot.height + (labelRoot.deleteSize + labelRoot.deleteGap + labelRoot.hoverTopPad)
+
+                onEntered: { labelRoot.deleteAreaHovered = true; labelRoot.updateHoverState() }
+                onExited:  { labelRoot.deleteAreaHovered = false; labelRoot.updateHoverState() }
+            }
+
+            // Delete button (same UX as column delete button, shown above the label)
+            Rectangle {
+                id: deleteButton
+                width: 20
+                height: 20
+                radius: 3
+
+                x: (labelRoot.width - width) / 2
+                y: -height - labelRoot.deleteGap
+
+                visible: labelRoot.hovered && !labelRoot.editing
+
+                color: labelRoot.deleteHovered ? "#ffe5e5" : "transparent"
+                border.width: labelRoot.deleteHovered ? 1 : 0
+                border.color: labelRoot.deleteHovered ? "#ff4a4a" : "transparent"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "✕"
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: labelRoot.deleteHovered ? "#ff2020" : "#c05050"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onEntered: { labelRoot.deleteHovered = true; labelRoot.updateHoverState() }
+                    onExited:  { labelRoot.deleteHovered = false; labelRoot.updateHoverState() }
+
+                    onClicked: {
+                        if (!labelRoot.relObj)
+                            return
+                        root.relationshipDeleteRequested(
+                                    labelRoot.relObj.sourceTableID,
+                                    labelRoot.relObj.destinationTableID)
+                    }
+                }
+            }
+
+            // No contentItem/background/popup overrides → no warning on native style
             ComboBox {
                 id: combo
                 anchors.fill: parent
@@ -531,22 +602,18 @@ Item {
                 model: ["1:1", "1:*"]
                 currentIndex: (labelRoot.displayLabel === "1:1") ? 0 : 1
 
-                // Ensure popup same width as label
                 popup.width: combo.width
-
                 implicitHeight: labelRoot.height
 
                 onActivated: function(index) {
                     let chosenDisplay = combo.model[index] // "1:1" / "1:*"
                     let chosenRelStr  = root._toStorageRelationship(chosenDisplay) // "1..1" / "1..*"
 
-                    // unchanged -> just close edit
                     if (chosenRelStr === labelRoot.originalRelStr) {
                         labelRoot.editing = false
                         return
                     }
 
-                    // changed -> ask confirm
                     root.pendingRelationship = chosenRelStr
                     root.pendingRelationObj = labelRoot.relObj
                     root.relationshipConfirmVisible = true
@@ -560,7 +627,6 @@ Item {
                 }
 
                 popup.onClosed: {
-                    // if user clicks away while editing
                     labelRoot.editing = false
                 }
             }
@@ -574,7 +640,6 @@ Item {
         visible: root.relationshipConfirmVisible
         closePolicy: Popup.NoAutoClose
 
-        // Center on screen
         x: (root.width  - width)  / 2
         y: (root.height - height) / 2
 
@@ -636,7 +701,6 @@ Item {
         }
 
         onClosed: {
-            // Safety cleanup
             root.relationshipConfirmVisible = false
             root.pendingRelationship = ""
             root.pendingRelationObj = null
