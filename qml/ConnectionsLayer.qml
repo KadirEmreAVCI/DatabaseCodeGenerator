@@ -1,7 +1,6 @@
 // ConnectionsLayer.qml
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtQml
 import DatabaseCodeGenerator 1.0
 
@@ -39,8 +38,6 @@ Item {
     // emitted when user changes relationship from UI (handle in C++/Controller)
     signal relationshipChangeRequested(int sourceTableID,
                                       int destinationTableID,
-                                      int sourceRowIdx,
-                                      int destinationRowIdx,
                                       string relationship) // values: "1..1" or "1..*"
 
     onRelationsChanged: {
@@ -255,14 +252,12 @@ Item {
                 continue
             }
 
-            // Control points in WORLD space
             let dx = (p2World.x - p1World.x) * curvatureFactor
             let cp1x = p1World.x + dx
             let cp1y = p1World.y
             let cp2x = p2World.x - dx
             let cp2y = p2World.y
 
-            // Midpoint on cubic Bezier (t = 0.5)
             let t = 0.5
             let it = 1.0 - t
 
@@ -278,7 +273,6 @@ Item {
                 3*it*t*t * cp2y +
                 t*t*t * p2World.y
 
-            // Normal for offset
             let lvx = p2World.x - p1World.x
             let lvy = p2World.y - p1World.y
             let llen = Math.sqrt(lvx * lvx + lvy * lvy)
@@ -370,20 +364,17 @@ Item {
                     continue
                 }
 
-                // Convert world -> canvas space
                 let p1x = p1World.x - root.worldMinX
                 let p1y = p1World.y - root.worldMinY
                 let p2x = p2World.x - root.worldMinX
                 let p2y = p2World.y - root.worldMinY
 
-                // Bezier control points
                 let dx = (p2x - p1x) * curvatureFactor
                 let cp1x = p1x + dx
                 let cp1y = p1y
                 let cp2x = p2x - dx
                 let cp2y = p2y
 
-                // Start slightly after the source circle center
                 let svx = cp1x - p1x
                 let svy = cp1y - p1y
                 if (svx === 0 && svy === 0) {
@@ -401,18 +392,15 @@ Item {
                     startY = p1y + svy * sourceRadius
                 }
 
-                // Draw curve
                 ctx.beginPath()
                 ctx.moveTo(startX, startY)
                 ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2x, p2y)
                 ctx.stroke()
 
-                // Draw source circle
                 ctx.beginPath()
                 ctx.arc(p1x, p1y, sourceRadius, 0, Math.PI * 2, false)
                 ctx.stroke()
 
-                // Draw destination arrow
                 let vx = p2x - cp2x
                 let vy = p2y - cp2y
                 if (vx === 0 && vy === 0) {
@@ -476,7 +464,7 @@ Item {
 
             readonly property real paddingX: 8
             readonly property real paddingY: 4
-            readonly property real bubbleHeight: 18 + paddingY
+            readonly property real bubbleHeight: 22
             readonly property real bubbleWidth: tm.width + paddingX * 2
 
             x: centerX - bubbleWidth / 2
@@ -485,15 +473,13 @@ Item {
             height: bubbleHeight
             z: 999
 
-            // ✅ IMPORTANT FIX:
-            // Use OPAQUE background so it looks EXACTLY like the original canvas bubble.
             Rectangle {
                 id: bubble
                 anchors.fill: parent
                 radius: 6
                 visible: !labelRoot.editing
 
-                // Original look (not theme-dependent)
+                // first-file look (opaque white)
                 color: labelRoot.hovered ? "#E6F4FF" : "#FFFFFF"
                 border.width: 2
                 border.color: labelRoot.hovered ? "#1a6fbf" : "#2d8cff"
@@ -503,7 +489,7 @@ Item {
                     text: labelRoot.displayLabel
                     font.pixelSize: 14
                     font.bold: true
-                    color: "#1f3b57" // same as original canvas
+                    color: "#1f3b57" // same as original canvas label text
                 }
 
                 MouseArea {
@@ -524,73 +510,20 @@ Item {
                 }
             }
 
+            // ✅ FIX: No contentItem/background/popup overrides → NO warning on native style
             ComboBox {
                 id: combo
                 anchors.fill: parent
                 visible: labelRoot.editing
+
                 model: ["1:1", "1:*"]
                 currentIndex: (labelRoot.displayLabel === "1:1") ? 0 : 1
-                font.pixelSize: 14
 
-                // Force light look (avoid dark/black style/palette)
-                background: Rectangle {
-                    radius: 6
-                    border.width: 2
-                    border.color: "#1a6fbf"
-                    color: "#FFFFFF"
-                }
+                // Ensure popup same width as label
+                popup.width: combo.width
 
-                contentItem: Text {
-                    leftPadding: 8
-                    rightPadding: 8
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                    text: combo.displayText
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: "#1f3b57"
-                }
-
-                popup: Popup {
-                    y: combo.height
-                    width: combo.width
-                    padding: 0
-
-                    background: Rectangle {
-                        radius: 6
-                        border.width: 1
-                        border.color: "#1a6fbf"
-                        color: "#FFFFFF"
-                    }
-
-                    contentItem: ListView {
-                        clip: true
-                        implicitHeight: contentHeight
-                        model: combo.popup.visible ? combo.delegateModel : null
-                        currentIndex: combo.highlightedIndex
-
-                        delegate: ItemDelegate {
-                            width: combo.width
-                            text: modelData
-                            highlighted: hovered || ListView.isCurrentItem
-
-                            contentItem: Text {
-                                text: parent.text
-                                verticalAlignment: Text.AlignVCenter
-                                elide: Text.ElideRight
-                                font.pixelSize: 14
-                                font.bold: true
-                                color: "#1f3b57"
-                            }
-
-                            background: Rectangle {
-                                color: parent.highlighted ? "#E6F4FF" : "transparent"
-                            }
-                        }
-                    }
-
-                    onClosed: labelRoot.editing = false
-                }
+                // Optional: make it feel like the old label height
+                implicitHeight: labelRoot.height
 
                 onActivated: function(index) {
                     let chosen = combo.model[index]
@@ -600,8 +533,6 @@ Item {
                         root.relationshipChangeRequested(
                                     labelRoot.relObj.sourceTableID,
                                     labelRoot.relObj.destinationTableID,
-                                    labelRoot.relObj.sourceRowIdx,
-                                    labelRoot.relObj.destinationRowIdx,
                                     newRel)
                     }
 
@@ -611,6 +542,11 @@ Item {
                 Keys.onEscapePressed: {
                     labelRoot.editing = false
                     combo.popup.close()
+                }
+
+                // Click-away closes: when popup closes (native)
+                popup.onClosed: {
+                    labelRoot.editing = false
                 }
             }
         }

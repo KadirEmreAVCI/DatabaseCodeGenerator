@@ -20,6 +20,11 @@ Window {
         signal tableNameChangeRequested(int tableID, string newName)
         signal tablePositionChangeRequested(int tableID, point newPos)
         signal newRelationEstablished(int sourceTableID, int destinationTableID)
+
+        // ✅ NEW: relationship change
+        signal relationshipChangeRequested(int sourceTableID,
+                                           int destinationTableID,
+                                           string relationship)
         // ------------------------------------------------------------
     }
 
@@ -99,18 +104,6 @@ Window {
                             return
                         }
 
-                        // world -> view mapping: use content item transform
-                        function worldToView(pWorld) {
-                            var p = zoomLayer.contentChildren[0] // not reliable
-                            // safer: map via content item directly
-                            var v = zoomLayer.mapFromItem(zoomLayer.contentChildrenItem ? zoomLayer.contentChildrenItem : zoomLayer,
-                                                          pWorld.x, pWorld.y)
-                            return Qt.point(v.x, v.y)
-                        }
-
-                        // We can map using content item directly:
-                        // content is the zoomed Item inside ZoomableCanvas, but not accessible by id here.
-                        // So we use zoomLayer.children search fallback.
                         var contentItem = null
                         for (var i = 0; i < zoomLayer.children.length; ++i) {
                             if (zoomLayer.children[i] && zoomLayer.children[i].scale === zoomLayer.zoom) {
@@ -119,7 +112,6 @@ Window {
                             }
                         }
                         if (!contentItem) {
-                            // last resort: draw nothing
                             console.warn("[Main][PreviewCanvas] contentItem not found")
                             ctx.restore()
                             return
@@ -137,8 +129,6 @@ Window {
                         ctx.strokeStyle = "#2d8cff"
                         ctx.lineCap = "round"
                         ctx.lineJoin = "round"
-
-                        // dashed
                         ctx.setLineDash([8, 6])
 
                         var curvatureFactor = 0.7
@@ -153,7 +143,6 @@ Window {
                         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
                         ctx.stroke()
 
-                        // arrow head solid
                         ctx.setLineDash([])
                         var arrowLength = 15
                         var arrowAngle = Math.PI / 7
@@ -265,7 +254,6 @@ Window {
                             text: qsTr("Reset Zoom")
                             onTriggered: {
                                 zoomLayer.zoom = 1.0
-                                // İstersen pan reset de ekleyebiliriz ama şimdilik dokunmuyorum.
                             }
                         }
 
@@ -290,12 +278,19 @@ Window {
             tableRepeater: tableRepeater
         }
 
-        // forward new relation to bus
+        // forward signals from ConnectionsLayer to bus
         Connections {
             target: links
+
             function onNewRelationEstablished(sourceTableID, destinationTableID) {
                 commandBus.newRelationEstablished(sourceTableID, destinationTableID)
             }
+
+            // ✅ NEW: forward relationship change
+            function onRelationshipChangeRequested(sourceTableID, destinationTableID, sourceRowIdx, destinationRowIdx, relationship) {
+                commandBus.relationshipChangeRequested(sourceTableID, destinationTableID, sourceRowIdx, destinationRowIdx, relationship)
+            }
+
             function onPreviewTrackingRequested(enabled) {
                 previewCanvas.requestPaint()
             }
