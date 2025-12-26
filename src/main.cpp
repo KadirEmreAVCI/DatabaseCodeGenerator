@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QObject>
+#include <QQuickStyle>
 #include <iostream>
 
 #include "TableModel.h"
@@ -43,6 +44,7 @@ int main(int argc, char **argv)
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested, &RelationController::GetInstance(), &RelationController::onRelationshipChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested, &RelationController::GetInstance(), &RelationController::onRelationshipDeleteRequested);
 
     // Expose to QML
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());

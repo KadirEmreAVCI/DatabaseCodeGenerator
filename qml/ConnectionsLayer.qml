@@ -30,10 +30,14 @@ Item {
     // Label overlay cache (interactive relationship bubbles)
     property var _labelData: []   // array of { relObj, x, y, key }
 
-    // Confirm dialog state
+    // Relationship change confirm state
     property bool relationshipConfirmVisible: false
     property string pendingRelationship: ""      // "1..1" or "1..*"
     property var pendingRelationObj: null        // relation object
+
+    // Relationship delete confirm state
+    property bool relationshipDeleteConfirmVisible: false
+    property var pendingDeleteRelationObj: null  // relation object
 
     signal previewTrackingRequested(bool enabled)
 
@@ -45,7 +49,7 @@ Item {
                                       int destinationTableID,
                                       string relationship) // values: "1..1" or "1..*"
 
-    // emitted when user clicks delete button on relation label
+    // emitted when user confirms relationship delete (handle in C++/Controller)
     signal relationshipDeleteRequested(int sourceTableID,
                                        int destinationTableID)
 
@@ -61,9 +65,24 @@ Item {
 
     focus: true
     Keys.onEscapePressed: {
-        if (!creatingRelation)
+        if (creatingRelation) {
+            cancelPreview()
             return
-        cancelPreview()
+        }
+
+        // Close any open confirmation popups
+        if (relationshipDeleteConfirmVisible) {
+            relationshipDeleteConfirmVisible = false
+            pendingDeleteRelationObj = null
+            return
+        }
+
+        if (relationshipConfirmVisible) {
+            relationshipConfirmVisible = false
+            pendingRelationship = ""
+            pendingRelationObj = null
+            return
+        }
     }
 
     function cancelPreview() {
@@ -467,7 +486,6 @@ Item {
             property bool deleteHovered: false
             property bool deleteAreaHovered: false
 
-            // used for confirm compare
             property string originalRelStr: "1..*"
 
             TextMetrics {
@@ -538,10 +556,8 @@ Item {
 
             // Hover catcher that also covers the delete button area above the label
             MouseArea {
-                id: topHoverCatcher
                 hoverEnabled: true
                 acceptedButtons: Qt.NoButton
-
                 x: 0
                 y: -(labelRoot.deleteSize + labelRoot.deleteGap + labelRoot.hoverTopPad)
                 width: labelRoot.width
@@ -551,7 +567,6 @@ Item {
                 onExited:  { labelRoot.deleteAreaHovered = false; labelRoot.updateHoverState() }
             }
 
-            // Delete button (same UX as column delete button, shown above the label)
             Rectangle {
                 id: deleteButton
                 width: 20
@@ -586,14 +601,13 @@ Item {
                     onClicked: {
                         if (!labelRoot.relObj)
                             return
-                        root.relationshipDeleteRequested(
-                                    labelRoot.relObj.sourceTableID,
-                                    labelRoot.relObj.destinationTableID)
+
+                        root.pendingDeleteRelationObj = labelRoot.relObj
+                        root.relationshipDeleteConfirmVisible = true
                     }
                 }
             }
 
-            // No contentItem/background/popup overrides → no warning on native style
             ComboBox {
                 id: combo
                 anchors.fill: parent
@@ -606,8 +620,8 @@ Item {
                 implicitHeight: labelRoot.height
 
                 onActivated: function(index) {
-                    let chosenDisplay = combo.model[index] // "1:1" / "1:*"
-                    let chosenRelStr  = root._toStorageRelationship(chosenDisplay) // "1..1" / "1..*"
+                    let chosenDisplay = combo.model[index]
+                    let chosenRelStr  = root._toStorageRelationship(chosenDisplay)
 
                     if (chosenRelStr === labelRoot.originalRelStr) {
                         labelRoot.editing = false
@@ -633,6 +647,7 @@ Item {
         }
     }
 
+    // Relationship change confirmation popup
     Popup {
         id: confirmPopup
         modal: true
@@ -644,57 +659,65 @@ Item {
         y: (root.height - height) / 2
 
         width: 340
-        padding: 16
+        padding: 0
 
-        background: Rectangle {
-            radius: 12
-            color: "white"
-            border.width: 2
-            border.color: "#2d8cff"
-        }
+        Item {
+            width: confirmPopup.width
+            height: confirmColumn.implicitHeight + 32
 
-        Column {
-            spacing: 16
-            width: parent.width
-
-            Text {
-                width: parent.width
-                text: "Do you want to change the relationship?"
-                font.pixelSize: 16
-                font.bold: true
-                color: "#1f3b57"
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
+            Rectangle {
+                anchors.fill: parent
+                radius: 12
+                color: "white"
+                border.width: 2
+                border.color: "#2d8cff"
             }
 
-            Row {
-                spacing: 12
-                anchors.horizontalCenter: parent.horizontalCenter
+            Column {
+                id: confirmColumn
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 16
 
-                Button {
-                    text: "Cancel"
-                    onClicked: {
-                        root.relationshipConfirmVisible = false
-                        root.pendingRelationship = ""
-                        root.pendingRelationObj = null
-                        confirmPopup.close()
-                    }
+                Text {
+                    width: parent.width
+                    text: "Confirm relationship change?"
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#1f3b57"
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
 
-                Button {
-                    text: "Confirm"
-                    onClicked: {
-                        if (root.pendingRelationObj) {
-                            root.relationshipChangeRequested(
-                                        root.pendingRelationObj.sourceTableID,
-                                        root.pendingRelationObj.destinationTableID,
-                                        root.pendingRelationship)
-                        }
+                Row {
+                    spacing: 12
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-                        root.relationshipConfirmVisible = false
-                        root.pendingRelationship = ""
-                        root.pendingRelationObj = null
-                        confirmPopup.close()
+                    Button {
+                        text: "Cancel"
+                        onClicked: {
+                            root.relationshipConfirmVisible = false
+                            root.pendingRelationship = ""
+                            root.pendingRelationObj = null
+                            confirmPopup.close()
+                        }
+                    }
+
+                    Button {
+                        text: "Confirm"
+                        onClicked: {
+                            if (root.pendingRelationObj) {
+                                root.relationshipChangeRequested(
+                                            root.pendingRelationObj.sourceTableID,
+                                            root.pendingRelationObj.destinationTableID,
+                                            root.pendingRelationship)
+                            }
+
+                            root.relationshipConfirmVisible = false
+                            root.pendingRelationship = ""
+                            root.pendingRelationObj = null
+                            confirmPopup.close()
+                        }
                     }
                 }
             }
@@ -704,6 +727,85 @@ Item {
             root.relationshipConfirmVisible = false
             root.pendingRelationship = ""
             root.pendingRelationObj = null
+        }
+    }
+
+    // Relationship delete confirmation popup
+    Popup {
+        id: deleteConfirmPopup
+        modal: true
+        focus: true
+        visible: root.relationshipDeleteConfirmVisible
+        closePolicy: Popup.NoAutoClose
+
+        x: (root.width  - width)  / 2
+        y: (root.height - height) / 2
+
+        width: 340
+        padding: 0
+
+        Item {
+            width: deleteConfirmPopup.width
+            height: deleteConfirmColumn.implicitHeight + 32
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 12
+                color: "white"
+                border.width: 2
+                border.color: "#2d8cff"
+            }
+
+            Column {
+                id: deleteConfirmColumn
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 16
+
+                Text {
+                    width: parent.width
+                    text: "Confirm relation deletion?"
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#1f3b57"
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                }
+
+                Row {
+                    spacing: 12
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    Button {
+                        text: "Cancel"
+                        onClicked: {
+                            root.relationshipDeleteConfirmVisible = false
+                            root.pendingDeleteRelationObj = null
+                            deleteConfirmPopup.close()
+                        }
+                    }
+
+                    Button {
+                        text: "Delete"
+                        onClicked: {
+                            if (root.pendingDeleteRelationObj) {
+                                root.relationshipDeleteRequested(
+                                            root.pendingDeleteRelationObj.sourceTableID,
+                                            root.pendingDeleteRelationObj.destinationTableID)
+                            }
+
+                            root.relationshipDeleteConfirmVisible = false
+                            root.pendingDeleteRelationObj = null
+                            deleteConfirmPopup.close()
+                        }
+                    }
+                }
+            }
+        }
+
+        onClosed: {
+            root.relationshipDeleteConfirmVisible = false
+            root.pendingDeleteRelationObj = null
         }
     }
 

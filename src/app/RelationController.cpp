@@ -89,6 +89,24 @@ void RelationController::onRelationshipChangeRequested(int iSourceTableID, int i
         qDebug() << "Warning: No existing relation between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
     }
 }
+void RelationController::onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID)
+{
+    const size_t szErasedRelation = std::erase_if(m_vecupRelation, [iSourceTableID, iDestinationTableID](const auto& upRelation){
+        if(upRelation != nullptr)
+        {
+            return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
+        }
+        return false;
+    });
+    if(szErasedRelation > 0)
+    {
+        emit relationsChanged();
+    }
+    else
+    {
+        qDebug() << "Warning: No existing relation to delete between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
+    }
+}
 bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
 {
     return std::any_of(m_vecupRelation.cbegin(), m_vecupRelation.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){

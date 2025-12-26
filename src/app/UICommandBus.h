@@ -24,6 +24,7 @@ signals:
     void tablePositionChangeRequested(int tableID, const QPointF& newPos);
     void newRelationEstablished(int sourceTableID, int destinationTableID);
     void relationshipChangeRequested(int sourceTableID, int destinationTableID, const QString& relationship);
+    void relationshipDeleteRequested(int sourceTableID, int destinationTableID);
     // -------------------------------------------------------------------------
 };
 
