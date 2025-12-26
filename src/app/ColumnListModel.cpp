@@ -54,6 +54,17 @@ void ColumnListModel::AddColumn(ColumnModel* pColumnModel)
 
     emit countChanged();
 }
+void ColumnListModel::RemoveColumn(int iRow)
+{
+    if (iRow < 0 || iRow >= m_vecColumnModels.size())
+        return;
+
+    beginRemoveRows(QModelIndex(), iRow, iRow);
+    delete m_vecColumnModels.takeAt(iRow);
+    endRemoveRows();
+
+    emit countChanged();
+}
 QVariantMap ColumnListModel::GetColumn(int row) const
 {
     QVariantMap map;

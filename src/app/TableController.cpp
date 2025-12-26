@@ -97,6 +97,26 @@ void TableController::onCreateNewTable(const QPointF& rPointF)
     }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
     AddTable(new TableModel(this, sTempNewName, rPointF));
 }
+void TableController::onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID)
+{
+    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    {
+        ColumnListModel* const pColumnListModel = iterSourceTable->second->GetColumnListModel();
+        const QString sRelationColumnName = FindRelationColumnName(iDestinationTableID);
+        for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
+        {
+            if(pColumnListModel->GetColumn(idx)["name"] == sRelationColumnName)
+            {
+                pColumnListModel->RemoveColumn(idx);
+                break;
+            }
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Source Table ID not found.";
+    }
+}
 QRectF TableController::GetBoundingRect() const
 {
     QRectF rUnitedRect{};
@@ -139,6 +159,19 @@ QString TableController::NormalizeTableName(const QString& sName) const
     sNormalized[0] = sNormalized[0].toUpper();       
     return sNormalized;
 }
+QString TableController::FindRelationColumnName(int iDestinationTableID) const
+{
+    QString sRelationColumnName{}; 
+    if(auto iterDestinationTable = m_mapTable.find(iDestinationTableID); iterDestinationTable != m_mapTable.end() && iterDestinationTable->second != nullptr)
+    {
+        sRelationColumnName = iterDestinationTable->second->GetName() + "ID";
+    }
+    else
+    {
+        qDebug() << "Error: Destination Table ID not found.";
+    }
+    return sRelationColumnName;
+}
 QList<QObject*> TableController::GetTables() const
 {
     QList<QObject*> lsTable;
@@ -169,15 +202,7 @@ void TableController::NewRelationEstablished(int iSourceTableID, int iDestinatio
 {
     if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
     {
-        if(auto iterDestinationTable = m_mapTable.find(iDestinationTableID); iterDestinationTable != m_mapTable.end() && iterDestinationTable->second != nullptr)
-        {
-            const QString sSourceColumnName = iterDestinationTable->second->GetName() + "ID";
-            iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(sSourceColumnName, "INT", false, false, true));
-        }
-        else
-        {
-            qDebug() << "Error: Destination Table ID not found.";
-        }
+        iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(FindRelationColumnName(iDestinationTableID), "INT", false, false, true));
     }
     else
     {

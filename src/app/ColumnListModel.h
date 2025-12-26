@@ -25,6 +25,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     
     void AddColumn(ColumnModel* pColumnItem);
+    void RemoveColumn(int iRow);
 private:
     QVector<ColumnModel*> m_vecColumnModels;
 public slots:
