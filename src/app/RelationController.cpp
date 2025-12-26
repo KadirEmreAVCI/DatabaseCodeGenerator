@@ -37,7 +37,6 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
     {
         m_vecupRelation.emplace_back(pRelationModel);
         emit relationsChanged();
-        qDebug() << "RelationController::AddRelation::emit relationsChanged";
     }
     else
     {
@@ -67,6 +66,27 @@ void RelationController::onNewRelationEstablished(int iSourceTableID, int iDesti
     else
     {
         qDebug() << "Warning: Relation already exists between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
+    }
+}
+void RelationController::onRelationshipChangeRequested(int iSourceTableID, int iDestinationTableID, const QString& sRelationship)
+{
+    if(IsRelationExists(iSourceTableID, iDestinationTableID))
+    {
+        const auto iterRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
+            if(upRelation != nullptr)
+            {
+                return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
+            }
+            return false;
+        });
+        if(iterRelation != m_vecupRelation.end())
+        {
+            (*iterRelation)->SetRelationship(sRelationship);
+        }
+    }
+    else
+    {
+        qDebug() << "Warning: No existing relation between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
     }
 }
 bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const

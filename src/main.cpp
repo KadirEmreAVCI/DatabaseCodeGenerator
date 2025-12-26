@@ -42,6 +42,7 @@ int main(int argc, char **argv)
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested, &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished, &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested, &RelationController::GetInstance(), &RelationController::onRelationshipChangeRequested);
 
     // Expose to QML
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());

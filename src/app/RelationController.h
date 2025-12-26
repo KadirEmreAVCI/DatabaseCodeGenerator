@@ -24,6 +24,7 @@ public:
 public slots:
     void OnTableDeleted(int iTableID);
     void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
+    void onRelationshipChangeRequested(int iSourceTableID, int iDestinationTableID, const QString& sRelationship);
 private:
     RelationController(QObject *parent = nullptr);
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
