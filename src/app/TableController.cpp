@@ -91,6 +91,7 @@ void TableController::onTableDeleteRequested(int iTableID)
 {
     if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
     {
+        DeleteRelationBasedColumnsFromDestinationTables(iTableID);
         const auto pTable = iterTable->second;
         if (pTable != nullptr) 
         {
@@ -174,6 +175,25 @@ QString TableController::FindRelationColumnName(int iDestinationTableID) const
         qDebug() << "Error: Destination Table ID not found.";
     }
     return sRelationColumnName;
+}
+void TableController::DeleteRelationBasedColumnsFromDestinationTables(int iDeletedTableID)
+{
+    for(auto [iID, pTable] : m_mapTable)
+    {
+        if(pTable != nullptr && iID != iDeletedTableID)
+        {
+            ColumnListModel* const pColumnListModel = pTable->GetColumnListModel();
+            const QString sRelationBasedColumnName = FindRelationColumnName(iDeletedTableID);
+            for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
+            {
+                if(pColumnListModel->GetColumn(idx)["name"] == sRelationBasedColumnName && pColumnListModel->GetColumn(idx)["isRelationSource"].toBool())
+                {
+                    pColumnListModel->RemoveColumn(idx);
+                    break;
+                }
+            }
+        }
+    }
 }
 QList<QObject*> TableController::GetTables() const
 {

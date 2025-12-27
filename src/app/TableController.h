@@ -34,6 +34,7 @@ private:
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
     QString FindRelationColumnName(int iDestinationTableID) const;
+    void DeleteRelationBasedColumnsFromDestinationTables(int iDeletedTableID);
 
     std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;
