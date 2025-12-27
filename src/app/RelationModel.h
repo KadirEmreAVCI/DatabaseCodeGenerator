@@ -18,12 +18,12 @@ class RelationModel : public Model{
     Q_PROPERTY(QString relationship READ GetRelationship NOTIFY relationshipChanged)
 public:
     explicit RelationModel(QObject* pParent = nullptr);
-    RelationModel(const TableModel* pDestinationTableModel, const TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent = nullptr);
+    RelationModel(std::shared_ptr<const TableModel> spDestinationTable, std::shared_ptr<const TableModel> spSourceTable, const QString& sRelationship, QObject* pParent = nullptr);
 
     // Getters
     int GetID() const;
-    const TableModel* GetDestinationTableModel()const;
-    const TableModel* GetSourceTableModel()const;
+    std::shared_ptr<const TableModel> GetDestinationTable()const;
+    std::shared_ptr<const TableModel> GetSourceTable()const;
     int GetDestinationRowIdx()const;
     int GetDestinationTableID()const;
     int GetSourceRowIdx()const;
@@ -32,8 +32,8 @@ public:
 
     // Setters
     void SetID(int);
-    void SetDestinationTableModel(const TableModel*);
-    void SetSourceTableModel(const TableModel*);
+    void SetDestinationTable(std::shared_ptr<const TableModel>);
+    void SetSourceTable(std::shared_ptr<const TableModel>);
     void SetRelationship(const QString&);
 
     void UpdateSourceRowIdx();
@@ -43,8 +43,8 @@ private:
     int m_iDestinationTableID{-1};
     int m_iSourceRowIdx{-1};
     int m_iSourceTableID{-1};
-    const TableModel* m_pDestinationTableModel{nullptr};
-    const TableModel* m_pSourceTableModel{nullptr};
+    std::shared_ptr<const TableModel> m_spDestinationTable{nullptr};
+    std::shared_ptr<const TableModel> m_spSourceTable{nullptr};
     QString m_sRelationship{""};
 signals:
     void idChanged();
