@@ -22,11 +22,11 @@ public:
     void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
     void AddTable(TableModel*);
-    void RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
+    void TableDeleted(int iTableID);
+    bool RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
-    void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:

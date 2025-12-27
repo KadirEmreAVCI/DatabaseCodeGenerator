@@ -35,9 +35,9 @@ public:
     void SetDestinationTableModel(const TableModel*);
     void SetSourceTableModel(const TableModel*);
     void SetRelationship(const QString&);
-private:
-    void CalculateSourceRowIdx();
 
+    void UpdateSourceRowIdx();
+private:
     int m_iID;
     const static int ms_iDestinationRowIdx{0};
     int m_iDestinationTableID{-1};

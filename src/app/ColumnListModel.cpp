@@ -71,7 +71,7 @@ void ColumnListModel::AddColumn(ColumnModel* pColumnModel)
         qWarning("Attempted to add a null ColumnModel.");
     }
 }
-void ColumnListModel::RemoveColumn(int iRow)
+bool ColumnListModel::RemoveColumn(int iRow)
 {
     if(IsRowIndexValid(iRow)) 
     {
@@ -84,10 +84,12 @@ void ColumnListModel::RemoveColumn(int iRow)
             pColumn->deleteLater();
         }
         emit countChanged();
+        return true;
     }
     else
     {
         qWarning("Attempted to remove a ColumnModel with an invalid row index.");
+        return false;
     }
 }
 bool ColumnListModel::IsRowIndexValid(int iRow) const

@@ -27,7 +27,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     
     void AddColumn(ColumnModel* pColumnItem);
-    void RemoveColumn(int iRow);
+    bool RemoveColumn(int iRow);
 private:
     bool IsRowIndexValid(int iRow) const;
     std::vector<ColumnModel*> m_vecColumnModels;

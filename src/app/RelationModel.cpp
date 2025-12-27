@@ -70,7 +70,7 @@ void RelationModel::SetSourceTableModel(const TableModel* pSourceTableModel)
     {
         m_pSourceTableModel = pSourceTableModel;
         m_iSourceTableID = m_pSourceTableModel->GetID();
-        CalculateSourceRowIdx();
+        UpdateSourceRowIdx();
         emit sourceRowIdxChanged();
         emit sourceTableIDChanged();
     }
@@ -83,7 +83,7 @@ void RelationModel::SetRelationship(const QString& sRelationship)
         emit relationshipChanged();
     }
 }
-void RelationModel::CalculateSourceRowIdx()
+void RelationModel::UpdateSourceRowIdx()
 {
     if(m_pSourceTableModel != nullptr)
     {
