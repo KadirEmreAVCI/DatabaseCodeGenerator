@@ -31,7 +31,7 @@ private:
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
     void UpdateSourceTableRowIndexes(int iSourceTableID);
     void HandleRelationBasedColumns(const std::unique_ptr<RelationModel>& upRelation);
-    std::vector<std::unique_ptr<RelationModel>> m_vecupRelation; 
+    std::map<int, std::unique_ptr<RelationModel>> m_mapupRelation; 
     int m_iNextRelationID = 0;
 signals:
     void relationsChanged();
