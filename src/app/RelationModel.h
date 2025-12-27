@@ -10,6 +10,7 @@
 
 class RelationModel : public Model{
     Q_OBJECT
+    Q_PROPERTY(int ID READ GetID NOTIFY idChanged)
     Q_PROPERTY(int destinationRowIdx READ GetDestinationRowIdx)
     Q_PROPERTY(int destinationTableID READ GetDestinationTableID NOTIFY destinationTableIDChanged)
     Q_PROPERTY(int sourceRowIdx READ GetSourceRowIdx NOTIFY sourceRowIdxChanged)
@@ -20,6 +21,7 @@ public:
     RelationModel(const TableModel* pDestinationTableModel, const TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent = nullptr);
 
     // Getters
+    int GetID() const;
     const TableModel* GetDestinationTableModel()const;
     const TableModel* GetSourceTableModel()const;
     int GetDestinationRowIdx()const;
@@ -29,12 +31,14 @@ public:
     QString GetRelationship()const;
 
     // Setters
+    void SetID(int);
     void SetDestinationTableModel(const TableModel*);
     void SetSourceTableModel(const TableModel*);
     void SetRelationship(const QString&);
 private:
     void CalculateSourceRowIdx();
 
+    int m_iID;
     const static int ms_iDestinationRowIdx{0};
     int m_iDestinationTableID{-1};
     int m_iSourceRowIdx{-1};
@@ -43,6 +47,7 @@ private:
     const TableModel* m_pSourceTableModel{nullptr};
     QString m_sRelationship{""};
 signals:
+    void idChanged();
     void destinationTableIDChanged();
     void sourceRowIdxChanged();
     void sourceTableIDChanged();

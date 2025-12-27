@@ -45,13 +45,10 @@ Item {
     signal newRelationEstablished(int sourceTableID, int destinationTableID)
 
     // emitted when user confirms relationship change (handle in C++/Controller)
-    signal relationshipChangeRequested(int sourceTableID,
-                                      int destinationTableID,
-                                      string relationship) // values: "1..1" or "1..*"
+    signal relationshipChangeRequested(int ID, string relationship) // values: "1..1" or "1..*"
 
     // emitted when user confirms relationship delete (handle in C++/Controller)
-    signal relationshipDeleteRequested(int sourceTableID,
-                                       int destinationTableID)
+    signal relationshipDeleteRequested(int ID)
 
     onRelationsChanged: {
         Qt.callLater(function() {
@@ -707,10 +704,7 @@ Item {
                         text: "Confirm"
                         onClicked: {
                             if (root.pendingRelationObj) {
-                                root.relationshipChangeRequested(
-                                            root.pendingRelationObj.sourceTableID,
-                                            root.pendingRelationObj.destinationTableID,
-                                            root.pendingRelationship)
+                                root.relationshipChangeRequested(root.pendingRelationObj.ID, root.pendingRelationship)
                             }
 
                             root.relationshipConfirmVisible = false
@@ -789,9 +783,7 @@ Item {
                         text: "Delete"
                         onClicked: {
                             if (root.pendingDeleteRelationObj) {
-                                root.relationshipDeleteRequested(
-                                            root.pendingDeleteRelationObj.sourceTableID,
-                                            root.pendingDeleteRelationObj.destinationTableID)
+                                root.relationshipDeleteRequested(root.pendingDeleteRelationObj.ID)
                             }
 
                             root.relationshipDeleteConfirmVisible = false

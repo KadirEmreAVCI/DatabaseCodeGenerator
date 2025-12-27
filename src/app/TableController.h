@@ -22,12 +22,12 @@ public:
     void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
     void AddTable(TableModel*);
+    void RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPointF& rPointF);
-    void onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
@@ -39,7 +39,6 @@ private:
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
-    void tableDeleted(int tableID);
     void tableNameChangeRejected(int tableID, const QString &sWarningMessage);
 };
 

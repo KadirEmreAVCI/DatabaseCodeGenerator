@@ -19,13 +19,8 @@ Window {
         signal tableNameChangeRequested(int tableID, string newName)
         signal tablePositionChangeRequested(int tableID, point newPos)
         signal newRelationEstablished(int sourceTableID, int destinationTableID)
-
-        signal relationshipChangeRequested(int sourceTableID,
-                                           int destinationTableID,
-                                           string relationship)
-
-        signal relationshipDeleteRequested(int sourceTableID,
-                                           int destinationTableID)
+        signal relationshipChangeRequested(int ID, string relationship)
+        signal relationshipDeleteRequested(int ID)
     }
 
     GridBackground {
@@ -275,12 +270,12 @@ Window {
                 commandBus.newRelationEstablished(sourceTableID, destinationTableID)
             }
 
-            function onRelationshipChangeRequested(sourceTableID, destinationTableID, relationship) {
-                commandBus.relationshipChangeRequested(sourceTableID, destinationTableID, relationship)
+            function onRelationshipChangeRequested(ID, relationship) {
+                commandBus.relationshipChangeRequested(ID, relationship)
             }
 
-            function onRelationshipDeleteRequested(sourceTableID, destinationTableID) {
-                commandBus.relationshipDeleteRequested(sourceTableID, destinationTableID)
+            function onRelationshipDeleteRequested(ID) {
+                commandBus.relationshipDeleteRequested(ID)
             }
 
             function onPreviewTrackingRequested(enabled) {

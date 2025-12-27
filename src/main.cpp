@@ -37,12 +37,9 @@ int main(int argc, char **argv)
 
     RelationController::GetInstance().AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
 
-    QObject::connect(&TableController::GetInstance(), &TableController::tableDeleted, &RelationController::GetInstance(), &RelationController::OnTableDeleted);
-
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableDeleteRequested,         &TableController::GetInstance(), &TableController::onTableDeleteRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested,     &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested,  &TableController::GetInstance(), &TableController::onRelationshipDeleteRequested);
 
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished,       &RelationController::GetInstance(), &RelationController::onNewRelationEstablished);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested,  &RelationController::GetInstance(), &RelationController::onRelationshipChangeRequested);
