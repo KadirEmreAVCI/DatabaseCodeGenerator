@@ -22,7 +22,7 @@ public:
     void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
     void AddTable(TableModel*);
-    void RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
+    bool RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);

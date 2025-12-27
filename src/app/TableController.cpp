@@ -28,7 +28,7 @@ void TableController::AddTable(TableModel* pTable)
         qDebug() << "Error: TableModel pointer is null.";
     }
 }
-void TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTableID)
+bool TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTableID)
 {
     if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
     {
@@ -38,8 +38,7 @@ void TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTa
         {
             if(pColumnListModel->GetColumn(idx)["name"] == sRelationColumnName)
             {
-                pColumnListModel->RemoveColumn(idx);
-                break;
+                return pColumnListModel->RemoveColumn(idx);
             }
         }
     }
@@ -47,6 +46,7 @@ void TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTa
     {
         qDebug() << "Error: Source Table ID not found.";
     }
+    return false;
 }
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
 {

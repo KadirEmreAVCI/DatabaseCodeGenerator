@@ -29,6 +29,7 @@ public slots:
 private:
     RelationController(QObject *parent = nullptr);
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
+    void UpdateSourceTableRowIndexes(int iSourceTableID);
     std::vector<std::unique_ptr<RelationModel>> m_vecupRelation; 
     int m_iNextRelationID = 0;
 signals:

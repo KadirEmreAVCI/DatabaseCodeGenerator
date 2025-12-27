@@ -101,8 +101,11 @@ void RelationController::onRelationshipDeleteRequested(int iID)
         const int iSourceTableID = (*iterDeletedRelation)->GetSourceTableID();
         const int iDestinationTableID = (*iterDeletedRelation)->GetDestinationTableID();
         m_vecupRelation.erase(iterDeletedRelation);
-        TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID);
-        emit relationsChanged();
+        if(TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID))
+        {
+            UpdateSourceTableRowIndexes(iSourceTableID);
+            emit relationsChanged();
+        }
     }
     else
     {
@@ -118,4 +121,14 @@ bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTa
         }
         return false;
     });
+}
+void RelationController::UpdateSourceTableRowIndexes(int iSourceTableID)
+{
+    for(const auto& upRelation : m_vecupRelation)
+    {
+        if(upRelation != nullptr && upRelation->GetSourceTableID() == iSourceTableID)
+        {
+            upRelation->UpdateSourceRowIdx();
+        }
+    }
 }
