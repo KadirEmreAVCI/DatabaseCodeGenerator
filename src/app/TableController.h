@@ -22,11 +22,11 @@ public:
     void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
     void AddTable(TableModel*);
+    void TableDeleted(int iTableID);
     bool RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
 public slots:
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
-    void onTableDeleteRequested(int iTableID);
     void onCreateNewTable(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
@@ -34,7 +34,7 @@ private:
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
     QString FindRelationColumnName(int iDestinationTableID) const;
-    void DeleteRelationBasedColumnsFromDestinationTables(int iDeletedTableID);
+    //void DeleteRelationBasedColumnsFromSourceTables(int iDeletedTableID);
 
     std::map<int, TableModel*> m_mapTable; 
     int m_iNextTableID = 0;

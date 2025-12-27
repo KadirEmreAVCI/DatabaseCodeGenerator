@@ -28,6 +28,27 @@ void TableController::AddTable(TableModel* pTable)
         qDebug() << "Error: TableModel pointer is null.";
     }
 }
+void TableController::TableDeleted(int iTableID)
+{
+    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    {
+        const auto pTable = iterTable->second;
+        if (pTable != nullptr) 
+        {
+            delete pTable;
+            m_mapTable.erase(iterTable);
+            emit tablesChanged();
+        }
+        else
+        {
+            qDebug() << "Error: TableModel pointer is null.";
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
 bool TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTableID)
 {
     if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
@@ -85,29 +106,6 @@ void TableController::onTablePositionChangeRequested(int iTableID, const QPointF
         {
             pTable->SetPoint(rPointF);
         }
-    }
-}
-void TableController::onTableDeleteRequested(int iTableID)
-{
-    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
-    {
-        DeleteRelationBasedColumnsFromDestinationTables(iTableID);
-        const auto pTable = iterTable->second;
-        if (pTable != nullptr) 
-        {
-            delete pTable;
-            m_mapTable.erase(iterTable);
-            RelationController::GetInstance().TableDeleted(iTableID);  
-            emit tablesChanged();
-        }
-        else
-        {
-            qDebug() << "Error: TableModel pointer is null.";
-        }
-    }
-    else
-    {
-        qDebug() << "Error: Table ID not found.";
     }
 }
 void TableController::onCreateNewTable(const QPointF& rPointF)
@@ -176,25 +174,25 @@ QString TableController::FindRelationColumnName(int iDestinationTableID) const
     }
     return sRelationColumnName;
 }
-void TableController::DeleteRelationBasedColumnsFromDestinationTables(int iDeletedTableID)
-{
-    for(auto [iID, pTable] : m_mapTable)
-    {
-        if(pTable != nullptr && iID != iDeletedTableID)
-        {
-            ColumnListModel* const pColumnListModel = pTable->GetColumnListModel();
-            const QString sRelationBasedColumnName = FindRelationColumnName(iDeletedTableID);
-            for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
-            {
-                if(pColumnListModel->GetColumn(idx)["name"] == sRelationBasedColumnName && pColumnListModel->GetColumn(idx)["isRelationSource"].toBool())
-                {
-                    pColumnListModel->RemoveColumn(idx);
-                    break;
-                }
-            }
-        }
-    }
-}
+// void TableController::DeleteRelationBasedColumnsFromSourceTables(int iDeletedTableID)
+// {
+//     for(auto [iID, pTable] : m_mapTable)
+//     {
+//         if(pTable != nullptr && iID != iDeletedTableID)
+//         {
+//             ColumnListModel* const pColumnListModel = pTable->GetColumnListModel();
+//             const QString sRelationBasedColumnName = FindRelationColumnName(iDeletedTableID);
+//             for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
+//             {
+//                 if(pColumnListModel->GetColumn(idx)["name"] == sRelationBasedColumnName && pColumnListModel->GetColumn(idx)["isRelationSource"].toBool())
+//                 {
+//                     pColumnListModel->RemoveColumn(idx);
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+// }
 QList<QObject*> TableController::GetTables() const
 {
     QList<QObject*> lsTable;

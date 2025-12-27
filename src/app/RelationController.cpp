@@ -44,16 +44,23 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
         qDebug() << "Error: RelationModel pointer is null.";
     }
 }
-void RelationController::TableDeleted(int iTableID)
-{    
-    const size_t szErasedRelation = std::erase_if(m_vecupRelation, [iTableID](const auto& upRelation){
-        return (upRelation == nullptr) || (upRelation->GetDestinationTableID() == iTableID) || (upRelation->GetSourceTableID() == iTableID);
-        });
-    if(szErasedRelation > 0)
+void RelationController::onTableDeleteRequested(int iTableID)
+{
+    for(auto iterRelation = m_vecupRelation.begin(); iterRelation != m_vecupRelation.end();)
     {
-        emit relationsChanged();
+        if(*iterRelation != nullptr && ((*iterRelation)->GetSourceTableID() == iTableID || (*iterRelation)->GetDestinationTableID() == iTableID))
+        {
+            HandleRelationBasedColumns(*iterRelation);
+            iterRelation = m_vecupRelation.erase(iterRelation);
+        }
+        else
+        {
+            ++iterRelation;
+        }
     }
-}   
+    emit relationsChanged();
+    TableController::GetInstance().TableDeleted(iTableID);
+}
 void RelationController::onNewRelationEstablished(int iSourceTableID, int iDestinationTableID)
 {
     if(!IsRelationExists(iSourceTableID, iDestinationTableID))
@@ -98,14 +105,9 @@ void RelationController::onRelationshipDeleteRequested(int iID)
     });
     if(iterDeletedRelation != m_vecupRelation.end())
     {
-        const int iSourceTableID = (*iterDeletedRelation)->GetSourceTableID();
-        const int iDestinationTableID = (*iterDeletedRelation)->GetDestinationTableID();
+        HandleRelationBasedColumns(*iterDeletedRelation);
         m_vecupRelation.erase(iterDeletedRelation);
-        if(TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID))
-        {
-            UpdateSourceTableRowIndexes(iSourceTableID);
-            emit relationsChanged();
-        }
+        emit relationsChanged();
     }
     else
     {
@@ -130,5 +132,14 @@ void RelationController::UpdateSourceTableRowIndexes(int iSourceTableID)
         {
             upRelation->UpdateSourceRowIdx();
         }
+    }
+}
+void RelationController::HandleRelationBasedColumns(const std::unique_ptr<RelationModel>& upRelation)
+{
+    const int iSourceTableID = upRelation->GetSourceTableID();
+    const int iDestinationTableID = upRelation->GetDestinationTableID();
+    if(TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID))
+    {
+        UpdateSourceTableRowIndexes(iSourceTableID);
     }
 }
