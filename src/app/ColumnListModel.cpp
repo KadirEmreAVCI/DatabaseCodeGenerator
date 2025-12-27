@@ -13,22 +13,23 @@ int ColumnListModel::rowCount(const QModelIndex &parent) const
 }
 QVariant ColumnListModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid())
-        return {};
-
-    const int row = index.row();
-    if (row < 0 || row >= m_vecColumnModels.size())
-        return {};
-
-    const ColumnModel* const pColumnModel = m_vecColumnModels.at(row);
-    switch (role) {
-    case TypeRole:              return pColumnModel->GetType();
-    case NameRole:              return pColumnModel->GetName();
-    case IsEnabledRole:         return pColumnModel->GetIsEnabled();
-    case IsPrimaryKeyRole:      return pColumnModel->GetIsPrimaryKey();
-    case IsRelationSourceRole:  return pColumnModel->GetIsRelationSource();
-    default:                    return {};
+    if (index.isValid())
+    {
+        const int iRow = index.row();
+        if (IsRowIndexValid(iRow))
+        {
+            const ColumnModel* const pColumnModel = m_vecColumnModels.at(iRow);
+            switch (role) {
+            case TypeRole:              return pColumnModel->GetType();
+            case NameRole:              return pColumnModel->GetName();
+            case IsEnabledRole:         return pColumnModel->GetIsEnabled();
+            case IsPrimaryKeyRole:      return pColumnModel->GetIsPrimaryKey();
+            case IsRelationSourceRole:  return pColumnModel->GetIsRelationSource();
+            default:                    return {};
+            }
+        }
     }
+    return {};
 }
 QHash<int, QByteArray> ColumnListModel::roleNames() const
 {
@@ -42,43 +43,71 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
 }
 void ColumnListModel::AddColumn(ColumnModel* pColumnModel)
 {
-    if (!pColumnModel)
-        return;
+    if (pColumnModel != nullptr)
+    {
+        pColumnModel->setParent(this);
+        
+        int iInsertionRow = m_vecColumnModels.size();
+        if(!pColumnModel->GetIsEnabled())
+        {
+            const auto iterColumn = std::find_if_not(m_vecColumnModels.begin(), m_vecColumnModels.end(),
+                [](const ColumnModel* const pColumn){
+                    return !pColumn->GetIsEnabled();
+                });
+            if (iterColumn != m_vecColumnModels.end())
+            {
+                iInsertionRow = std::distance(m_vecColumnModels.begin(), iterColumn);
+            }
+        }
 
-    pColumnModel->setParent(this);
+        beginInsertRows(QModelIndex(), iInsertionRow, iInsertionRow);
+        m_vecColumnModels.insert(m_vecColumnModels.begin() + iInsertionRow, pColumnModel);
+        endInsertRows();
 
-    const int row = m_vecColumnModels.size();
-    beginInsertRows(QModelIndex(), row, row);
-    m_vecColumnModels.append(pColumnModel);
-    endInsertRows();
-
-    emit countChanged();
+        emit countChanged();
+    }
+    else
+    {
+        qWarning("Attempted to add a null ColumnModel.");
+    }
 }
 void ColumnListModel::RemoveColumn(int iRow)
 {
-    if (iRow < 0 || iRow >= m_vecColumnModels.size())
-        return;
-
-    beginRemoveRows(QModelIndex(), iRow, iRow);
-    delete m_vecColumnModels.takeAt(iRow);
-    endRemoveRows();
-
-    emit countChanged();
+    if(IsRowIndexValid(iRow)) 
+    {
+        beginRemoveRows(QModelIndex(), iRow, iRow);
+        ColumnModel* const pColumn = m_vecColumnModels[iRow];
+        m_vecColumnModels.erase(m_vecColumnModels.begin() + iRow);
+        endRemoveRows();
+        if(pColumn != nullptr)
+        {
+            pColumn->deleteLater();
+        }
+        emit countChanged();
+    }
+    else
+    {
+        qWarning("Attempted to remove a ColumnModel with an invalid row index.");
+    }
 }
-QVariantMap ColumnListModel::GetColumn(int row) const
+bool ColumnListModel::IsRowIndexValid(int iRow) const
+{
+    return !(iRow < 0 || iRow >= static_cast<int>(m_vecColumnModels.size()));
+}
+QVariantMap ColumnListModel::GetColumn(int iRow) const
 {
     QVariantMap map;
-    if (row < 0 || row >= m_vecColumnModels.size())
-        return map;
-
-    ColumnModel *pColumnModel = m_vecColumnModels.at(row);
-    if (!pColumnModel)
-        return map;
-
-    map["name"]             = pColumnModel->GetName();          // adapt to your getters
-    map["type"]             = pColumnModel->GetType();
-    map["isEnabled"]        = pColumnModel->GetIsEnabled();
-    map["isPrimaryKey"]     = pColumnModel->GetIsPrimaryKey();
-    map["isRelationSource"] = pColumnModel->GetIsRelationSource();
+    if(IsRowIndexValid(iRow))
+    {
+        const ColumnModel* const pColumnModel = m_vecColumnModels.at(iRow);
+        if (pColumnModel != nullptr)
+        {
+            map["name"]             = pColumnModel->GetName();          // adapt to your getters
+            map["type"]             = pColumnModel->GetType();
+            map["isEnabled"]        = pColumnModel->GetIsEnabled();
+            map["isPrimaryKey"]     = pColumnModel->GetIsPrimaryKey();
+            map["isRelationSource"] = pColumnModel->GetIsRelationSource();
+        }
+    }
     return map;
 }
