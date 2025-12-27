@@ -120,7 +120,7 @@ void RelationController::UpdateSourceTableRowIndexes(int iSourceTableID)
         }
     }
 }
-void RelationController::HandleRelationBasedColumns(const std::shared_ptr<RelationModel>& spRelation)
+void RelationController::HandleRelationBasedColumns(std::shared_ptr<const RelationModel> spRelation)
 {
     const int iSourceTableID = spRelation->GetSourceTableID();
     const int iDestinationTableID = spRelation->GetDestinationTableID();

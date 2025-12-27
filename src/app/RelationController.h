@@ -30,7 +30,7 @@ private:
     RelationController(QObject *parent = nullptr);
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
     void UpdateSourceTableRowIndexes(int iSourceTableID);
-    void HandleRelationBasedColumns(const std::shared_ptr<RelationModel>& spRelation);
+    void HandleRelationBasedColumns(std::shared_ptr<const RelationModel> spRelation);
     std::map<int, std::shared_ptr<RelationModel>> m_mapspRelations; 
     int m_iNextRelationID = 0;
 signals:
