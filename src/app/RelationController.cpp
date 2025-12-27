@@ -35,6 +35,7 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
 {
     if(nullptr != pRelationModel)
     {
+        pRelationModel->SetID(m_iNextRelationID++);
         m_vecupRelation.emplace_back(pRelationModel);
         emit relationsChanged();
     }
@@ -43,11 +44,11 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
         qDebug() << "Error: RelationModel pointer is null.";
     }
 }
-void RelationController::OnTableDeleted(int iTableID)
+void RelationController::TableDeleted(int iTableID)
 {    
     const size_t szErasedRelation = std::erase_if(m_vecupRelation, [iTableID](const auto& upRelation){
         return (upRelation == nullptr) || (upRelation->GetDestinationTableID() == iTableID) || (upRelation->GetSourceTableID() == iTableID);
-    });
+        });
     if(szErasedRelation > 0)
     {
         emit relationsChanged();
@@ -68,43 +69,44 @@ void RelationController::onNewRelationEstablished(int iSourceTableID, int iDesti
         qDebug() << "Warning: Relation already exists between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
     }
 }
-void RelationController::onRelationshipChangeRequested(int iSourceTableID, int iDestinationTableID, const QString& sRelationship)
+void RelationController::onRelationshipChangeRequested(int iID, const QString& sRelationship)
 {
-    if(IsRelationExists(iSourceTableID, iDestinationTableID))
-    {
-        const auto iterRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
-            if(upRelation != nullptr)
-            {
-                return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
-            }
-            return false;
-        });
-        if(iterRelation != m_vecupRelation.end())
-        {
-            (*iterRelation)->SetRelationship(sRelationship);
-        }
-    }
-    else
-    {
-        qDebug() << "Warning: No existing relation between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
-    }
-}
-void RelationController::onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID)
-{
-    const size_t szErasedRelation = std::erase_if(m_vecupRelation, [iSourceTableID, iDestinationTableID](const auto& upRelation){
+    auto iterChangedRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iID](const auto& upRelation){
         if(upRelation != nullptr)
         {
-            return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
+            return upRelation->GetID() == iID;
         }
         return false;
     });
-    if(szErasedRelation > 0)
+    if(iterChangedRelation != m_vecupRelation.end())
     {
+        (*iterChangedRelation)->SetRelationship(sRelationship);
+    }
+    else
+    {
+        qDebug() << "Warning: No existing relation found with ID" << iID << "to change relationship.";
+    }
+}
+void RelationController::onRelationshipDeleteRequested(int iID)
+{
+    auto iterDeletedRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iID](const auto& upRelation){
+        if(upRelation != nullptr)
+        {
+            return upRelation->GetID() == iID;
+        }
+        return false;
+    });
+    if(iterDeletedRelation != m_vecupRelation.end())
+    {
+        const int iSourceTableID = (*iterDeletedRelation)->GetSourceTableID();
+        const int iDestinationTableID = (*iterDeletedRelation)->GetDestinationTableID();
+        m_vecupRelation.erase(iterDeletedRelation);
+        TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID);
         emit relationsChanged();
     }
     else
     {
-        qDebug() << "Warning: No existing relation to delete between source table ID" << iSourceTableID << "and destination table ID" << iDestinationTableID;
+        qDebug() << "Warning: No existing relation to delete with ID" << iID;
     }
 }
 bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const

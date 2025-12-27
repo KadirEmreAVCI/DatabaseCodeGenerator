@@ -15,6 +15,10 @@ RelationModel::RelationModel(const TableModel* pDestinationTableModel, const Tab
         SetSourceTableModel(pSourceTableModel);
     }
 }
+int RelationModel::GetID() const
+{
+    return m_iID;
+}
 const TableModel* RelationModel::GetDestinationTableModel()const
 {
     return m_pDestinationTableModel;
@@ -42,6 +46,14 @@ int RelationModel::GetSourceTableID()const
 QString RelationModel::GetRelationship()const
 {
     return m_sRelationship;
+}
+void RelationModel::SetID(int iID)
+{
+    if(m_iID != iID)
+    {
+        m_iID = iID;
+        emit idChanged();
+    }
 }
 void RelationModel::SetDestinationTableModel(const TableModel* pDestinationTableModel)
 {

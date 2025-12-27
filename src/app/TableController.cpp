@@ -1,5 +1,6 @@
 #include "TableController.h"
 #include "TableModel.h"
+#include "RelationController.h"
 
 // Standard Library
 #include <algorithm>
@@ -25,6 +26,26 @@ void TableController::AddTable(TableModel* pTable)
     else
     {
         qDebug() << "Error: TableModel pointer is null.";
+    }
+}
+void TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTableID)
+{
+    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    {
+        ColumnListModel* const pColumnListModel = iterSourceTable->second->GetColumnListModel();
+        const QString sRelationColumnName = FindRelationColumnName(iDestinationTableID);
+        for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
+        {
+            if(pColumnListModel->GetColumn(idx)["name"] == sRelationColumnName)
+            {
+                pColumnListModel->RemoveColumn(idx);
+                break;
+            }
+        }
+    }
+    else
+    {
+        qDebug() << "Error: Source Table ID not found.";
     }
 }
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
@@ -75,7 +96,7 @@ void TableController::onTableDeleteRequested(int iTableID)
         {
             delete pTable;
             m_mapTable.erase(iterTable);
-            emit tableDeleted(iTableID);
+            RelationController::GetInstance().TableDeleted(iTableID);  
             emit tablesChanged();
         }
         else
@@ -92,30 +113,12 @@ void TableController::onCreateNewTable(const QPointF& rPointF)
 {
     int iTableIDOffset = 0;
     QString sTempNewName = "";
-    do{
+    do
+    {
         sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
-    }while(IsNameDuplicated(m_iNextTableID, sTempNewName));
+    }
+    while(IsNameDuplicated(m_iNextTableID, sTempNewName));
     AddTable(new TableModel(this, sTempNewName, rPointF));
-}
-void TableController::onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID)
-{
-    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
-    {
-        ColumnListModel* const pColumnListModel = iterSourceTable->second->GetColumnListModel();
-        const QString sRelationColumnName = FindRelationColumnName(iDestinationTableID);
-        for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
-        {
-            if(pColumnListModel->GetColumn(idx)["name"] == sRelationColumnName)
-            {
-                pColumnListModel->RemoveColumn(idx);
-                break;
-            }
-        }
-    }
-    else
-    {
-        qDebug() << "Error: Source Table ID not found.";
-    }
 }
 QRectF TableController::GetBoundingRect() const
 {

@@ -21,15 +21,16 @@ public:
     QList<QObject*> GetRelations()const;
 
     void AddRelation(RelationModel*);
+    void TableDeleted(int iTableID);
 public slots:
-    void OnTableDeleted(int iTableID);
     void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
-    void onRelationshipChangeRequested(int iSourceTableID, int iDestinationTableID, const QString& sRelationship);
-    void onRelationshipDeleteRequested(int iSourceTableID, int iDestinationTableID);
+    void onRelationshipChangeRequested(int iID, const QString& sRelationship);
+    void onRelationshipDeleteRequested(int iID);
 private:
     RelationController(QObject *parent = nullptr);
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
     std::vector<std::unique_ptr<RelationModel>> m_vecupRelation; 
+    int m_iNextRelationID = 0;
 signals:
     void relationsChanged();
 };
