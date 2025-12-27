@@ -17,8 +17,8 @@ RelationController::RelationController(QObject *parent)
 QList<QObject*> RelationController::GetRelations()const
 {
     QList<QObject*> lsRelations;
-    lsRelations.reserve(static_cast<int>(m_vecupRelation.size()));
-    for (const auto& upRelation : m_vecupRelation) 
+    lsRelations.reserve(static_cast<int>(m_mapupRelation.size()));
+    for (const auto& [iID, upRelation] : m_mapupRelation) 
     {
         if (upRelation != nullptr) 
         {
@@ -36,7 +36,7 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
     if(nullptr != pRelationModel)
     {
         pRelationModel->SetID(m_iNextRelationID++);
-        m_vecupRelation.emplace_back(pRelationModel);
+        m_mapupRelation.emplace(pRelationModel->GetID(), std::unique_ptr<RelationModel>(pRelationModel));
         emit relationsChanged();
     }
     else
@@ -46,12 +46,12 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
 }
 void RelationController::onTableDeleteRequested(int iTableID)
 {
-    for(auto iterRelation = m_vecupRelation.begin(); iterRelation != m_vecupRelation.end();)
+    for(auto iterRelation = m_mapupRelation.begin(); iterRelation != m_mapupRelation.end();)
     {
-        if(*iterRelation != nullptr && ((*iterRelation)->GetSourceTableID() == iTableID || (*iterRelation)->GetDestinationTableID() == iTableID))
+        if(iterRelation->second != nullptr && (iterRelation->second->GetSourceTableID() == iTableID || iterRelation->second->GetDestinationTableID() == iTableID))
         {
-            HandleRelationBasedColumns(*iterRelation);
-            iterRelation = m_vecupRelation.erase(iterRelation);
+            HandleRelationBasedColumns(iterRelation->second);
+            iterRelation = m_mapupRelation.erase(iterRelation);
         }
         else
         {
@@ -78,16 +78,9 @@ void RelationController::onNewRelationEstablished(int iSourceTableID, int iDesti
 }
 void RelationController::onRelationshipChangeRequested(int iID, const QString& sRelationship)
 {
-    auto iterChangedRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iID](const auto& upRelation){
-        if(upRelation != nullptr)
-        {
-            return upRelation->GetID() == iID;
-        }
-        return false;
-    });
-    if(iterChangedRelation != m_vecupRelation.end())
+    if(auto iterChangedRelation = m_mapupRelation.find(iID); iterChangedRelation != m_mapupRelation.end() && iterChangedRelation->second != nullptr)
     {
-        (*iterChangedRelation)->SetRelationship(sRelationship);
+        iterChangedRelation->second->SetRelationship(sRelationship);
     }
     else
     {
@@ -96,17 +89,10 @@ void RelationController::onRelationshipChangeRequested(int iID, const QString& s
 }
 void RelationController::onRelationshipDeleteRequested(int iID)
 {
-    auto iterDeletedRelation = std::find_if(m_vecupRelation.begin(), m_vecupRelation.end(), [iID](const auto& upRelation){
-        if(upRelation != nullptr)
-        {
-            return upRelation->GetID() == iID;
-        }
-        return false;
-    });
-    if(iterDeletedRelation != m_vecupRelation.end())
+    if(auto iterChangedRelation = m_mapupRelation.find(iID); iterChangedRelation != m_mapupRelation.end() && iterChangedRelation->second != nullptr)
     {
-        HandleRelationBasedColumns(*iterDeletedRelation);
-        m_vecupRelation.erase(iterDeletedRelation);
+        HandleRelationBasedColumns(iterChangedRelation->second);
+        m_mapupRelation.erase(iterChangedRelation);
         emit relationsChanged();
     }
     else
@@ -116,17 +102,17 @@ void RelationController::onRelationshipDeleteRequested(int iID)
 }
 bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
 {
-    return std::any_of(m_vecupRelation.cbegin(), m_vecupRelation.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
-        if(upRelation != nullptr)
+    return std::any_of(m_mapupRelation.cbegin(), m_mapupRelation.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
+        if(upRelation.second != nullptr)
         {
-            return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
+            return (upRelation.second->GetSourceTableID() == iSourceTableID) && (upRelation.second->GetDestinationTableID() == iDestinationTableID);
         }
         return false;
     });
 }
 void RelationController::UpdateSourceTableRowIndexes(int iSourceTableID)
 {
-    for(const auto& upRelation : m_vecupRelation)
+    for(const auto& [iID, upRelation] : m_mapupRelation)
     {
         if(upRelation != nullptr && upRelation->GetSourceTableID() == iSourceTableID)
         {
