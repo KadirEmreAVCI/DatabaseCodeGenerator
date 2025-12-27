@@ -174,25 +174,6 @@ QString TableController::FindRelationColumnName(int iDestinationTableID) const
     }
     return sRelationColumnName;
 }
-// void TableController::DeleteRelationBasedColumnsFromSourceTables(int iDeletedTableID)
-// {
-//     for(auto [iID, pTable] : m_mapTable)
-//     {
-//         if(pTable != nullptr && iID != iDeletedTableID)
-//         {
-//             ColumnListModel* const pColumnListModel = pTable->GetColumnListModel();
-//             const QString sRelationBasedColumnName = FindRelationColumnName(iDeletedTableID);
-//             for(int idx = 0; idx < pColumnListModel->rowCount(); ++idx)
-//             {
-//                 if(pColumnListModel->GetColumn(idx)["name"] == sRelationBasedColumnName && pColumnListModel->GetColumn(idx)["isRelationSource"].toBool())
-//                 {
-//                     pColumnListModel->RemoveColumn(idx);
-//                     break;
-//                 }
-//             }
-//         }
-//     }
-// }
 QList<QObject*> TableController::GetTables() const
 {
     QList<QObject*> lsTable;
