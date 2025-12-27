@@ -3,29 +3,29 @@
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
-RelationModel::RelationModel(const TableModel* pDestinationTableModel, const TableModel* pSourceTableModel, const QString& sRelationship, QObject* pParent)
+RelationModel::RelationModel(std::shared_ptr<const TableModel> spDestinationTable, std::shared_ptr<const TableModel> spSourceTable, const QString& sRelationship, QObject* pParent)
     : m_sRelationship{sRelationship}, Model{pParent}
 {
-    if(pDestinationTableModel != nullptr)
+    if(spDestinationTable != nullptr)
     {
-        SetDestinationTableModel(pDestinationTableModel);
+        SetDestinationTable(spDestinationTable);
     }
-    if(pSourceTableModel != nullptr)
+    if(spSourceTable != nullptr)
     {
-        SetSourceTableModel(pSourceTableModel);
+        SetSourceTable(spSourceTable);
     }
 }
 int RelationModel::GetID() const
 {
     return m_iID;
 }
-const TableModel* RelationModel::GetDestinationTableModel()const
+std::shared_ptr<const TableModel> RelationModel::GetDestinationTable()const
 {
-    return m_pDestinationTableModel;
+    return m_spDestinationTable;
 }
-const TableModel* RelationModel::GetSourceTableModel()const
+std::shared_ptr<const TableModel> RelationModel::GetSourceTable()const
 {
-    return m_pSourceTableModel;
+    return m_spSourceTable;
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -55,21 +55,21 @@ void RelationModel::SetID(int iID)
         emit idChanged();
     }
 }
-void RelationModel::SetDestinationTableModel(const TableModel* pDestinationTableModel)
+void RelationModel::SetDestinationTable(std::shared_ptr<const TableModel> spDestinationTable)
 {
-    if(m_pDestinationTableModel != pDestinationTableModel)
+    if(m_spDestinationTable != spDestinationTable)
     {
-        m_pDestinationTableModel = pDestinationTableModel;
-        m_iDestinationTableID = m_pDestinationTableModel->GetID();
+        m_spDestinationTable = spDestinationTable;
+        m_iDestinationTableID = m_spDestinationTable->GetID();
         emit destinationTableIDChanged();
     }
 } 
-void RelationModel::SetSourceTableModel(const TableModel* pSourceTableModel)
+void RelationModel::SetSourceTable(std::shared_ptr<const TableModel> spSourceTable)
 {
-    if(m_pSourceTableModel != pSourceTableModel)
+    if(m_spSourceTable != spSourceTable)
     {
-        m_pSourceTableModel = pSourceTableModel;
-        m_iSourceTableID = m_pSourceTableModel->GetID();
+        m_spSourceTable = spSourceTable;
+        m_iSourceTableID = m_spSourceTable->GetID();
         UpdateSourceRowIdx();
         emit sourceRowIdxChanged();
         emit sourceTableIDChanged();
@@ -85,11 +85,11 @@ void RelationModel::SetRelationship(const QString& sRelationship)
 }
 void RelationModel::UpdateSourceRowIdx()
 {
-    if(m_pSourceTableModel != nullptr)
+    if(m_spSourceTable != nullptr)
     {
         m_iSourceRowIdx = -1;
-        const QString sSourceColumnName = m_pDestinationTableModel->GetName() + "ID";
-        const ColumnListModel* const pColumnListModel{m_pSourceTableModel->GetColumnListModel()};
+        const QString sSourceColumnName = m_spDestinationTable->GetName() + "ID";
+        const ColumnListModel* const pColumnListModel{m_spSourceTable->GetColumnListModel()};
         for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
         {
             if(pColumnListModel->GetColumn(idx)["name"] == sSourceColumnName)

@@ -15,12 +15,12 @@ TableController::TableController(QObject *parent)
     : QObject{parent}
 {
 }
-void TableController::AddTable(TableModel* pTable)
+void TableController::AddTable(std::shared_ptr<TableModel> spTable)
 {
-    if(nullptr != pTable)
+    if(nullptr != spTable)
     {
-        pTable->SetID(m_iNextTableID++);
-        m_mapTable.insert(std::make_pair(pTable->GetID(), pTable));
+        spTable->SetID(m_iNextTableID++);
+        m_mapspTable.insert(std::make_pair(spTable->GetID(), std::shared_ptr<TableModel>(spTable)));
         emit tablesChanged();
     }
     else
@@ -30,13 +30,11 @@ void TableController::AddTable(TableModel* pTable)
 }
 void TableController::TableDeleted(int iTableID)
 {
-    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    if (auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end()) 
     {
-        const auto pTable = iterTable->second;
-        if (pTable != nullptr) 
+        if (iterTable->second != nullptr) 
         {
-            delete pTable;
-            m_mapTable.erase(iterTable);
+            m_mapspTable.erase(iterTable);
             emit tablesChanged();
         }
         else
@@ -51,7 +49,7 @@ void TableController::TableDeleted(int iTableID)
 }
 bool TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTableID)
 {
-    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    if(auto iterSourceTable = m_mapspTable.find(iSourceTableID); iterSourceTable != m_mapspTable.end() && iterSourceTable->second != nullptr)
     {
         ColumnListModel* const pColumnListModel = iterSourceTable->second->GetColumnListModel();
         const QString sRelationColumnName = FindRelationColumnName(iDestinationTableID);
@@ -71,15 +69,15 @@ bool TableController::RelationshipDeleted(int iSourceTableID, int iDestinationTa
 }
 void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
 {
-    if(auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end())
+    if(auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end())
     {
-        if(TableModel* const pTableModel = iterTable->second; pTableModel != nullptr)
+        if(const auto spTableModel = iterTable->second; spTableModel != nullptr)
         {
-            const QString sOldName{pTableModel->GetName()};
+            const QString sOldName{spTableModel->GetName()};
             const QString sNormalizedNewName{NormalizeTableName(sNewName)};
             if(!IsNameDuplicated(iTableID, sNormalizedNewName))
             {
-                pTableModel->SetName(sNormalizedNewName);
+                spTableModel->SetName(sNormalizedNewName);
             }
             else
             {
@@ -99,12 +97,12 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
 }
 void TableController::onTablePositionChangeRequested(int iTableID, const QPointF& rPointF)
 {
-    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    if (auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end()) 
     {
-        const auto pTable = iterTable->second;
-        if (pTable != nullptr) 
+        const auto spTable = iterTable->second;
+        if (spTable != nullptr) 
         {
-            pTable->SetPoint(rPointF);
+            spTable->SetPoint(rPointF);
         }
     }
 }
@@ -117,20 +115,20 @@ void TableController::onCreateNewTable(const QPointF& rPointF)
         sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
     }
     while(IsNameDuplicated(m_iNextTableID, sTempNewName));
-    AddTable(new TableModel(this, sTempNewName, rPointF));
+    AddTable(std::make_shared<TableModel>(this, sTempNewName, rPointF));
 }
 QRectF TableController::GetBoundingRect() const
 {
     QRectF rUnitedRect{};
     bool blFirstRect = true;
 
-    for(const auto &[iID, pTable] : m_mapTable) 
+    for(const auto &[iID, spTable] : m_mapspTable) 
     {
-        if(!pTable)
+        if(!spTable)
         { 
             continue;
         }
-        QRectF rNextRect(pTable->GetPointF().x(), pTable->GetPointF().y(), pTable->GetWidth(), pTable->GetHeight()); 
+        QRectF rNextRect(spTable->GetPointF().x(), spTable->GetPointF().y(), spTable->GetWidth(), spTable->GetHeight()); 
         if(blFirstRect) 
         {
             rUnitedRect = rNextRect;
@@ -145,10 +143,9 @@ QRectF TableController::GetBoundingRect() const
 }
 bool TableController::IsNameDuplicated(int iChangedTableID, const QString& sNewName)const
 {
-    return std::any_of(m_mapTable.cbegin(), m_mapTable.cend(), [=](const auto& prTable){
-        const int iID = prTable.first;
-        const TableModel* const pTableModel = prTable.second;
-        return (iChangedTableID != iID) && (sNewName == pTableModel->GetName());
+    return std::any_of(m_mapspTable.cbegin(), m_mapspTable.cend(), [iChangedTableID, sNewName](const auto& pairTable){
+        const auto& [iID, spTableModel] = pairTable;
+        return (iChangedTableID != iID) && (sNewName == spTableModel->GetName());
     });
 }
 QString TableController::NormalizeTableName(const QString& sName) const
@@ -164,7 +161,7 @@ QString TableController::NormalizeTableName(const QString& sName) const
 QString TableController::FindRelationColumnName(int iDestinationTableID) const
 {
     QString sRelationColumnName{}; 
-    if(auto iterDestinationTable = m_mapTable.find(iDestinationTableID); iterDestinationTable != m_mapTable.end() && iterDestinationTable->second != nullptr)
+    if(auto iterDestinationTable = m_mapspTable.find(iDestinationTableID); iterDestinationTable != m_mapspTable.end() && iterDestinationTable->second != nullptr)
     {
         sRelationColumnName = iterDestinationTable->second->GetName() + "ID";
     }
@@ -177,12 +174,12 @@ QString TableController::FindRelationColumnName(int iDestinationTableID) const
 QList<QObject*> TableController::GetTables() const
 {
     QList<QObject*> lsTable;
-    lsTable.reserve(static_cast<int>(m_mapTable.size()));
-    for (auto [iID, pTable] : m_mapTable) 
+    lsTable.reserve(static_cast<int>(m_mapspTable.size()));
+    for (const auto& [iID, spTable] : m_mapspTable) 
     {
-        if (pTable != nullptr) 
+        if (spTable != nullptr) 
         {
-            lsTable.append(pTable);
+            lsTable.append(spTable.get());
         } 
         else 
         {
@@ -191,20 +188,20 @@ QList<QObject*> TableController::GetTables() const
     }
     return lsTable;
 }
-const TableModel* TableController::GetTable(int iTableID)const
+std::shared_ptr<const TableModel> TableController::GetTable(int iTableID)const
 {
-    const TableModel* pTableModel = nullptr;
-    if (auto iterTable = m_mapTable.find(iTableID); iterTable != m_mapTable.end()) 
+    std::shared_ptr<const TableModel> spTableModel = nullptr;
+    if (auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end()) 
     {
-        pTableModel = iterTable->second;
+        spTableModel = iterTable->second;
     }
-    return pTableModel;
+    return spTableModel;
 }
 void TableController::NewRelationEstablished(int iSourceTableID, int iDestinationTableID)
 {
-    if(auto iterSourceTable = m_mapTable.find(iSourceTableID); iterSourceTable != m_mapTable.end() && iterSourceTable->second != nullptr)
+    if(auto iterSourceTable = m_mapspTable.find(iSourceTableID); iterSourceTable != m_mapspTable.end() && iterSourceTable->second != nullptr)
     {
-        iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(FindRelationColumnName(iDestinationTableID), "INT", false, false, true));
+        iterSourceTable->second->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>(FindRelationColumnName(iDestinationTableID), "INT", false, false, true));
     }
     else
     {

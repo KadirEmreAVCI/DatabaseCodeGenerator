@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQuickStyle>
 #include <iostream>
+#include <memory>
 
 #include "TableModel.h"
 #include "ColumnListModel.h"
@@ -17,25 +18,24 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    auto pTournamentTableModel = new TableModel(nullptr, "Tournament", QPoint{100, 150});
-    if (pTournamentTableModel->GetColumnListModel() != nullptr)
+    auto spTournamentTable = std::make_shared<TableModel>(nullptr, "Tournament", QPoint{100, 150});
+    if (spTournamentTable->GetColumnListModel() != nullptr)
     {
-        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Season", "TEXT", true,  false, false));
-        pTournamentTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
+        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Season", "TEXT", true,  false, false));
+        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Category", "TEXT", true,  false, false));
     }
 
-    auto pMatchTableModel = new TableModel(nullptr, "Match", QPoint{450, 150});
-    if (pMatchTableModel->GetColumnListModel() != nullptr)
+    auto spMatchTable = std::make_shared<TableModel>(nullptr, "Match", QPoint{450, 150});
+    if (spMatchTable->GetColumnListModel() != nullptr)
     {
-        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("TournamentID", "INT",  false, false, true));
-        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Date", "REAL", true,  false, false));
-        pMatchTableModel->GetColumnListModel()->AddColumn(new ColumnModel("Time", "TEXT", true,  false, false));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("TournamentID", "INT",  false, false, true));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Date", "REAL", true,  false, false));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Time", "TEXT", true,  false, false));
     }
 
-    TableController::GetInstance().AddTable(pTournamentTableModel);
-    TableController::GetInstance().AddTable(pMatchTableModel);
-
-    RelationController::GetInstance().AddRelation(new RelationModel(pTournamentTableModel, pMatchTableModel, "1..*"));
+    TableController::GetInstance().AddTable(spTournamentTable);
+    TableController::GetInstance().AddTable(spMatchTable);
+    RelationController::GetInstance().AddRelation(std::make_shared<RelationModel>(spTournamentTable, spMatchTable, "1..*"));
 
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested,     &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);

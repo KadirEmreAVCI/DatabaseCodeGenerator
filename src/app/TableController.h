@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QRectF>
 #include <map>
+#include <memory>
 
 class TableModel;
 
@@ -18,10 +19,10 @@ public:
 
     // Getters
     QList<QObject*> GetTables()const;
-    const TableModel* GetTable(int iTableID)const;
+    std::shared_ptr<const TableModel> GetTable(int iTableID)const;
     void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
 
-    void AddTable(TableModel*);
+    void AddTable(std::shared_ptr<TableModel> spTable);
     void TableDeleted(int iTableID);
     bool RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
 public slots:
@@ -35,7 +36,7 @@ private:
     QString NormalizeTableName(const QString& sName) const;
     QString FindRelationColumnName(int iDestinationTableID) const;
 
-    std::map<int, TableModel*> m_mapTable; 
+    std::map<int, std::shared_ptr<TableModel>> m_mapspTable; 
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
