@@ -5,6 +5,7 @@
 #include "ColumnModel.h"
 
 #include <vector>
+#include <memory>
 
 class ColumnListModel : public QAbstractListModel{
     Q_OBJECT
@@ -26,11 +27,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
     
-    void AddColumn(ColumnModel* pColumnItem);
+    void AddColumn(std::shared_ptr<ColumnModel> spColumnItem);
     bool RemoveColumn(int iRow);
 private:
     bool IsRowIndexValid(int iRow) const;
-    std::vector<ColumnModel*> m_vecColumnModels;
+    std::vector<std::shared_ptr<ColumnModel>> m_vecspColumns;
 public slots:
     QVariantMap GetColumn(int row) const;
 signals:

@@ -21,16 +21,16 @@ int main(int argc, char **argv)
     auto spTournamentTable = std::make_shared<TableModel>(nullptr, "Tournament", QPoint{100, 150});
     if (spTournamentTable->GetColumnListModel() != nullptr)
     {
-        spTournamentTable->GetColumnListModel()->AddColumn(new ColumnModel("Season", "TEXT", true,  false, false));
-        spTournamentTable->GetColumnListModel()->AddColumn(new ColumnModel("Category", "TEXT", true,  false, false));
+        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Season", "TEXT", true,  false, false));
+        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Category", "TEXT", true,  false, false));
     }
 
     auto spMatchTable = std::make_shared<TableModel>(nullptr, "Match", QPoint{450, 150});
     if (spMatchTable->GetColumnListModel() != nullptr)
     {
-        spMatchTable->GetColumnListModel()->AddColumn(new ColumnModel("TournamentID", "INT",  false, false, true));
-        spMatchTable->GetColumnListModel()->AddColumn(new ColumnModel("Date", "REAL", true,  false, false));
-        spMatchTable->GetColumnListModel()->AddColumn(new ColumnModel("Time", "TEXT", true,  false, false));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("TournamentID", "INT",  false, false, true));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Date", "REAL", true,  false, false));
+        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Time", "TEXT", true,  false, false));
     }
 
     TableController::GetInstance().AddTable(spTournamentTable);

@@ -3,13 +3,13 @@
 ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
 {    
-    AddColumn(new ColumnModel("ID", "INT",  false, true,  true, this));
+    AddColumn(std::make_shared<ColumnModel>("ID", "INT",  false, true,  true, this));
 }
 int ColumnListModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return m_vecColumnModels.size();
+    return m_vecspColumns.size();
 }
 QVariant ColumnListModel::data(const QModelIndex &index, int role) const
 {
@@ -18,13 +18,13 @@ QVariant ColumnListModel::data(const QModelIndex &index, int role) const
         const int iRow = index.row();
         if (IsRowIndexValid(iRow))
         {
-            const ColumnModel* const pColumnModel = m_vecColumnModels.at(iRow);
+            const std::shared_ptr<const ColumnModel> spColumnModel = m_vecspColumns.at(iRow);
             switch (role) {
-            case TypeRole:              return pColumnModel->GetType();
-            case NameRole:              return pColumnModel->GetName();
-            case IsEnabledRole:         return pColumnModel->GetIsEnabled();
-            case IsPrimaryKeyRole:      return pColumnModel->GetIsPrimaryKey();
-            case IsRelationSourceRole:  return pColumnModel->GetIsRelationSource();
+            case TypeRole:              return spColumnModel->GetType();
+            case NameRole:              return spColumnModel->GetName();
+            case IsEnabledRole:         return spColumnModel->GetIsEnabled();
+            case IsPrimaryKeyRole:      return spColumnModel->GetIsPrimaryKey();
+            case IsRelationSourceRole:  return spColumnModel->GetIsRelationSource();
             default:                    return {};
             }
         }
@@ -41,27 +41,26 @@ QHash<int, QByteArray> ColumnListModel::roleNames() const
     roles[NameRole] = "name";
     return roles;
 }
-void ColumnListModel::AddColumn(ColumnModel* pColumnModel)
+void ColumnListModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
 {
-    if (pColumnModel != nullptr)
+    if (spColumn != nullptr)
     {
-        pColumnModel->setParent(this);
-        
-        int iInsertionRow = m_vecColumnModels.size();
-        if(!pColumnModel->GetIsEnabled())
+        spColumn->setParent(this);
+        int iInsertionRow = m_vecspColumns.size();
+        if(!spColumn->GetIsEnabled())
         {
-            const auto iterColumn = std::find_if_not(m_vecColumnModels.begin(), m_vecColumnModels.end(),
-                [](const ColumnModel* const pColumn){
-                    return !pColumn->GetIsEnabled();
+            const auto iterColumn = std::find_if_not(m_vecspColumns.begin(), m_vecspColumns.end(),
+                [](const std::shared_ptr<ColumnModel> spColumn){
+                    return !spColumn->GetIsEnabled();
                 });
-            if (iterColumn != m_vecColumnModels.end())
+            if (iterColumn != m_vecspColumns.end())
             {
-                iInsertionRow = std::distance(m_vecColumnModels.begin(), iterColumn);
+                iInsertionRow = std::distance(m_vecspColumns.begin(), iterColumn);
             }
         }
 
         beginInsertRows(QModelIndex(), iInsertionRow, iInsertionRow);
-        m_vecColumnModels.insert(m_vecColumnModels.begin() + iInsertionRow, pColumnModel);
+        m_vecspColumns.insert(m_vecspColumns.begin() + iInsertionRow, spColumn);
         endInsertRows();
 
         emit countChanged();
@@ -76,12 +75,12 @@ bool ColumnListModel::RemoveColumn(int iRow)
     if(IsRowIndexValid(iRow)) 
     {
         beginRemoveRows(QModelIndex(), iRow, iRow);
-        ColumnModel* const pColumn = m_vecColumnModels[iRow];
-        m_vecColumnModels.erase(m_vecColumnModels.begin() + iRow);
+        std::shared_ptr<ColumnModel> spColumn = m_vecspColumns[iRow];
+        m_vecspColumns.erase(m_vecspColumns.begin() + iRow);
         endRemoveRows();
-        if(pColumn != nullptr)
+        if(spColumn != nullptr)
         {
-            pColumn->deleteLater();
+            spColumn->deleteLater();
         }
         emit countChanged();
         return true;
@@ -94,21 +93,21 @@ bool ColumnListModel::RemoveColumn(int iRow)
 }
 bool ColumnListModel::IsRowIndexValid(int iRow) const
 {
-    return !(iRow < 0 || iRow >= static_cast<int>(m_vecColumnModels.size()));
+    return !(iRow < 0 || iRow >= static_cast<int>(m_vecspColumns.size()));
 }
 QVariantMap ColumnListModel::GetColumn(int iRow) const
 {
     QVariantMap map;
     if(IsRowIndexValid(iRow))
     {
-        const ColumnModel* const pColumnModel = m_vecColumnModels.at(iRow);
-        if (pColumnModel != nullptr)
+        const std::shared_ptr<const ColumnModel> spColumn = m_vecspColumns.at(iRow);
+        if (spColumn != nullptr)
         {
-            map["name"]             = pColumnModel->GetName();          // adapt to your getters
-            map["type"]             = pColumnModel->GetType();
-            map["isEnabled"]        = pColumnModel->GetIsEnabled();
-            map["isPrimaryKey"]     = pColumnModel->GetIsPrimaryKey();
-            map["isRelationSource"] = pColumnModel->GetIsRelationSource();
+            map["name"]             = spColumn->GetName();          // adapt to your getters
+            map["type"]             = spColumn->GetType();
+            map["isEnabled"]        = spColumn->GetIsEnabled();
+            map["isPrimaryKey"]     = spColumn->GetIsPrimaryKey();
+            map["isRelationSource"] = spColumn->GetIsRelationSource();
         }
     }
     return map;

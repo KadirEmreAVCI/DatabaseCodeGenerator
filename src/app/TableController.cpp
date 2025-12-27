@@ -201,7 +201,7 @@ void TableController::NewRelationEstablished(int iSourceTableID, int iDestinatio
 {
     if(auto iterSourceTable = m_mapspTable.find(iSourceTableID); iterSourceTable != m_mapspTable.end() && iterSourceTable->second != nullptr)
     {
-        iterSourceTable->second->GetColumnListModel()->AddColumn(new ColumnModel(FindRelationColumnName(iDestinationTableID), "INT", false, false, true));
+        iterSourceTable->second->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>(FindRelationColumnName(iDestinationTableID), "INT", false, false, true));
     }
     else
     {
