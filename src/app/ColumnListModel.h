@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include "ColumnModel.h"
 
+#include <vector>
+
 class ColumnListModel : public QAbstractListModel{
     Q_OBJECT
     Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
@@ -27,7 +29,8 @@ public:
     void AddColumn(ColumnModel* pColumnItem);
     void RemoveColumn(int iRow);
 private:
-    QVector<ColumnModel*> m_vecColumnModels;
+    bool IsRowIndexValid(int iRow) const;
+    std::vector<ColumnModel*> m_vecColumnModels;
 public slots:
     QVariantMap GetColumn(int row) const;
 signals:
