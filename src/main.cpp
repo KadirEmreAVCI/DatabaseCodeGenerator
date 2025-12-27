@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 
     TableController::GetInstance().AddTable(spTournamentTable);
     TableController::GetInstance().AddTable(spMatchTable);
-    RelationController::GetInstance().AddRelation(new RelationModel(spTournamentTable, spMatchTable, "1..*"));
+    RelationController::GetInstance().AddRelation(std::make_shared<RelationModel>(spTournamentTable, spMatchTable, "1..*"));
 
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested,     &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);

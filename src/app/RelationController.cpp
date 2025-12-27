@@ -17,12 +17,12 @@ RelationController::RelationController(QObject *parent)
 QList<QObject*> RelationController::GetRelations()const
 {
     QList<QObject*> lsRelations;
-    lsRelations.reserve(static_cast<int>(m_mapupRelation.size()));
-    for (const auto& [iID, upRelation] : m_mapupRelation) 
+    lsRelations.reserve(static_cast<int>(m_mapspRelations.size()));
+    for (const auto& [iID, spRelation] : m_mapspRelations) 
     {
-        if (upRelation != nullptr) 
+        if (spRelation != nullptr) 
         {
-            lsRelations.append(upRelation.get());
+            lsRelations.append(spRelation.get());
         } 
         else 
         {
@@ -31,12 +31,12 @@ QList<QObject*> RelationController::GetRelations()const
     }
     return lsRelations;
 }
-void RelationController::AddRelation(RelationModel* pRelationModel)
+void RelationController::AddRelation(std::shared_ptr<RelationModel> spRelationModel)
 {
-    if(nullptr != pRelationModel)
+    if(nullptr != spRelationModel)
     {
-        pRelationModel->SetID(m_iNextRelationID++);
-        m_mapupRelation.emplace(pRelationModel->GetID(), std::unique_ptr<RelationModel>(pRelationModel));
+        spRelationModel->SetID(m_iNextRelationID++);
+        m_mapspRelations.emplace(spRelationModel->GetID(), std::shared_ptr<RelationModel>(spRelationModel));
         emit relationsChanged();
     }
     else
@@ -46,12 +46,12 @@ void RelationController::AddRelation(RelationModel* pRelationModel)
 }
 void RelationController::onTableDeleteRequested(int iTableID)
 {
-    for(auto iterRelation = m_mapupRelation.begin(); iterRelation != m_mapupRelation.end();)
+    for(auto iterRelation = m_mapspRelations.begin(); iterRelation != m_mapspRelations.end();)
     {
         if(iterRelation->second != nullptr && (iterRelation->second->GetSourceTableID() == iTableID || iterRelation->second->GetDestinationTableID() == iTableID))
         {
             HandleRelationBasedColumns(iterRelation->second);
-            iterRelation = m_mapupRelation.erase(iterRelation);
+            iterRelation = m_mapspRelations.erase(iterRelation);
         }
         else
         {
@@ -66,7 +66,7 @@ void RelationController::onNewRelationEstablished(int iSourceTableID, int iDesti
     if(!IsRelationExists(iSourceTableID, iDestinationTableID))
     {
         TableController::GetInstance().NewRelationEstablished(iSourceTableID, iDestinationTableID);
-        AddRelation(new RelationModel(
+        AddRelation(std::make_shared<RelationModel>(
             TableController::GetInstance().GetTable(iDestinationTableID),
             TableController::GetInstance().GetTable(iSourceTableID),
             "1..*"));
@@ -78,7 +78,7 @@ void RelationController::onNewRelationEstablished(int iSourceTableID, int iDesti
 }
 void RelationController::onRelationshipChangeRequested(int iID, const QString& sRelationship)
 {
-    if(auto iterChangedRelation = m_mapupRelation.find(iID); iterChangedRelation != m_mapupRelation.end() && iterChangedRelation->second != nullptr)
+    if(auto iterChangedRelation = m_mapspRelations.find(iID); iterChangedRelation != m_mapspRelations.end() && iterChangedRelation->second != nullptr)
     {
         iterChangedRelation->second->SetRelationship(sRelationship);
     }
@@ -89,10 +89,10 @@ void RelationController::onRelationshipChangeRequested(int iID, const QString& s
 }
 void RelationController::onRelationshipDeleteRequested(int iID)
 {
-    if(auto iterChangedRelation = m_mapupRelation.find(iID); iterChangedRelation != m_mapupRelation.end() && iterChangedRelation->second != nullptr)
+    if(auto iterChangedRelation = m_mapspRelations.find(iID); iterChangedRelation != m_mapspRelations.end() && iterChangedRelation->second != nullptr)
     {
         HandleRelationBasedColumns(iterChangedRelation->second);
-        m_mapupRelation.erase(iterChangedRelation);
+        m_mapspRelations.erase(iterChangedRelation);
         emit relationsChanged();
     }
     else
@@ -102,28 +102,28 @@ void RelationController::onRelationshipDeleteRequested(int iID)
 }
 bool RelationController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
 {
-    return std::any_of(m_mapupRelation.cbegin(), m_mapupRelation.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
-        if(upRelation.second != nullptr)
+    return std::any_of(m_mapspRelations.cbegin(), m_mapspRelations.cend(), [iSourceTableID, iDestinationTableID](const auto& spRelation){
+        if(spRelation.second != nullptr)
         {
-            return (upRelation.second->GetSourceTableID() == iSourceTableID) && (upRelation.second->GetDestinationTableID() == iDestinationTableID);
+            return (spRelation.second->GetSourceTableID() == iSourceTableID) && (spRelation.second->GetDestinationTableID() == iDestinationTableID);
         }
         return false;
     });
 }
 void RelationController::UpdateSourceTableRowIndexes(int iSourceTableID)
 {
-    for(const auto& [iID, upRelation] : m_mapupRelation)
+    for(const auto& [iID, spRelation] : m_mapspRelations)
     {
-        if(upRelation != nullptr && upRelation->GetSourceTableID() == iSourceTableID)
+        if(spRelation != nullptr && spRelation->GetSourceTableID() == iSourceTableID)
         {
-            upRelation->UpdateSourceRowIdx();
+            spRelation->UpdateSourceRowIdx();
         }
     }
 }
-void RelationController::HandleRelationBasedColumns(const std::unique_ptr<RelationModel>& upRelation)
+void RelationController::HandleRelationBasedColumns(const std::shared_ptr<RelationModel>& spRelation)
 {
-    const int iSourceTableID = upRelation->GetSourceTableID();
-    const int iDestinationTableID = upRelation->GetDestinationTableID();
+    const int iSourceTableID = spRelation->GetSourceTableID();
+    const int iDestinationTableID = spRelation->GetDestinationTableID();
     if(TableController::GetInstance().RelationshipDeleted(iSourceTableID, iDestinationTableID))
     {
         UpdateSourceTableRowIndexes(iSourceTableID);

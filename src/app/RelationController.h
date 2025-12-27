@@ -20,7 +20,7 @@ public:
     // Getters
     QList<QObject*> GetRelations()const;
 
-    void AddRelation(RelationModel*);
+    void AddRelation(std::shared_ptr<RelationModel> spRelationModel);
 public slots:
     void onTableDeleteRequested(int iTableID);
     void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
@@ -30,8 +30,8 @@ private:
     RelationController(QObject *parent = nullptr);
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
     void UpdateSourceTableRowIndexes(int iSourceTableID);
-    void HandleRelationBasedColumns(const std::unique_ptr<RelationModel>& upRelation);
-    std::map<int, std::unique_ptr<RelationModel>> m_mapupRelation; 
+    void HandleRelationBasedColumns(const std::shared_ptr<RelationModel>& spRelation);
+    std::map<int, std::shared_ptr<RelationModel>> m_mapspRelations; 
     int m_iNextRelationID = 0;
 signals:
     void relationsChanged();
