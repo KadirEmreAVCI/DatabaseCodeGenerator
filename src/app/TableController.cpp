@@ -51,27 +51,20 @@ void TableController::AddRelation(int iSourceTableID, int iDestinationTableID)
         qDebug() << "Error: Source TableModel pointer is null.";
     }
 }
-void TableController::onTableNameChangeRequested(int iTableID, const QString& sNewName)
+void TableController::onTableNameChangeRequested(int iRenamedTableID, const QString& sNewName)
 {
-    if(auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end())
+    if(auto spRenamedTable = GetTable(iRenamedTableID); spRenamedTable != nullptr)
     {
-        if(const auto spTableModel = iterTable->second; spTableModel != nullptr)
+        const QString sOldName{spRenamedTable->GetName()};
+        const QString sNormalizedNewName{NormalizeTableName(sNewName)};
+        if(!IsNameDuplicated(iRenamedTableID, sNormalizedNewName))
         {
-            const QString sOldName{spTableModel->GetName()};
-            const QString sNormalizedNewName{NormalizeTableName(sNewName)};
-            if(!IsNameDuplicated(iTableID, sNormalizedNewName))
-            {
-                spTableModel->SetName(sNormalizedNewName);
-            }
-            else
-            {
-                const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNormalizedNewName, sOldName);
-                emit tableNameChangeRejected(iTableID, sWarningMessage);
-            }
+            spRenamedTable->SetName(sNormalizedNewName);
         }
         else
         {
-            qDebug() << "Error: TableModel pointer is null.";
+            const QString sWarningMessage = tr("A table with name '%1' already exists. You cannot rename '%2' to this name.").arg(sNormalizedNewName, sOldName);
+            emit tableNameChangeRejected(iRenamedTableID, sWarningMessage);
         }
     }
     else
@@ -79,15 +72,15 @@ void TableController::onTableNameChangeRequested(int iTableID, const QString& sN
         qDebug() << "Error: Table ID not found.";
     }
 }
-void TableController::onTablePositionChangeRequested(int iTableID, const QPointF& rPointF)
+void TableController::onTablePositionChangeRequested(int iRelocatedTableID, const QPointF& rPointF)
 {
-    if (auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end()) 
+    if (auto spRelocatedTable = GetTable(iRelocatedTableID); spRelocatedTable != nullptr) 
     {
-        const auto spTable = iterTable->second;
-        if (spTable != nullptr) 
-        {
-            spTable->SetPoint(rPointF);
-        }
+        spRelocatedTable->SetPoint(rPointF);
+    } 
+    else 
+    {
+        qDebug() << "Error: Table ID not found.";
     }
 }
 void TableController::onCreateNewTable(const QPointF& rPointF)
@@ -125,7 +118,7 @@ QRectF TableController::GetBoundingRect() const
     }
     return rUnitedRect;
 }
-std::map<int, std::shared_ptr<RelationModel>> TableController::GetRelations()const
+std::map<int, std::shared_ptr<RelationModel>> TableController::GatherRelationsFromTables()const
 {
     std::map<int, std::shared_ptr<RelationModel>> mapRelations;
     for (const auto& [iID, spTable] : m_mapspTable) 
@@ -161,8 +154,7 @@ QString TableController::NormalizeTableName(const QString& sName) const
 }
 bool TableController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
 {
-    auto mapRelations = GetRelations();
-    return std::any_of(mapRelations.cbegin(), mapRelations.cend(), [iSourceTableID, iDestinationTableID](const auto& spRelation){
+    return std::any_of(m_mapspRelations.cbegin(), m_mapspRelations.cend(), [iSourceTableID, iDestinationTableID](const auto& spRelation){
         if(spRelation.second != nullptr)
         {
             return (spRelation.second->GetSourceTableID() == iSourceTableID) && (spRelation.second->GetDestinationTableID() == iDestinationTableID);
@@ -172,7 +164,7 @@ bool TableController::IsRelationExists(int iSourceTableID, int iDestinationTable
 }
 void TableController::RelationsChanged()
 {
-    m_mapspRelations = GetRelations();
+    m_mapspRelations = GatherRelationsFromTables();
     emit relationsChanged();
 }
 QList<QObject*> TableController::GetTableList() const
@@ -218,6 +210,15 @@ std::shared_ptr<TableModel> TableController::GetTable(int iTableID)const
     }
     return spTableModel;
 }
+std::shared_ptr<RelationModel> TableController::GetRelation(int iRelationID)const
+{
+    std::shared_ptr<RelationModel> spRelationModel = nullptr;
+    if (auto iterRelation = m_mapspRelations.find(iRelationID); iterRelation != m_mapspRelations.end()) 
+    {
+        spRelationModel = iterRelation->second;
+    }
+    return spRelationModel;
+}
 void TableController::onTableDeleteRequested(int iDeletedTableID)
 {
     // Delete relations if deleted table is not source table.
@@ -242,13 +243,13 @@ void TableController::onTableDeleteRequested(int iDeletedTableID)
         emit tablesChanged();
     }
 }
-void TableController::onRelationshipDeleteRequested(int iRelationID)
+void TableController::onRelationshipDeleteRequested(int iDeletedRelationID)
 {
-    if(auto iterRelation = m_mapspRelations.find(iRelationID); iterRelation != m_mapspRelations.end() && iterRelation->second != nullptr)
+    if(auto spDeletedRelation = GetRelation(iDeletedRelationID); spDeletedRelation != nullptr)
     {
-        if(auto iterSourceTable = m_mapspTable.find(iterRelation->second->GetSourceTableID()); iterSourceTable != m_mapspTable.end() && iterSourceTable->second != nullptr)
+        if(auto spSourceTable = GetTable(spDeletedRelation->GetSourceTableID()); spSourceTable != nullptr)
         {
-            if(iterSourceTable->second->RemoveRelation(iRelationID))
+            if(spSourceTable->RemoveRelation(iDeletedRelationID))
             {
                 RelationsChanged();
             }
@@ -256,19 +257,18 @@ void TableController::onRelationshipDeleteRequested(int iRelationID)
     }
     else
     {
-        qDebug() << "Warning: No existing relation found with ID" << iRelationID << "to delete.";
+        qDebug() << "Warning: No existing relation found with ID" << iDeletedRelationID << "to delete.";
     }
 }
-void TableController::onRelationshipChangeRequested(int iRelationID, const QString& sRelationship)
+void TableController::onRelationshipChangeRequested(int iChangedRelationID, const QString& sRelationship)
 {
-    auto mapRelations = GetRelations();
-    if(auto iterChangedRelation = mapRelations.find(iRelationID); iterChangedRelation != mapRelations.end() && iterChangedRelation->second != nullptr)
+    if(auto spChangedRelation = GetRelation(iChangedRelationID); spChangedRelation != nullptr)
     {
-        iterChangedRelation->second->SetRelationship(sRelationship);
+        spChangedRelation->SetRelationship(sRelationship);
     }
     else
     {
-        qDebug() << "Warning: No existing relation found with ID" << iRelationID << "to change relationship.";
+        qDebug() << "Warning: No existing relation found with ID" << iChangedRelationID << "to change relationship.";
     }
 }
 void TableController::onNewRelationEstablished(int iSourceTableID, int iDestinationTableID)

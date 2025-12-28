@@ -22,7 +22,7 @@ public:
     // Getters
     QList<QObject*> GetTableList()const;
     QList<QObject*> GetRelationList()const;
-    std::shared_ptr<TableModel> GetTable(int iTableID)const;
+    
 
     void AddTable(std::shared_ptr<TableModel> spTable);
     void AddRelation(int iSourceTableID, int iDestinationTableID);
@@ -37,7 +37,9 @@ public slots:
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
-    std::map<int, std::shared_ptr<RelationModel>> GetRelations()const;
+    std::shared_ptr<TableModel> GetTable(int iTableID)const;
+    std::shared_ptr<RelationModel> GetRelation(int iRelationID)const;
+    std::map<int, std::shared_ptr<RelationModel>> GatherRelationsFromTables()const;
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
