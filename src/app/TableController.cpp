@@ -1,6 +1,7 @@
 #include "TableController.h"
 #include "TableModel.h"
 #include "RelationController.h"
+#include "ColumnListModel.h"
 
 // Standard Library
 #include <algorithm>

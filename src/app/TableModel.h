@@ -3,7 +3,9 @@
 
 #include <QPointF>
 #include "Model.h"
-#include "ColumnListModel.h"
+
+class ColumnModel;
+class ColumnListModel;
 
 class TableModel : public Model{
     Q_OBJECT
@@ -16,6 +18,7 @@ class TableModel : public Model{
 public:
     TableModel(QObject *parent = nullptr, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200);
     virtual ~TableModel()override = default;
+    void AddColumn(std::shared_ptr<ColumnModel> spColumn);
 
     // Getters
     int GetID() const;

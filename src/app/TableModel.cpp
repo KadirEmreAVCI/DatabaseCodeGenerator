@@ -1,8 +1,16 @@
 #include "TableModel.h"
+#include "ColumnListModel.h"
 
 TableModel::TableModel(QObject *parent, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight) 
     : Model(parent), m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_pColumnListModel{new ColumnListModel(this)}
 {
+}
+void TableModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
+{
+    if (m_pColumnListModel != nullptr)
+    {
+        m_pColumnListModel->AddColumn(spColumn);
+    }
 }
 int TableModel::GetID() const
 {

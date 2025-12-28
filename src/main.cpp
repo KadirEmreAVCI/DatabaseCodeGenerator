@@ -18,21 +18,15 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    auto spTournamentTable = std::make_shared<TableModel>(nullptr, "Tournament", QPoint{100, 150});
-    if (spTournamentTable->GetColumnListModel() != nullptr)
-    {
-        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Season", "TEXT", true,  false, false));
-        spTournamentTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Category", "TEXT", true,  false, false));
-    }
+    const auto spTournamentTable = std::make_shared<TableModel>(nullptr, "Tournament", QPoint{100, 150});
+    spTournamentTable->AddColumn(std::make_shared<ColumnModel>("Season", "TEXT", true,  false, false));
+    spTournamentTable->AddColumn(std::make_shared<ColumnModel>("Category", "TEXT", true,  false, false));
 
-    auto spMatchTable = std::make_shared<TableModel>(nullptr, "Match", QPoint{450, 150});
-    if (spMatchTable->GetColumnListModel() != nullptr)
-    {
-        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("TournamentID", "INT",  false, false, true));
-        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Date", "REAL", true,  false, false));
-        spMatchTable->GetColumnListModel()->AddColumn(std::make_shared<ColumnModel>("Time", "TEXT", true,  false, false));
-    }
-
+    const auto spMatchTable = std::make_shared<TableModel>(nullptr, "Match", QPoint{450, 150});
+    spMatchTable->AddColumn(std::make_shared<ColumnModel>("TournamentID", "INT",  false, false, true));
+    spMatchTable->AddColumn(std::make_shared<ColumnModel>("Date", "REAL", true,  false, false));
+    spMatchTable->AddColumn(std::make_shared<ColumnModel>("Time", "TEXT", true,  false, false));
+    
     TableController::GetInstance().AddTable(spTournamentTable);
     TableController::GetInstance().AddTable(spMatchTable);
     RelationController::GetInstance().AddRelation(std::make_shared<RelationModel>(spTournamentTable, spMatchTable, "1..*"));

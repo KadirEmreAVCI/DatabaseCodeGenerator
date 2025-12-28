@@ -1,4 +1,5 @@
 #include "RelationModel.h"
+#include "ColumnListModel.h"
 #include <iostream>
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
