@@ -6,7 +6,8 @@
 
 // Project Headers
 #include "Model.h"
-#include "TableModel.h"
+
+class TableModel;
 
 class RelationModel : public Model{
     Q_OBJECT
@@ -18,12 +19,12 @@ class RelationModel : public Model{
     Q_PROPERTY(QString relationship READ GetRelationship NOTIFY relationshipChanged)
 public:
     explicit RelationModel(QObject* pParent = nullptr);
-    RelationModel(std::shared_ptr<const TableModel> spDestinationTable, std::shared_ptr<const TableModel> spSourceTable, const QString& sRelationship, QObject* pParent = nullptr);
+    RelationModel(int iID, std::weak_ptr<const TableModel> wpDestinationTable, std::weak_ptr<const TableModel> wpSourceTable, const QString& sRelationship, QObject* pParent = nullptr);
 
     // Getters
     int GetID() const;
-    std::shared_ptr<const TableModel> GetDestinationTable()const;
-    std::shared_ptr<const TableModel> GetSourceTable()const;
+    std::weak_ptr<const TableModel> GetDestinationTable()const;
+    std::weak_ptr<const TableModel> GetSourceTable()const;
     int GetDestinationRowIdx()const;
     int GetDestinationTableID()const;
     int GetSourceRowIdx()const;
@@ -32,19 +33,21 @@ public:
 
     // Setters
     void SetID(int);
-    void SetDestinationTable(std::shared_ptr<const TableModel>);
-    void SetSourceTable(std::shared_ptr<const TableModel>);
+    void SetDestinationTable(std::weak_ptr<const TableModel>);
+    void SetSourceTable(std::weak_ptr<const TableModel>);
     void SetRelationship(const QString&);
 
-    void UpdateSourceRowIdx();
+    void Update();
 private:
+    void UpdateSourceRowIdx();
+
     int m_iID;
     const static int ms_iDestinationRowIdx{0};
     int m_iDestinationTableID{-1};
     int m_iSourceRowIdx{-1};
     int m_iSourceTableID{-1};
-    std::shared_ptr<const TableModel> m_spDestinationTable{nullptr};
-    std::shared_ptr<const TableModel> m_spSourceTable{nullptr};
+    std::weak_ptr<const TableModel> m_wpDestinationTable{};
+    std::weak_ptr<const TableModel> m_wpSourceTable{};
     QString m_sRelationship{""};
 signals:
     void idChanged();

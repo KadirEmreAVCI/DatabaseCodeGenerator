@@ -1,31 +1,32 @@
 #include "RelationModel.h"
+#include "TableModel.h"
 #include <iostream>
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
-RelationModel::RelationModel(std::shared_ptr<const TableModel> spDestinationTable, std::shared_ptr<const TableModel> spSourceTable, const QString& sRelationship, QObject* pParent)
-    : m_sRelationship{sRelationship}, Model{pParent}
+RelationModel::RelationModel(int iID, std::weak_ptr<const TableModel> wpDestinationTable, std::weak_ptr<const TableModel> wpSourceTable, const QString& sRelationship, QObject* pParent)
+    : m_iID{iID}, m_sRelationship{sRelationship}, Model{pParent}
 {
-    if(spDestinationTable != nullptr)
+    if (!wpDestinationTable.expired()) 
     {
-        SetDestinationTable(spDestinationTable);
+        SetDestinationTable(wpDestinationTable);
     }
-    if(spSourceTable != nullptr)
+    if (!wpSourceTable.expired()) 
     {
-        SetSourceTable(spSourceTable);
+        SetSourceTable(wpSourceTable);
     }
 }
 int RelationModel::GetID() const
 {
     return m_iID;
 }
-std::shared_ptr<const TableModel> RelationModel::GetDestinationTable()const
+std::weak_ptr<const TableModel> RelationModel::GetDestinationTable()const
 {
-    return m_spDestinationTable;
+    return m_wpDestinationTable;
 }
-std::shared_ptr<const TableModel> RelationModel::GetSourceTable()const
+std::weak_ptr<const TableModel> RelationModel::GetSourceTable()const
 {
-    return m_spSourceTable;
+    return m_wpSourceTable;
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -55,22 +56,22 @@ void RelationModel::SetID(int iID)
         emit idChanged();
     }
 }
-void RelationModel::SetDestinationTable(std::shared_ptr<const TableModel> spDestinationTable)
+void RelationModel::SetDestinationTable(std::weak_ptr<const TableModel> wpDestinationTable)
 {
-    if(m_spDestinationTable != spDestinationTable)
+    if(m_wpDestinationTable.lock() != wpDestinationTable.lock())
     {
-        m_spDestinationTable = spDestinationTable;
-        m_iDestinationTableID = m_spDestinationTable->GetID();
+        m_wpDestinationTable = wpDestinationTable;
+        m_iDestinationTableID = m_wpDestinationTable.lock()->GetID();
         emit destinationTableIDChanged();
     }
 } 
-void RelationModel::SetSourceTable(std::shared_ptr<const TableModel> spSourceTable)
+void RelationModel::SetSourceTable(std::weak_ptr<const TableModel> wpSourceTable)
 {
-    if(m_spSourceTable != spSourceTable)
+    if(m_wpSourceTable.lock() != wpSourceTable.lock())
     {
-        m_spSourceTable = spSourceTable;
-        m_iSourceTableID = m_spSourceTable->GetID();
-        UpdateSourceRowIdx();
+        m_wpSourceTable = wpSourceTable;
+        m_iSourceTableID = m_wpSourceTable.lock()->GetID();
+        Update();
         emit sourceRowIdxChanged();
         emit sourceTableIDChanged();
     }
@@ -83,24 +84,20 @@ void RelationModel::SetRelationship(const QString& sRelationship)
         emit relationshipChanged();
     }
 }
+void RelationModel::Update()
+{
+    UpdateSourceRowIdx();
+}
 void RelationModel::UpdateSourceRowIdx()
 {
-    if(m_spSourceTable != nullptr)
+    m_iSourceRowIdx = -1;
+    if(auto spSourceTable = m_wpSourceTable.lock(); spSourceTable != nullptr)
     {
-        m_iSourceRowIdx = -1;
-        const QString sSourceColumnName = m_spDestinationTable->GetName() + "ID";
-        const ColumnListModel* const pColumnListModel{m_spSourceTable->GetColumnListModel()};
-        for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
-        {
-            if(pColumnListModel->GetColumn(idx)["name"] == sSourceColumnName)
-            {
-                m_iSourceRowIdx = idx;
-                break;
-            }
-        }
+        const QString sSourceColumnName = m_wpDestinationTable.lock()->GetName() + "ID";
+        m_iSourceRowIdx = spSourceTable->GetColumnIdxByName(sSourceColumnName);
     }
     else
     {
-        std::cerr << "RelationModel::CalculateSourceRowIdx m_pSourceTableModel is nullptr!\n";
+        std::cerr << "RelationModel::UpdateSourceRowIdx m_wpSourceTable is nullptr!\n";
     }
 }

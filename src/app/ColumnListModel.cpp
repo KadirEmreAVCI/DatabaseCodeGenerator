@@ -1,4 +1,5 @@
 #include "ColumnListModel.h"
+#include "ColumnModel.h"
 
 ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -70,6 +71,33 @@ void ColumnListModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
         qWarning("Attempted to add a null ColumnModel.");
     }
 }
+void ColumnListModel::AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem)
+{
+    if(spColumnItem != nullptr)
+    {
+        spColumnItem->setParent(this);
+        int iInsertionRow = m_vecspColumns.size();
+        if(!spColumnItem->GetIsEnabled())
+        {
+            const auto iterColumn = std::find_if_not(m_vecspColumns.begin(), m_vecspColumns.end(), [](const std::shared_ptr<ColumnModel> spColumn){
+                    return !spColumn->GetIsEnabled();
+                });
+            if (iterColumn != m_vecspColumns.end())
+            {
+                iInsertionRow = std::distance(m_vecspColumns.begin(), iterColumn);
+            }
+        }
+        beginInsertRows(QModelIndex(), iInsertionRow, iInsertionRow);
+        m_vecspColumns.insert(m_vecspColumns.begin() + iInsertionRow, spColumnItem);
+        endInsertRows();
+
+        emit countChanged();
+    }
+    else
+    {
+        qWarning("Attempted to add a null ColumnModel.");
+    }
+}
 bool ColumnListModel::RemoveColumn(int iRow)
 {
     if(IsRowIndexValid(iRow)) 
@@ -90,6 +118,29 @@ bool ColumnListModel::RemoveColumn(int iRow)
         qWarning("Attempted to remove a ColumnModel with an invalid row index.");
         return false;
     }
+}
+int ColumnListModel::GetColumnIdxByName(const QString& sColumnName) const
+{
+    for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
+    {
+        if(m_vecspColumns[i]->GetName() == sColumnName)
+        {
+            return i;
+        }
+    }
+    return -1; // Not found
+}
+bool ColumnListModel::RemoveColumn(const QString& sColumnName)
+{
+    for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
+    {
+        if(m_vecspColumns[i]->GetName() == sColumnName)
+        {
+            return RemoveColumn(i);
+        }
+    }
+    qWarning("Attempted to remove a ColumnModel with a name that does not exist.");
+    return false;
 }
 bool ColumnListModel::IsRowIndexValid(int iRow) const
 {
