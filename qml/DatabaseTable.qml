@@ -17,6 +17,13 @@ Item {
 
     property bool editingName: false
 
+    // Whole-table hover tracker (does not steal events)
+    readonly property bool isTableHovered: tableHover.hovered
+
+    // Enable hover highlight only when NOT creating a relation
+    readonly property bool isHoverHighlight: (isTableHovered
+                                             && !(connectionsLayer && connectionsLayer.creatingRelation))
+
     implicitHeight: relationHandle.height + tableRect.implicitHeight
 
     // -------------------------------------------------------------------------
@@ -32,6 +39,12 @@ Item {
                                                 && connectionsLayer.creatingRelation
                                                 && connectionsLayer.hoveredDestinationTableID === wrapper.tableID
                                                 && connectionsLayer.creatingSourceTableID !== wrapper.tableID)
+
+    // Tracks hover over the whole table (handle + body) without stealing events
+    HoverHandler {
+        id: tableHover
+        acceptedDevices: PointerDevice.Mouse
+    }
 
     function emitTablePositionChanged() {
         tablePositionChangeRequested(
@@ -153,7 +166,6 @@ Item {
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
                 onAccepted: {
-                    // Emit signal (bus-ready)
                     tableDeleteRequested(wrapper.tableID)
                     deleteTableDialog.close()
                 }
@@ -242,14 +254,14 @@ Item {
         }
 
         //
-        // Hold area highlight (instant show/hide)
+        // Hold area highlight (preview drop target OR hover)
         //
         Canvas {
             id: handleHighlightCanvas
             anchors.fill: parent
             antialiasing: true
             z: 50
-            visible: wrapper.isPreviewDropTarget
+            visible: wrapper.isPreviewDropTarget || wrapper.isHoverHighlight
 
             onVisibleChanged: {
                 if (visible)
@@ -278,7 +290,7 @@ Item {
                 // Overlay fill
                 ctx.save()
                 tracePath()
-                ctx.fillStyle = "rgba(45, 140, 255, 0.12)"
+                ctx.fillStyle = "rgba(45, 140, 255, 0.12)" // Canvas fillStyle is JS/CSS string OK
                 ctx.fill()
                 ctx.restore()
 
@@ -286,7 +298,7 @@ Item {
                 ctx.save()
                 tracePath()
                 ctx.lineWidth = 2
-                ctx.strokeStyle = "rgba(45, 140, 255, 0.95)"
+                ctx.strokeStyle = "rgba(45, 140, 255, 0.95)" // Canvas strokeStyle is JS/CSS string OK
                 ctx.lineJoin = "round"
                 ctx.stroke()
                 ctx.restore()
@@ -414,15 +426,91 @@ Item {
                         + table_content.height
                         + border.width
 
-        // Destination highlight overlay (instant show/hide)
-        Rectangle {
+        //
+        // ONE single (generic) decoration canvas:
+        // - Draws outer boundary stroke around entire tableRect
+        // - Fills ONLY header area (top region), NOT DatabaseTableContent
+        //
+        Canvas {
+            id: tableDecorationCanvas
             anchors.fill: parent
-            color: Qt.rgba(0.176, 0.549, 1.0, 0.08)
-            border.color: "#2d8cff"
-            border.width: 3
-            radius: tableRect.radius
-            visible: wrapper.isPreviewDropTarget
-            z: 999
+            antialiasing: true
+            z: 500
+            visible: wrapper.isPreviewDropTarget || wrapper.isHoverHighlight
+            enabled: false   // don't block mouse
+
+            readonly property real strokeW: 3
+            readonly property color strokeColor: Qt.rgba(0.176, 0.549, 1.0, 0.95)     // #2d8cff @ 0.95
+            readonly property color headerFillColor: Qt.rgba(0.176, 0.549, 1.0, 0.08) // light fill
+
+            onVisibleChanged: { if (visible) requestPaint() }
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+
+            function roundedRectPath(ctx, x, y, w, h, r) {
+                var rr = Math.max(0, Math.min(r, Math.min(w / 2, h / 2)))
+                ctx.beginPath()
+                ctx.moveTo(x + rr, y)
+                ctx.lineTo(x + w - rr, y)
+                ctx.quadraticCurveTo(x + w, y, x + w, y + rr)
+                ctx.lineTo(x + w, y + h - rr)
+                ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h)
+                ctx.lineTo(x + rr, y + h)
+                ctx.quadraticCurveTo(x, y + h, x, y + h - rr)
+                ctx.lineTo(x, y + rr)
+                ctx.quadraticCurveTo(x, y, x + rr, y)
+                ctx.closePath()
+            }
+
+            function headerFillPath(ctx, x, y, w, headerH, r) {
+                // Top rounded corners, straight bottom edge at headerH
+                var rr = Math.max(0, Math.min(r, w / 2))
+                ctx.beginPath()
+                ctx.moveTo(x + rr, y)
+                ctx.lineTo(x + w - rr, y)
+                ctx.quadraticCurveTo(x + w, y, x + w, y + rr)
+                ctx.lineTo(x + w, y + headerH)
+                ctx.lineTo(x, y + headerH)
+                ctx.lineTo(x, y + rr)
+                ctx.quadraticCurveTo(x, y, x + rr, y)
+                ctx.closePath()
+            }
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                var w = Math.round(width)
+                var h = Math.round(height)
+
+                var sw = tableDecorationCanvas.strokeW
+                var half = sw / 2
+
+                var x = half
+                var y = half
+                var ww = w - sw
+                var hh = h - sw
+                var r = Math.max(0, tableRect.radius - half)
+
+                // Fill should cover header + separator (same visual block)
+                var headerFillH = table_header.height + separator.height
+
+                // 1) Header fill only
+                ctx.save()
+                headerFillPath(ctx, x, y, ww, headerFillH, r)
+                ctx.fillStyle = tableDecorationCanvas.headerFillColor
+                ctx.fill()
+                ctx.restore()
+
+                // 2) Outer boundary stroke around whole table
+                ctx.save()
+                roundedRectPath(ctx, x, y, ww, hh, r)
+                ctx.lineWidth = sw
+                ctx.strokeStyle = tableDecorationCanvas.strokeColor
+                ctx.lineJoin = "round"
+                ctx.stroke()
+                ctx.restore()
+            }
         }
 
         Rectangle {
@@ -489,7 +577,6 @@ Item {
                     }
 
                     if (trimmed !== wrapper.tableName) {
-                        // Emit signal (bus-ready)
                         tableNameChangeRequested(wrapper.tableID, trimmed)
                     }
 
