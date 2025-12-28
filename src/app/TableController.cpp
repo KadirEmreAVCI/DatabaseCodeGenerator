@@ -167,6 +167,10 @@ void TableController::RelationsChanged()
     m_mapspRelations = GatherRelationsFromTables();
     emit relationsChanged();
 }
+int TableController::GetColumnIdxByName(const QString& sColumnName) const
+{
+    return m_pColumnListModel->GetColumnIdxByName(sColumnName);
+}
 QList<QObject*> TableController::GetTableList() const
 {
     QList<QObject*> lsTable;

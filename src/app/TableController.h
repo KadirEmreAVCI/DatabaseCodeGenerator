@@ -22,7 +22,6 @@ public:
     // Getters
     QList<QObject*> GetTableList()const;
     QList<QObject*> GetRelationList()const;
-    
 
     void AddTable(std::shared_ptr<TableModel> spTable);
     void AddRelation(int iSourceTableID, int iDestinationTableID);

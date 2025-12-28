@@ -6,7 +6,8 @@
 
 // Project Headers
 #include "Model.h"
-#include "TableModel.h"
+
+class TableModel;
 
 class RelationModel : public Model{
     Q_OBJECT

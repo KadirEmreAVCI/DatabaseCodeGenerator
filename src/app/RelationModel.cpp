@@ -1,5 +1,5 @@
 #include "RelationModel.h"
-#include "ColumnListModel.h"
+#include "TableModel.h"
 #include <iostream>
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
@@ -86,19 +86,11 @@ void RelationModel::SetRelationship(const QString& sRelationship)
 }
 void RelationModel::UpdateSourceRowIdx()
 {
+    m_iSourceRowIdx = -1;
     if(auto spSourceTable = m_wpSourceTable.lock(); spSourceTable != nullptr)
     {
-        m_iSourceRowIdx = -1;
         const QString sSourceColumnName = m_wpDestinationTable.lock()->GetName() + "ID";
-        const ColumnListModel* const pColumnListModel{spSourceTable->GetColumnListModel()};
-        for(unsigned idx = 0; idx < pColumnListModel->rowCount(); ++idx)
-        {
-            if(pColumnListModel->GetColumn(idx)["name"] == sSourceColumnName)
-            {
-                m_iSourceRowIdx = idx;
-                break;
-            }
-        }
+        m_iSourceRowIdx = spSourceTable->GetColumnIdxByName(sSourceColumnName);
     }
     else
     {
