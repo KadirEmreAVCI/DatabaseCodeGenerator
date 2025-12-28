@@ -51,7 +51,7 @@ void TableController::AddRelation(int iSourceTableID, int iDestinationTableID)
         qDebug() << "Error: Source TableModel pointer is null.";
     }
 }
-void TableController::onTableNameChangeRequested(int iRenamedTableID, const QString& sNewName)
+void TableController::onChangeTableNameRequested(int iRenamedTableID, const QString& sNewName)
 {
     if(auto spRenamedTable = GetTable(iRenamedTableID); spRenamedTable != nullptr)
     {
@@ -83,7 +83,7 @@ void TableController::onTablePositionChangeRequested(int iRelocatedTableID, cons
         qDebug() << "Error: Table ID not found.";
     }
 }
-void TableController::onCreateNewTable(const QPointF& rPointF)
+void TableController::onCreateNewTableRequested(const QPointF& rPointF)
 {
     int iTableIDOffset = 0;
     QString sTempNewName = "";
@@ -219,7 +219,7 @@ std::shared_ptr<RelationModel> TableController::GetRelation(int iRelationID)cons
     }
     return spRelationModel;
 }
-void TableController::onTableDeleteRequested(int iDeletedTableID)
+void TableController::onDeleteTableRequested(int iDeletedTableID)
 {
     // Delete relations if deleted table is not source table.
     std::shared_ptr<TableModel> spDeletedtable = nullptr;
@@ -243,7 +243,7 @@ void TableController::onTableDeleteRequested(int iDeletedTableID)
         emit tablesChanged();
     }
 }
-void TableController::onRelationshipDeleteRequested(int iDeletedRelationID)
+void TableController::onDeleteRelationRequested(int iDeletedRelationID)
 {
     if(auto spDeletedRelation = GetRelation(iDeletedRelationID); spDeletedRelation != nullptr)
     {
@@ -260,7 +260,7 @@ void TableController::onRelationshipDeleteRequested(int iDeletedRelationID)
         qDebug() << "Warning: No existing relation found with ID" << iDeletedRelationID << "to delete.";
     }
 }
-void TableController::onRelationshipChangeRequested(int iChangedRelationID, const QString& sRelationship)
+void TableController::onChangeRelationshipRequested(int iChangedRelationID, const QString& sRelationship)
 {
     if(auto spChangedRelation = GetRelation(iChangedRelationID); spChangedRelation != nullptr)
     {
@@ -271,7 +271,7 @@ void TableController::onRelationshipChangeRequested(int iChangedRelationID, cons
         qDebug() << "Warning: No existing relation found with ID" << iChangedRelationID << "to change relationship.";
     }
 }
-void TableController::onNewRelationEstablished(int iSourceTableID, int iDestinationTableID)
+void TableController::onCreateNewRelationRequested(int iSourceTableID, int iDestinationTableID)
 {
     if(!IsRelationExists(iSourceTableID, iDestinationTableID))
     {

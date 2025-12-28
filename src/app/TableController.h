@@ -26,13 +26,13 @@ public:
     void AddTable(std::shared_ptr<TableModel> spTable);
     void AddRelation(int iSourceTableID, int iDestinationTableID);
 public slots:
-    void onTableDeleteRequested(int iTableID);
-    void onRelationshipDeleteRequested(int iID);
-    void onRelationshipChangeRequested(int iID, const QString& sRelationship);
-    void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
-    void onTableNameChangeRequested(int iTableID, const QString& sNewName);
+    void onDeleteTableRequested(int iTableID);
+    void onDeleteRelationRequested(int iID);
+    void onChangeRelationshipRequested(int iID, const QString& sRelationship);
+    void onCreateNewRelationRequested(int iSourceTableID, int iDestinationTableID);
+    void onChangeTableNameRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
-    void onCreateNewTable(const QPointF& rPointF);
+    void onCreateNewTableRequested(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);

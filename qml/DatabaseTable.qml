@@ -29,8 +29,8 @@ Item {
     // -------------------------------------------------------------------------
     // Controller command signals (emitted by UI; C++ controllers should listen)
     // -------------------------------------------------------------------------
-    signal tableDeleteRequested(int tableID)
-    signal tableNameChangeRequested(int tableID, string newName)
+    signal deleteTableRequested(int tableID)
+    signal changeTableNameRequested(int tableID, string newName)
     signal tablePositionChangeRequested(int tableID, point newPos)
     // -------------------------------------------------------------------------
 
@@ -166,7 +166,7 @@ Item {
                 standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
                 alignment: Qt.AlignRight
                 onAccepted: {
-                    tableDeleteRequested(wrapper.tableID)
+                    deleteTableRequested(wrapper.tableID)
                     deleteTableDialog.close()
                 }
                 onRejected: deleteTableDialog.close()
@@ -577,7 +577,7 @@ Item {
                     }
 
                     if (trimmed !== wrapper.tableName) {
-                        tableNameChangeRequested(wrapper.tableID, trimmed)
+                        changeTableNameRequested(wrapper.tableID, trimmed)
                     }
 
                     wrapper.editingName = false
