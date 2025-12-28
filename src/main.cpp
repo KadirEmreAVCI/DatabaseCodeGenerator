@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     
     TableController::GetInstance().AddTable(spTournamentTable);
     TableController::GetInstance().AddTable(spMatchTable);
-    TableController::GetInstance().AddRelation(spMatchTable->GetID(), spTournamentTable->GetID());
+    TableController::GetInstance().onCreateNewRelationRequested(spMatchTable->GetID(), spTournamentTable->GetID());
 
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewTableRequested,      &TableController::GetInstance(), &TableController::onCreateNewTableRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::changeTableNameRequested,     &TableController::GetInstance(), &TableController::onChangeTableNameRequested);

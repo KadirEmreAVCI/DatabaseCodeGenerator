@@ -24,18 +24,19 @@ public:
     QList<QObject*> GetRelationList()const;
 
     void AddTable(std::shared_ptr<TableModel> spTable);
-    void AddRelation(int iSourceTableID, int iDestinationTableID);
 public slots:
-    void onDeleteTableRequested(int iTableID);
     void onDeleteRelationRequested(int iID);
     void onChangeRelationshipRequested(int iID, const QString& sRelationship);
     void onCreateNewRelationRequested(int iSourceTableID, int iDestinationTableID);
+    
+    void onDeleteTableRequested(int iTableID);
     void onChangeTableNameRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onCreateNewTableRequested(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
+    void AddRelation(int iSourceTableID, int iDestinationTableID);
     std::shared_ptr<TableModel> GetTable(int iTableID)const;
     std::shared_ptr<RelationModel> GetRelation(int iRelationID)const;
     std::map<int, std::shared_ptr<RelationModel>> GatherRelationsFromTables()const;
