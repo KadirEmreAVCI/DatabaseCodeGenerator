@@ -2,10 +2,12 @@
 #define COLUMNLISTMODEL_H_
 
 #include <QAbstractListModel>
-#include "ColumnModel.h"
+
 
 #include <vector>
 #include <memory>
+
+class ColumnModel;
 
 class ColumnListModel : public QAbstractListModel{
     Q_OBJECT
@@ -28,7 +30,9 @@ public:
     QHash<int, QByteArray> roleNames() const override;
     
     void AddColumn(std::shared_ptr<ColumnModel> spColumnItem);
+    void AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem);
     bool RemoveColumn(int iRow);
+    bool RemoveColumn(const QString& sColumnName);
 private:
     bool IsRowIndexValid(int iRow) const;
     std::vector<std::shared_ptr<ColumnModel>> m_vecspColumns;

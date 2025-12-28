@@ -259,7 +259,7 @@ Window {
             id: links
             anchors.fill: parent
             z: -1
-            relations: relationController.relations
+            relations: tableController.relations
             tableRepeater: tableRepeater
         }
 

@@ -7,10 +7,12 @@
 #include <memory>
 
 class TableModel;
+class RelationModel;
 
 class TableController : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QList<QObject*> tables READ GetTables NOTIFY tablesChanged)
+    Q_PROPERTY(QList<QObject*> tables READ GetTableList NOTIFY tablesChanged)
+    Q_PROPERTY(QList<QObject*> relations READ GetRelationList NOTIFY relationsChanged)
 public:
     static TableController& GetInstance();
     TableController(const TableController&) = delete;
@@ -18,28 +20,35 @@ public:
     ~TableController() = default;
 
     // Getters
-    QList<QObject*> GetTables()const;
-    std::shared_ptr<const TableModel> GetTable(int iTableID)const;
-    void NewRelationEstablished(int iSourceTableID, int iDestinationTableID);
+    QList<QObject*> GetTableList()const;
+    QList<QObject*> GetRelationList()const;
+    std::shared_ptr<TableModel> GetTable(int iTableID)const;
 
     void AddTable(std::shared_ptr<TableModel> spTable);
-    void TableDeleted(int iTableID);
-    bool RelationshipDeleted(int iSourceTableID, int iDestinationTableID);
+    void AddRelation(int iSourceTableID, int iDestinationTableID);
 public slots:
+    void onTableDeleteRequested(int iTableID);
+    void onRelationshipDeleteRequested(int iID);
+    void onRelationshipChangeRequested(int iID, const QString& sRelationship);
+    void onNewRelationEstablished(int iSourceTableID, int iDestinationTableID);
     void onTableNameChangeRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onCreateNewTable(const QPointF& rPointF);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
+    std::map<int, std::shared_ptr<RelationModel>> GetRelations()const;
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
-    QString FindRelationColumnName(int iDestinationTableID) const;
+    bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
+    void RelationsChanged();
 
-    std::map<int, std::shared_ptr<TableModel>> m_mapspTable; 
+    std::map<int, std::shared_ptr<TableModel>> m_mapspTable;
+    std::map<int, std::shared_ptr<RelationModel>> m_mapspRelations;
     int m_iNextTableID = 0;
 signals:
     void tablesChanged();
+    void relationsChanged();
     void tableNameChangeRejected(int tableID, const QString &sWarningMessage);
 };
 
