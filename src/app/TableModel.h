@@ -26,6 +26,7 @@ public:
     bool RemoveRelation(int iDeletedTableID);
     void TableDeleteRequested(int iDeletedTableID);
     std::map<int, std::shared_ptr<RelationModel>> GetRelations() const;
+    int GetColumnIdxByName(const QString& sColumnName) const;
 
     // Getters
     int GetID() const;

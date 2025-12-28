@@ -119,6 +119,17 @@ bool ColumnListModel::RemoveColumn(int iRow)
         return false;
     }
 }
+int ColumnListModel::GetColumnIdxByName(const QString& sColumnName) const
+{
+    for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
+    {
+        if(m_vecspColumns[i]->GetName() == sColumnName)
+        {
+            return i;
+        }
+    }
+    return -1; // Not found
+}
 bool ColumnListModel::RemoveColumn(const QString& sColumnName)
 {
     for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)

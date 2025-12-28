@@ -85,6 +85,10 @@ void TableModel::TableDeleteRequested(int iDeletedTableID)
         }
     }
 }
+int TableModel::GetColumnIdxByName(const QString& sColumnName) const
+{
+    return m_pColumnListModel->GetColumnIdxByName(sColumnName);
+}
 std::map<int, std::shared_ptr<RelationModel>> TableModel::GetRelations() const
 {
     return m_mapspRelations;
@@ -167,7 +171,7 @@ void TableModel::UpdateRemainingRelations()
     {
         if(spRelation != nullptr)
         {
-            spRelation->UpdateSourceRowIdx();
+            spRelation->Update();
         }
     }
 }

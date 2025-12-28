@@ -37,8 +37,10 @@ public:
     void SetSourceTable(std::weak_ptr<const TableModel>);
     void SetRelationship(const QString&);
 
-    void UpdateSourceRowIdx();
+    void Update();
 private:
+    void UpdateSourceRowIdx();
+
     int m_iID;
     const static int ms_iDestinationRowIdx{0};
     int m_iDestinationTableID{-1};

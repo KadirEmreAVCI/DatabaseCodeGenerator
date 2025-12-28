@@ -71,7 +71,7 @@ void RelationModel::SetSourceTable(std::weak_ptr<const TableModel> wpSourceTable
     {
         m_wpSourceTable = wpSourceTable;
         m_iSourceTableID = m_wpSourceTable.lock()->GetID();
-        UpdateSourceRowIdx();
+        Update();
         emit sourceRowIdxChanged();
         emit sourceTableIDChanged();
     }
@@ -83,6 +83,10 @@ void RelationModel::SetRelationship(const QString& sRelationship)
         m_sRelationship = sRelationship;
         emit relationshipChanged();
     }
+}
+void RelationModel::Update()
+{
+    UpdateSourceRowIdx();
 }
 void RelationModel::UpdateSourceRowIdx()
 {

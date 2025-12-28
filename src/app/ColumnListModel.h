@@ -33,6 +33,7 @@ public:
     void AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem);
     bool RemoveColumn(int iRow);
     bool RemoveColumn(const QString& sColumnName);
+    int GetColumnIdxByName(const QString& sColumnName) const;
 private:
     bool IsRowIndexValid(int iRow) const;
     std::vector<std::shared_ptr<ColumnModel>> m_vecspColumns;
