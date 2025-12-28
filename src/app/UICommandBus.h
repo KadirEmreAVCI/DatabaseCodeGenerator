@@ -16,16 +16,16 @@ public:
 private:
     explicit UiCommandBus(QObject* parent = nullptr);
 signals:
-    // -------------------------------------------------------------------------
-    // Controller command signals (emitted by QML; controllers/services listen)
-    // -------------------------------------------------------------------------
-    void tableDeleteRequested(int tableID);
-    void tableNameChangeRequested(int tableID, const QString& newName);
+    // Table related commands
+    void createNewTableRequested(const QPointF& pos);
+    void deleteTableRequested(int tableID);
+    void changeTableNameRequested(int tableID, const QString& newName);
     void tablePositionChangeRequested(int tableID, const QPointF& newPos);
-    void newRelationEstablished(int sourceTableID, int destinationTableID);
-    void relationshipChangeRequested(int ID, const QString& relationship);
-    void relationshipDeleteRequested(int ID);
-    // -------------------------------------------------------------------------
+    
+    // Relation related commands
+    void createNewRelationRequested(int sourceTableID, int destinationTableID);
+    void deleteRelationRequested(int ID);
+    void changeRelationshipRequested(int ID, const QString& relationship);
 };
 
 #endif // UICOMMANDBUS_H_

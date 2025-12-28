@@ -15,12 +15,13 @@ Window {
 
     QtObject {
         id: qmlFallbackBus
-        signal tableDeleteRequested(int tableID)
-        signal tableNameChangeRequested(int tableID, string newName)
+        signal createNewTableRequested(point pos)
+        signal deleteTableRequested(int tableID)
+        signal changeTableNameRequested(int tableID, string newName)
         signal tablePositionChangeRequested(int tableID, point newPos)
-        signal newRelationEstablished(int sourceTableID, int destinationTableID)
-        signal relationshipChangeRequested(int ID, string relationship)
-        signal relationshipDeleteRequested(int ID)
+        signal createNewRelationRequested(int sourceTableID, int destinationTableID)
+        signal changeRelationshipRequested(int ID, string relationship)
+        signal deleteRelationRequested(int ID)
     }
 
     GridBackground {
@@ -212,7 +213,7 @@ Window {
 
                         MenuItem {
                             text: qsTr("Table")
-                            onTriggered: tableController.onCreateNewTable(zoomLayer.lastRightClickPos)
+                            onTriggered: commandBus.createNewTableRequested(zoomLayer.lastRightClickPos)
                         }
                     }
 
@@ -266,16 +267,16 @@ Window {
         Connections {
             target: links
 
-            function onNewRelationEstablished(sourceTableID, destinationTableID) {
-                commandBus.newRelationEstablished(sourceTableID, destinationTableID)
+            function onCreateNewRelationRequested(sourceTableID, destinationTableID) {
+                commandBus.createNewRelationRequested(sourceTableID, destinationTableID)
             }
 
-            function onRelationshipChangeRequested(ID, relationship) {
-                commandBus.relationshipChangeRequested(ID, relationship)
+            function onChangeRelationshipRequested(ID, relationship) {
+                commandBus.changeRelationshipRequested(ID, relationship)
             }
 
-            function onRelationshipDeleteRequested(ID) {
-                commandBus.relationshipDeleteRequested(ID)
+            function onDeleteRelationRequested(ID) {
+                commandBus.deleteRelationRequested(ID)
             }
 
             function onPreviewTrackingRequested(enabled) {
@@ -313,8 +314,8 @@ Window {
                 onXChanged: { links.updateWorldBounds(); links.requestRedraw() }
                 onYChanged: { links.updateWorldBounds(); links.requestRedraw() }
 
-                onTableDeleteRequested: function(id) { commandBus.tableDeleteRequested(id) }
-                onTableNameChangeRequested: function(id, newName) { commandBus.tableNameChangeRequested(id, newName) }
+                onDeleteTableRequested: function(id) { commandBus.deleteTableRequested(id) }
+                onChangeTableNameRequested: function(id, newName) { commandBus.changeTableNameRequested(id, newName) }
                 onTablePositionChangeRequested: function(id, pos) { commandBus.tablePositionChangeRequested(id, pos) }
             }
         }

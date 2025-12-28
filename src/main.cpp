@@ -27,14 +27,15 @@ int main(int argc, char **argv)
     
     TableController::GetInstance().AddTable(spTournamentTable);
     TableController::GetInstance().AddTable(spMatchTable);
-    TableController::GetInstance().AddRelation(spMatchTable->GetID(), spTournamentTable->GetID());
+    TableController::GetInstance().onCreateNewRelationRequested(spMatchTable->GetID(), spTournamentTable->GetID());
 
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableNameChangeRequested,     &TableController::GetInstance(), &TableController::onTableNameChangeRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewTableRequested,      &TableController::GetInstance(), &TableController::onCreateNewTableRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::changeTableNameRequested,     &TableController::GetInstance(), &TableController::onChangeTableNameRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tablePositionChangeRequested, &TableController::GetInstance(), &TableController::onTablePositionChangeRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::tableDeleteRequested,         &TableController::GetInstance(), &TableController::onTableDeleteRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::newRelationEstablished,       &TableController::GetInstance(), &TableController::onNewRelationEstablished);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipChangeRequested,  &TableController::GetInstance(), &TableController::onRelationshipChangeRequested);
-    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::relationshipDeleteRequested,  &TableController::GetInstance(), &TableController::onRelationshipDeleteRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteTableRequested,         &TableController::GetInstance(), &TableController::onDeleteTableRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewRelationRequested,   &TableController::GetInstance(), &TableController::onCreateNewRelationRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::changeRelationshipRequested,  &TableController::GetInstance(), &TableController::onChangeRelationshipRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteRelationRequested,      &TableController::GetInstance(), &TableController::onDeleteRelationRequested);
 
     // Expose to QML
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());

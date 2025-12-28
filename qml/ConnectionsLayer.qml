@@ -42,13 +42,13 @@ Item {
     signal previewTrackingRequested(bool enabled)
 
     // emitted when valid drop happens
-    signal newRelationEstablished(int sourceTableID, int destinationTableID)
+    signal createNewRelationRequested(int sourceTableID, int destinationTableID)
 
     // emitted when user confirms relationship change (handle in C++/Controller)
-    signal relationshipChangeRequested(int ID, string relationship) // values: "1..1" or "1..*"
+    signal changeRelationshipRequested(int ID, string relationship) // values: "1..1" or "1..*"
 
     // emitted when user confirms relationship delete (handle in C++/Controller)
-    signal relationshipDeleteRequested(int ID)
+    signal deleteRelationRequested(int ID)
 
     onRelationsChanged: {
         Qt.callLater(function() {
@@ -131,7 +131,7 @@ Item {
             return
         }
 
-        newRelationEstablished(srcId, dstId)
+        createNewRelationRequested(srcId, dstId)
 
         creatingSourceTableID = -1
         requestRedraw()
@@ -704,7 +704,7 @@ Item {
                         text: "Confirm"
                         onClicked: {
                             if (root.pendingRelationObj) {
-                                root.relationshipChangeRequested(root.pendingRelationObj.ID, root.pendingRelationship)
+                                root.changeRelationshipRequested(root.pendingRelationObj.ID, root.pendingRelationship)
                             }
 
                             root.relationshipConfirmVisible = false
@@ -783,7 +783,7 @@ Item {
                         text: "Delete"
                         onClicked: {
                             if (root.pendingDeleteRelationObj) {
-                                root.relationshipDeleteRequested(root.pendingDeleteRelationObj.ID)
+                                root.deleteRelationRequested(root.pendingDeleteRelationObj.ID)
                             }
 
                             root.relationshipDeleteConfirmVisible = false
