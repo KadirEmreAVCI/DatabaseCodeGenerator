@@ -10,6 +10,11 @@ class ColumnModel;
 class ColumnListModel;
 class RelationModel;
 
+enum class RelationRole{
+    eOutgoing,
+    eIncoming
+};
+
 class TableModel : public Model{
     Q_OBJECT
     Q_PROPERTY(int ID READ GetID NOTIFY idChanged)
@@ -19,14 +24,15 @@ class TableModel : public Model{
     Q_PROPERTY(qreal height READ GetHeight NOTIFY heightChanged)
     Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
 public:
-    TableModel(QObject *parent = nullptr, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200);
-    virtual ~TableModel() override;
+    TableModel(int iID, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200, QObject *parent = nullptr);
+    virtual ~TableModel() override = default;
     void AddColumn(std::shared_ptr<ColumnModel> spColumn);
-    bool AddRelation(std::shared_ptr<TableModel> spSourceTable, std::shared_ptr<const TableModel> spDestinationTable);
-    bool RemoveRelation(int iDeletedTableID);
-    void TableDeleteRequested(int iDeletedTableID);
-    std::map<int, std::shared_ptr<RelationModel>> GetRelations() const;
     int GetColumnIdxByName(const QString& sColumnName) const;
+    void Attach(const RelationModel*, RelationRole);
+    void Detach(const RelationModel*, RelationRole);
+    void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
+    int GetRelationBasedColumnIdx(int iRelationID)const;
+    void RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName);
 
     // Getters
     int GetID() const;
@@ -43,19 +49,14 @@ public:
     void SetWidth(qreal);
     void SetHeight(qreal);
 private:
-    void AddRelationBasedColumn(const QString& sDestinationTableName);
-    bool DeleteRelationBasedColumn(const QString& sDestinationTableName);
-    void UpdateRemainingRelations();
-
     int m_iID;
     QString m_sName;
     QPointF m_rPointF;
     qreal m_rWidth;
     qreal m_rHeight;
-    ColumnListModel* m_pColumnListModel;
-    
-    static int ms_iNextRelationID;
-    std::map<int, std::shared_ptr<RelationModel>> m_mapspRelations;
+    std::unique_ptr<ColumnListModel> m_upColumnListModel;   
+    std::vector<const RelationModel*> m_vecOutgoingRelations;
+    std::vector<const RelationModel*> m_vecIncomingRelations; 
 signals:
     void idChanged();
     void nameChanged();

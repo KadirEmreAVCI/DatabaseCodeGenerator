@@ -23,7 +23,7 @@ public:
     QList<QObject*> GetTableList()const;
     QList<QObject*> GetRelationList()const;
 
-    void AddTable(std::shared_ptr<TableModel> spTable);
+    void AddTable(const QPointF& rPointF, const QString& sTableName);
 public slots:
     void onDeleteRelationRequested(int iID);
     void onChangeRelationshipRequested(int iID, const QString& sRelationship);
@@ -37,17 +37,17 @@ public slots:
 private:
     TableController(QObject *parent = nullptr);
     void AddRelation(int iSourceTableID, int iDestinationTableID);
-    std::shared_ptr<TableModel> GetTable(int iTableID)const;
-    std::shared_ptr<RelationModel> GetRelation(int iRelationID)const;
-    std::map<int, std::shared_ptr<RelationModel>> GatherRelationsFromTables()const;
+    TableModel* GetTable(int iTableID);
+    RelationModel* GetRelation(int iRelationID);
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;
-    void RelationsChanged();
+    std::vector<int> GetRelationIDsIfTableInvolved(int iTableID);
 
-    std::map<int, std::shared_ptr<TableModel>> m_mapspTable;
-    std::map<int, std::shared_ptr<RelationModel>> m_mapspRelations;
+    std::vector<std::unique_ptr<TableModel>> m_vecupTables;
+    std::vector<std::unique_ptr<RelationModel>> m_vecupRelations;
     int m_iNextTableID = 0;
+    int ms_iNextRelationID = 0;
 signals:
     void tablesChanged();
     void relationsChanged();

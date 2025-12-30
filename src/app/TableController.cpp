@@ -17,29 +17,22 @@ TableController::TableController(QObject *parent)
     : QObject{parent}
 {
 }
-void TableController::AddTable(std::shared_ptr<TableModel> spTable)
+void TableController::AddTable(const QPointF& rPointF, const QString& sTableName)
 {
-    if(nullptr != spTable)
-    {
-        spTable->SetID(m_iNextTableID++);
-        m_mapspTable.emplace(spTable->GetID(), spTable);
-        emit tablesChanged();
-    }
-    else
-    {
-        qDebug() << "Error: TableModel pointer is null.";
-    }
+    m_vecupTables.push_back(std::make_unique<TableModel>(m_iNextTableID++, sTableName, rPointF));
+    emit tablesChanged();
 }
 void TableController::AddRelation(int iSourceTableID, int iDestinationTableID)
 {
-    if(auto spSourceTable = GetTable(iSourceTableID); spSourceTable != nullptr)
+    if(auto pSourceTable = GetTable(iSourceTableID); pSourceTable != nullptr)
     {
-        if(auto spDestinationTable = GetTable(iDestinationTableID); spDestinationTable != nullptr)
+        if(auto pDestinationTable = GetTable(iDestinationTableID); pDestinationTable != nullptr)
         {
-            if(spSourceTable->AddRelation(spSourceTable, spDestinationTable))
-            {
-                RelationsChanged();
-            }
+            auto upRelation = std::make_unique<RelationModel>(ms_iNextRelationID++, pDestinationTable, pSourceTable, "1..*");
+            pSourceTable->Attach(upRelation.get(), RelationRole::eOutgoing);
+            pDestinationTable->Attach(upRelation.get(), RelationRole::eIncoming);
+            m_vecupRelations.push_back(std::move(upRelation));
+            emit relationsChanged();
         }
         else
         {
@@ -53,13 +46,13 @@ void TableController::AddRelation(int iSourceTableID, int iDestinationTableID)
 }
 void TableController::onChangeTableNameRequested(int iRenamedTableID, const QString& sNewName)
 {
-    if(auto spRenamedTable = GetTable(iRenamedTableID); spRenamedTable != nullptr)
+    if(auto pRenamedTable = GetTable(iRenamedTableID); pRenamedTable != nullptr)
     {
-        const QString sOldName{spRenamedTable->GetName()};
+        const QString sOldName{pRenamedTable->GetName()};
         const QString sNormalizedNewName{NormalizeTableName(sNewName)};
         if(!IsNameDuplicated(iRenamedTableID, sNormalizedNewName))
         {
-            spRenamedTable->SetName(sNormalizedNewName);
+            pRenamedTable->SetName(sNormalizedNewName);
         }
         else
         {
@@ -74,9 +67,9 @@ void TableController::onChangeTableNameRequested(int iRenamedTableID, const QStr
 }
 void TableController::onTablePositionChangeRequested(int iRelocatedTableID, const QPointF& rPointF)
 {
-    if (auto spRelocatedTable = GetTable(iRelocatedTableID); spRelocatedTable != nullptr) 
+    if (auto pRelocatedTable = GetTable(iRelocatedTableID); pRelocatedTable != nullptr) 
     {
-        spRelocatedTable->SetPoint(rPointF);
+        pRelocatedTable->SetPoint(rPointF);
     } 
     else 
     {
@@ -92,20 +85,20 @@ void TableController::onCreateNewTableRequested(const QPointF& rPointF)
         sTempNewName = QString("Table %1").arg(m_iNextTableID + iTableIDOffset++);
     }
     while(IsNameDuplicated(m_iNextTableID, sTempNewName));
-    AddTable(std::make_shared<TableModel>(this, sTempNewName, rPointF));
+    AddTable(rPointF, sTempNewName);
 }
 QRectF TableController::GetBoundingRect() const
 {
     QRectF rUnitedRect{};
     bool blFirstRect = true;
 
-    for(const auto &[iID, spTable] : m_mapspTable) 
+    for(const auto& upTable : m_vecupTables) 
     {
-        if(!spTable)
+        if(!upTable)
         { 
             continue;
         }
-        QRectF rNextRect(spTable->GetPointF().x(), spTable->GetPointF().y(), spTable->GetWidth(), spTable->GetHeight()); 
+        QRectF rNextRect(upTable->GetPointF().x(), upTable->GetPointF().y(), upTable->GetWidth(), upTable->GetHeight()); 
         if(blFirstRect) 
         {
             rUnitedRect = rNextRect;
@@ -118,28 +111,10 @@ QRectF TableController::GetBoundingRect() const
     }
     return rUnitedRect;
 }
-std::map<int, std::shared_ptr<RelationModel>> TableController::GatherRelationsFromTables()const
-{
-    std::map<int, std::shared_ptr<RelationModel>> mapRelations;
-    for (const auto& [iID, spTable] : m_mapspTable) 
-    {
-        if (spTable != nullptr) 
-        {
-            const auto tableRelations = spTable->GetRelations();
-            mapRelations.insert(tableRelations.begin(), tableRelations.end());
-        } 
-        else 
-        {
-            qDebug() << "Warning: null TableModel for id" << iID;
-        }
-    }
-    return mapRelations;
-}
 bool TableController::IsNameDuplicated(int iChangedTableID, const QString& sNewName)const
 {
-    return std::any_of(m_mapspTable.cbegin(), m_mapspTable.cend(), [iChangedTableID, sNewName](const auto& pairTable){
-        const auto& [iID, spTableModel] = pairTable;
-        return (iChangedTableID != iID) && (sNewName == spTableModel->GetName());
+    return std::any_of(m_vecupTables.cbegin(), m_vecupTables.cend(), [iChangedTableID, sNewName](const auto& upTable){
+        return (upTable->GetID() != iChangedTableID) && (upTable->GetName() == sNewName);
     });
 }
 QString TableController::NormalizeTableName(const QString& sName) const
@@ -154,117 +129,123 @@ QString TableController::NormalizeTableName(const QString& sName) const
 }
 bool TableController::IsRelationExists(int iSourceTableID, int iDestinationTableID)const
 {
-    return std::any_of(m_mapspRelations.cbegin(), m_mapspRelations.cend(), [iSourceTableID, iDestinationTableID](const auto& spRelation){
-        if(spRelation.second != nullptr)
+    return std::any_of(m_vecupRelations.cbegin(), m_vecupRelations.cend(), [iSourceTableID, iDestinationTableID](const auto& upRelation){
+        if(upRelation != nullptr)
         {
-            return (spRelation.second->GetSourceTableID() == iSourceTableID) && (spRelation.second->GetDestinationTableID() == iDestinationTableID);
+            return (upRelation->GetSourceTableID() == iSourceTableID) && (upRelation->GetDestinationTableID() == iDestinationTableID);
         }
         return false;
     });
 }
-void TableController::RelationsChanged()
-{
-    m_mapspRelations = GatherRelationsFromTables();
-    emit relationsChanged();
+std::vector<int> TableController::GetRelationIDsIfTableInvolved(int iTableID)
+{   
+    std::vector<int> vecRelationIDsTableInvolved;
+    vecRelationIDsTableInvolved.reserve(m_vecupRelations.size());
+    if(const TableModel* const pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        for (const auto& upReletion : m_vecupRelations)
+        {
+            if (!upReletion) 
+            {
+                continue;
+            }
+            else
+            {  
+                if (upReletion->GetSourceTable() == pTable || upReletion->GetDestinationTable() == pTable)
+                {
+                    vecRelationIDsTableInvolved.push_back(upReletion->GetID());
+                }
+            }
+        }
+    }
+    return vecRelationIDsTableInvolved;
 }
 QList<QObject*> TableController::GetTableList() const
 {
     QList<QObject*> lsTable;
-    lsTable.reserve(static_cast<int>(m_mapspTable.size()));
-    for (const auto& [iID, spTable] : m_mapspTable) 
+    lsTable.reserve(static_cast<int>(m_vecupTables.size()));
+    for (const auto& upTable : m_vecupTables) 
     {
-        if (spTable != nullptr) 
+        if (upTable != nullptr) 
         {
-            lsTable.append(spTable.get());
+            lsTable.append(upTable.get());
         } 
-        else 
-        {
-            qDebug() << "Warning: null TableModel for id" << iID;
-        }
     }
     return lsTable;
 }
 QList<QObject*> TableController::GetRelationList()const
 {
     QList<QObject*> lsRelations;
-    lsRelations.reserve(static_cast<int>(m_mapspRelations.size()));
-    for (const auto& [iID, spRelation] : m_mapspRelations) 
+    lsRelations.reserve(static_cast<int>(m_vecupRelations.size()));
+    for (const auto& upRelation : m_vecupRelations) 
     {
-        if (spRelation != nullptr) 
+        if (upRelation != nullptr) 
         {
-            lsRelations.append(spRelation.get());
+            lsRelations.append(upRelation.get());
         } 
-        else 
-        {
-            qDebug() << "Warning: null Relation TableModel for id" << iID;
-        }
     }
     return lsRelations;
 }
-std::shared_ptr<TableModel> TableController::GetTable(int iTableID)const
+TableModel* TableController::GetTable(int iTableID)
 {
-    std::shared_ptr<TableModel> spTableModel = nullptr;
-    if (auto iterTable = m_mapspTable.find(iTableID); iterTable != m_mapspTable.end()) 
-    {
-        spTableModel = iterTable->second;
-    }
-    return spTableModel;
+    auto iterupTable = std::find_if(m_vecupTables.begin(), m_vecupTables.end(), [iTableID](const auto& upTable){
+        return upTable->GetID() == iTableID;
+    });
+    return (iterupTable != m_vecupTables.end()) ? iterupTable->get() : nullptr;
 }
-std::shared_ptr<RelationModel> TableController::GetRelation(int iRelationID)const
+RelationModel* TableController::GetRelation(int iRelationID)
 {
-    std::shared_ptr<RelationModel> spRelationModel = nullptr;
-    if (auto iterRelation = m_mapspRelations.find(iRelationID); iterRelation != m_mapspRelations.end()) 
-    {
-        spRelationModel = iterRelation->second;
-    }
-    return spRelationModel;
+    auto iterupRelation = std::find_if(m_vecupRelations.begin(), m_vecupRelations.end(), [iRelationID](const auto& upRelation){
+        return upRelation->GetID() == iRelationID;
+    });
+    return (iterupRelation != m_vecupRelations.end()) ? iterupRelation->get() : nullptr;
 }
 void TableController::onDeleteTableRequested(int iDeletedTableID)
 {
-    // Delete relations if deleted table is not source table.
-    std::shared_ptr<TableModel> spDeletedtable = nullptr;
-    for(auto [iTableID, spTable] : m_mapspTable)
+    if(auto pDeletedTable = GetTable(iDeletedTableID); pDeletedTable != nullptr)
     {
-        if(spTable != nullptr)
+        auto vecRelationIDsTableInvolved = GetRelationIDsIfTableInvolved(iDeletedTableID);
+        for(int iDeletedRelation : vecRelationIDsTableInvolved)
         {
-            if(iTableID != iDeletedTableID)
-            {
-                spTable->TableDeleteRequested(iDeletedTableID);
-            }
-            else
-            {
-                spDeletedtable = spTable;
-            }
+            onDeleteRelationRequested(iDeletedRelation);
         }
-    }
-    if(spDeletedtable != nullptr)
-    {
-        m_mapspTable.erase(iDeletedTableID);
+        std::erase_if(m_vecupTables, [&](const std::unique_ptr<TableModel>& upTable) {
+            return upTable && upTable->GetID() == iDeletedTableID;
+        });
         emit tablesChanged();
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
     }
 }
 void TableController::onDeleteRelationRequested(int iDeletedRelationID)
 {
-    if(auto spDeletedRelation = GetRelation(iDeletedRelationID); spDeletedRelation != nullptr)
+    if(auto pDeletedRelation = GetRelation(iDeletedRelationID); pDeletedRelation != nullptr)
     {
-        if(auto spSourceTable = GetTable(spDeletedRelation->GetSourceTableID()); spSourceTable != nullptr)
+        if(auto pDestinationTable = pDeletedRelation->GetDestinationTable(); pDestinationTable != nullptr)
         {
-            if(spSourceTable->RemoveRelation(iDeletedRelationID))
-            {
-                RelationsChanged();
-            }
+            pDestinationTable->Detach(pDeletedRelation, RelationRole::eIncoming);
         }
+        if(auto pSourceTable = pDeletedRelation->GetSourceTable(); pSourceTable != nullptr)
+        {
+            pSourceTable->Detach(pDeletedRelation, RelationRole::eOutgoing);
+        }
+        std::erase_if(m_vecupRelations, [&](const std::unique_ptr<RelationModel>& r){
+                return r->GetID() == iDeletedRelationID;
+            });
+        emit relationsChanged();
     }
     else
     {
-        qDebug() << "Warning: No existing relation found with ID" << iDeletedRelationID << "to delete.";
+        qDebug() << "Error: Relation ID not found.";
     }
 }
 void TableController::onChangeRelationshipRequested(int iChangedRelationID, const QString& sRelationship)
 {
-    if(auto spChangedRelation = GetRelation(iChangedRelationID); spChangedRelation != nullptr)
+    if(auto pChangedRelation = GetRelation(iChangedRelationID); pChangedRelation != nullptr)
     {
-        spChangedRelation->SetRelationship(sRelationship);
+        pChangedRelation->SetRelationship(sRelationship);
     }
     else
     {

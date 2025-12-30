@@ -3,95 +3,20 @@
 #include "ColumnModel.h"
 #include "RelationModel.h"
 
-int TableModel::ms_iNextRelationID{0};
-
-TableModel::TableModel(QObject *parent, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight) 
-    : Model(parent), m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_pColumnListModel{new ColumnListModel(this)}
+TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
+    : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_upColumnListModel{std::make_unique<ColumnListModel>(this)}
 {
-}
-TableModel::~TableModel()
-{
-    qDebug() << "TableModel destructor called for table:" << m_sName;
-    delete m_pColumnListModel;
-    m_pColumnListModel = nullptr;
 }
 void TableModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
 {
-    if (spColumn != nullptr && m_pColumnListModel != nullptr)
+    if (spColumn != nullptr && m_upColumnListModel != nullptr)
     {
-        m_pColumnListModel->AddColumn(spColumn);
-    }
-}
-bool TableModel::AddRelation(std::shared_ptr<TableModel> spSourceTable, std::shared_ptr<const TableModel> spDestinationTable)
-{
-    if (spDestinationTable != nullptr)
-    {
-        AddRelationBasedColumn(spDestinationTable->GetName());
-        const int iNextRelationID = ms_iNextRelationID++;
-        m_mapspRelations.emplace(iNextRelationID, std::make_shared<RelationModel>(  iNextRelationID, 
-                                                                                    spDestinationTable, 
-                                                                                    spSourceTable,
-                                                                                    "1..*"));
-        return true;
-    }
-    else
-    {
-        qDebug() << "Error: RelationModel pointer is null.";
-    }
-    return false;
-}
-bool TableModel::RemoveRelation(int iRelationID)
-{
-    bool blRelationRemoved = false;
-    for(auto iterRelation = m_mapspRelations.begin(); iterRelation != m_mapspRelations.end(); ++iterRelation)
-    {
-        if(iterRelation->second != nullptr && iterRelation->second->GetID() == iRelationID)
-        {
-            if(!iterRelation->second->GetDestinationTable().expired())
-            {
-                if(DeleteRelationBasedColumn(iterRelation->second->GetDestinationTable().lock()->GetName()))
-                {
-                    iterRelation = m_mapspRelations.erase(iterRelation);
-                    blRelationRemoved = true;
-                    break;
-                }
-                else
-                {
-                    qDebug() << "TableModel::Failed to delete relation-based column.";
-                }
-            }
-            else
-            {
-                qDebug() << "TableModel::Error: Destination Table pointer is null.";
-            }
-        }
-    }
-    if(blRelationRemoved)
-    {
-        UpdateRemainingRelations();
-    }
-    return blRelationRemoved;
-}
-void TableModel::TableDeleteRequested(int iDeletedTableID)
-{
-    for(auto iterRelation = m_mapspRelations.begin(); iterRelation != m_mapspRelations.end(); ++iterRelation)
-    {
-        if(iterRelation->second != nullptr && iterRelation->second->GetDestinationTableID() == iDeletedTableID)
-        {
-            if(RemoveRelation(iterRelation->second->GetID()))
-            {
-                break;
-            }
-        }
+        m_upColumnListModel->AddColumn(spColumn);
     }
 }
 int TableModel::GetColumnIdxByName(const QString& sColumnName) const
 {
-    return m_pColumnListModel->GetColumnIdxByName(sColumnName);
-}
-std::map<int, std::shared_ptr<RelationModel>> TableModel::GetRelations() const
-{
-    return m_mapspRelations;
+    return m_upColumnListModel->GetColumnIdxByName(sColumnName);
 }
 int TableModel::GetID() const
 {
@@ -115,7 +40,7 @@ qreal TableModel::GetHeight()const
 }
 ColumnListModel* TableModel::GetColumnListModel() const
 {
-    return m_pColumnListModel;
+    return m_upColumnListModel.get();
 }
 void TableModel::SetID(int iID)
 {
@@ -131,6 +56,13 @@ void TableModel::SetName(const QString &sName)
     {
         m_sName = sName;
         emit nameChanged();
+        for(auto pIncomingRelation : m_vecIncomingRelations)
+        {
+            if(pIncomingRelation != nullptr)
+            {
+                pIncomingRelation->DestinationTableRenamed();
+            }
+        }
     }
 }
 void TableModel::SetPoint(const QPointF& rPointF)
@@ -149,29 +81,57 @@ void TableModel::SetHeight(qreal rHeight)
 {
     m_rHeight = rHeight;
 }
-void TableModel::AddRelationBasedColumn(const QString& sDestinationTableName)
+void TableModel::Attach(const RelationModel* pRelation, RelationRole eRelationRole)
 {
-    const QString sRelationColumnName = sDestinationTableName + "ID";
+    if(pRelation != nullptr)
+    {
+        if(eRelationRole == RelationRole::eOutgoing)
+        {
+            AddRelationBasedColumn(pRelation->GetID(), pRelation->GetRelationBasedColumnName());
+            m_vecOutgoingRelations.push_back(pRelation);
+        }
+        else if(eRelationRole == RelationRole::eIncoming)
+        {
+            m_vecIncomingRelations.push_back(pRelation);
+        }
+    }
+}   
+void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRole)
+{
+    if(pRelation != nullptr)
+    {
+        if(eRelationRole == RelationRole::eOutgoing)
+        {
+            if(m_upColumnListModel->RemoveRelationBasedColumn(pRelation->GetID()))
+            {
+                std::erase(m_vecOutgoingRelations, pRelation);
+            }
+            else
+            {
+                qDebug() << "TableModel::Detach Relation based column could not be removed, relation ID: " << pRelation->GetID();
+            }
+        }
+        else if(eRelationRole == RelationRole::eIncoming)
+        {
+            std::erase(m_vecIncomingRelations, pRelation);
+        }
+    }
+}
+void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName)
+{
     const QString sRelationColumnType = "INT"; 
     const bool blIsEnabled = false;
     const bool blIsPrimaryKey = false;
     const bool blIsRelationSource = true;
 
-    auto spRelationColumn = std::make_shared<ColumnModel>(sRelationColumnName, sRelationColumnType, blIsEnabled, blIsPrimaryKey, blIsRelationSource);
-    m_pColumnListModel->AddRelationBasedColumn(spRelationColumn);
+    auto spRelationColumn = std::make_shared<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsEnabled, blIsPrimaryKey, blIsRelationSource, iRelationID);
+    m_upColumnListModel->AddRelationBasedColumn(spRelationColumn);
 }
-bool TableModel::DeleteRelationBasedColumn(const QString& sDestinationTableName)
+int TableModel::GetRelationBasedColumnIdx(int iRelationID)const
 {
-    const QString sRelationColumnName = sDestinationTableName + "ID";
-    return m_pColumnListModel->RemoveColumn(sRelationColumnName);
+    return m_upColumnListModel->GetRelationBasedColumnIdx(iRelationID);
 }
-void TableModel::UpdateRemainingRelations()
+void TableModel::RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName)
 {
-    for(auto [iID, spRelation] : m_mapspRelations)
-    {
-        if(spRelation != nullptr)
-        {
-            spRelation->Update();
-        }
-    }
+    m_upColumnListModel->RenameRelationBasedColumnName(iRelationID, sNewRelationBasedColumnName);
 }

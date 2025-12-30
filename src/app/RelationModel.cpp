@@ -1,32 +1,24 @@
 #include "RelationModel.h"
 #include "TableModel.h"
 #include <iostream>
+#include <QDebug>
 
 RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
-RelationModel::RelationModel(int iID, std::weak_ptr<const TableModel> wpDestinationTable, std::weak_ptr<const TableModel> wpSourceTable, const QString& sRelationship, QObject* pParent)
-    : m_iID{iID}, m_sRelationship{sRelationship}, Model{pParent}
-{
-    if (!wpDestinationTable.expired()) 
-    {
-        SetDestinationTable(wpDestinationTable);
-    }
-    if (!wpSourceTable.expired()) 
-    {
-        SetSourceTable(wpSourceTable);
-    }
-}
+RelationModel::RelationModel(int iID, TableModel* pDestinationTable, TableModel* pSourceTable, const QString& sRelationship, QObject* pParent)
+    : m_iID{iID}, m_sRelationship{sRelationship}, m_pDestinationTable{pDestinationTable}, m_pSourceTable{pSourceTable}, Model{pParent}
+{}
 int RelationModel::GetID() const
 {
     return m_iID;
 }
-std::weak_ptr<const TableModel> RelationModel::GetDestinationTable()const
+TableModel* RelationModel::GetDestinationTable()const
 {
-    return m_wpDestinationTable;
+    return m_pDestinationTable;
 }
-std::weak_ptr<const TableModel> RelationModel::GetSourceTable()const
+TableModel* RelationModel::GetSourceTable()const
 {
-    return m_wpSourceTable;
+    return m_pSourceTable;
 }
 int RelationModel::GetDestinationRowIdx()const
 {
@@ -34,46 +26,51 @@ int RelationModel::GetDestinationRowIdx()const
 }
 int RelationModel::GetDestinationTableID()const
 {
-    return m_iDestinationTableID;
+    return m_pDestinationTable->GetID();
 }
 int RelationModel::GetSourceRowIdx()const
 {
-    return m_iSourceRowIdx;
+    return m_pSourceTable->GetRelationBasedColumnIdx(m_iID);
 }
 int RelationModel::GetSourceTableID()const
 {
-    return m_iSourceTableID;
+    return m_pSourceTable->GetID();
 }
 QString RelationModel::GetRelationship()const
 {
     return m_sRelationship;
 }
-void RelationModel::SetID(int iID)
+QString RelationModel::GetRelationBasedColumnName()const
 {
-    if(m_iID != iID)
+    return m_pDestinationTable->GetName() + "ID";
+}
+void RelationModel::DestinationTableRenamed()const
+{
+    if(m_pSourceTable && m_pDestinationTable)
     {
-        m_iID = iID;
-        emit idChanged();
+        m_pSourceTable->RenameRelationBasedColumnName(m_iID, GetRelationBasedColumnName());
     }
 }
-void RelationModel::SetDestinationTable(std::weak_ptr<const TableModel> wpDestinationTable)
+void RelationModel::SetID(int iID)
 {
-    if(m_wpDestinationTable.lock() != wpDestinationTable.lock())
+    m_iID = iID;  
+    emit idChanged();
+}
+void RelationModel::SetDestinationTable(TableModel* pDestinationTable)
+{
+    if(pDestinationTable != nullptr)
     {
-        m_wpDestinationTable = wpDestinationTable;
-        m_iDestinationTableID = m_wpDestinationTable.lock()->GetID();
+        m_pDestinationTable = pDestinationTable;
         emit destinationTableIDChanged();
     }
 } 
-void RelationModel::SetSourceTable(std::weak_ptr<const TableModel> wpSourceTable)
+void RelationModel::SetSourceTable(TableModel* pSourceTable)
 {
-    if(m_wpSourceTable.lock() != wpSourceTable.lock())
+    if(m_pSourceTable != pSourceTable)
     {
-        m_wpSourceTable = wpSourceTable;
-        m_iSourceTableID = m_wpSourceTable.lock()->GetID();
-        Update();
-        emit sourceRowIdxChanged();
+        m_pSourceTable = pSourceTable;
         emit sourceTableIDChanged();
+        emit sourceRowIdxChanged();
     }
 } 
 void RelationModel::SetRelationship(const QString& sRelationship)
@@ -82,22 +79,5 @@ void RelationModel::SetRelationship(const QString& sRelationship)
     {
         m_sRelationship = sRelationship;
         emit relationshipChanged();
-    }
-}
-void RelationModel::Update()
-{
-    UpdateSourceRowIdx();
-}
-void RelationModel::UpdateSourceRowIdx()
-{
-    m_iSourceRowIdx = -1;
-    if(auto spSourceTable = m_wpSourceTable.lock(); spSourceTable != nullptr)
-    {
-        const QString sSourceColumnName = m_wpDestinationTable.lock()->GetName() + "ID";
-        m_iSourceRowIdx = spSourceTable->GetColumnIdxByName(sSourceColumnName);
-    }
-    else
-    {
-        std::cerr << "RelationModel::UpdateSourceRowIdx m_wpSourceTable is nullptr!\n";
     }
 }
