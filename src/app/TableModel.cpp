@@ -116,11 +116,10 @@ void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRo
 void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName)
 {
     const QString sRelationColumnType = "INT"; 
-    const bool blIsEnabled = false;
     const bool blIsPrimaryKey = false;
     const bool blIsRelationSource = true;
 
-    auto spRelationColumn = std::make_shared<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsEnabled, blIsPrimaryKey, blIsRelationSource, iRelationID);
+    auto spRelationColumn = std::make_shared<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsPrimaryKey, blIsRelationSource, iRelationID);
     m_upColumnListModel->AddColumn(spRelationColumn);
 }
 int TableModel::GetRelationBasedColumnIdx(int iRelationID)const

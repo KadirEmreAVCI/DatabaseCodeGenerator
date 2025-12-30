@@ -4,7 +4,7 @@
 ColumnListModel::ColumnListModel(QObject *parent)
     : QAbstractListModel(parent)
 {    
-    AddColumn(std::make_shared<ColumnModel>("ID", "INT",  false, true,  true));
+    AddColumn(std::make_shared<ColumnModel>("ID", "INT", true, false));
 }
 int ColumnListModel::rowCount(const QModelIndex &parent) const
 {

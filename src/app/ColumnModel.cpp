@@ -1,9 +1,9 @@
 #include "ColumnModel.h"
 
-ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, int iRelationID, QObject *parent)
+ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsPrimaryKey, bool blIsRelationSource, int iRelationID, QObject *parent)
     : m_sName{sName}, 
     m_sType(sType), 
-    m_blIsEnabled(blIsEnabled), 
+    m_blIsEnabled(!(blIsPrimaryKey || blIsRelationSource)), 
     m_blIsPrimaryKey(blIsPrimaryKey), 
     m_blIsRelationSource(blIsRelationSource), 
     m_iRelationID{iRelationID},
