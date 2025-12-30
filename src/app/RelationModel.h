@@ -19,35 +19,32 @@ class RelationModel : public Model{
     Q_PROPERTY(QString relationship READ GetRelationship NOTIFY relationshipChanged)
 public:
     explicit RelationModel(QObject* pParent = nullptr);
-    RelationModel(int iID, std::weak_ptr<const TableModel> wpDestinationTable, std::weak_ptr<const TableModel> wpSourceTable, const QString& sRelationship, QObject* pParent = nullptr);
+    RelationModel(int iID, TableModel* pDestinationTable, TableModel* pSourceTable, const QString& sRelationship, QObject* pParent = nullptr);
+    virtual ~RelationModel() override = default;
 
     // Getters
     int GetID() const;
-    std::weak_ptr<const TableModel> GetDestinationTable()const;
-    std::weak_ptr<const TableModel> GetSourceTable()const;
+    TableModel* GetDestinationTable()const;
+    TableModel* GetSourceTable()const;
     int GetDestinationRowIdx()const;
     int GetDestinationTableID()const;
     int GetSourceRowIdx()const;
     int GetSourceTableID()const;
     QString GetRelationship()const;
+    QString GetRelationBasedColumnName()const;
+    void DestinationTableRenamed()const;
 
     // Setters
     void SetID(int);
-    void SetDestinationTable(std::weak_ptr<const TableModel>);
-    void SetSourceTable(std::weak_ptr<const TableModel>);
+    void SetDestinationTable(TableModel*);
+    void SetSourceTable(TableModel*);
     void SetRelationship(const QString&);
 
-    void Update();
 private:
-    void UpdateSourceRowIdx();
-
     int m_iID;
     const static int ms_iDestinationRowIdx{0};
-    int m_iDestinationTableID{-1};
-    int m_iSourceRowIdx{-1};
-    int m_iSourceTableID{-1};
-    std::weak_ptr<const TableModel> m_wpDestinationTable{};
-    std::weak_ptr<const TableModel> m_wpSourceTable{};
+    TableModel* m_pDestinationTable{};
+    TableModel* m_pSourceTable{};
     QString m_sRelationship{""};
 signals:
     void idChanged();

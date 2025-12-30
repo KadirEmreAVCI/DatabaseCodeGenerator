@@ -29,11 +29,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
     
-    void AddColumn(std::shared_ptr<ColumnModel> spColumnItem);
-    void AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem);
+    void AddColumn(std::shared_ptr<ColumnModel>);
     bool RemoveColumn(int iRow);
-    bool RemoveColumn(const QString& sColumnName);
-    int GetColumnIdxByName(const QString& sColumnName) const;
+    bool RemoveRelationBasedColumn(int iRelationID);
+    int GetRelationBasedColumnIdx(int iRelationID)const;
+    void RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
 private:
     bool IsRowIndexValid(int iRow) const;
     std::vector<std::shared_ptr<ColumnModel>> m_vecspColumns;

@@ -1,9 +1,14 @@
 #include "ColumnModel.h"
 
-ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsEnabled, bool blIsPrimaryKey, bool blIsRelationSource, QObject *parent)
-    : m_sName{sName}, m_sType(sType), m_blIsEnabled(blIsEnabled), m_blIsPrimaryKey(blIsPrimaryKey), m_blIsRelationSource(blIsRelationSource), Model(parent)
-{
-}
+ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsPrimaryKey, bool blIsRelationSource, int iRelationID, QObject *parent)
+    : m_sName{sName}, 
+    m_sType(sType), 
+    m_blIsEnabled(!(blIsPrimaryKey || blIsRelationSource)), 
+    m_blIsPrimaryKey(blIsPrimaryKey), 
+    m_blIsRelationSource(blIsRelationSource), 
+    m_iRelationID{iRelationID},
+    Model(parent)
+{}   
 QString ColumnModel::GetName() const
 {
     return m_sName;
@@ -23,6 +28,10 @@ bool ColumnModel::GetIsPrimaryKey() const
 bool ColumnModel::GetIsRelationSource() const
 {
     return m_blIsRelationSource;
+}
+int ColumnModel::GetRelationID()const
+{
+    return m_iRelationID;
 }
 void ColumnModel::SetName(const QString &name)
 {
