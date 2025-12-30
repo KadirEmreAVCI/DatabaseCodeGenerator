@@ -14,10 +14,6 @@ void TableModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
         m_upColumnListModel->AddColumn(spColumn);
     }
 }
-int TableModel::GetColumnIdxByName(const QString& sColumnName) const
-{
-    return m_upColumnListModel->GetColumnIdxByName(sColumnName);
-}
 int TableModel::GetID() const
 {
     return m_iID;

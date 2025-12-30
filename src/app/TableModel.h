@@ -27,7 +27,6 @@ public:
     TableModel(int iID, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200, QObject *parent = nullptr);
     virtual ~TableModel() override = default;
     void AddColumn(std::shared_ptr<ColumnModel> spColumn);
-    int GetColumnIdxByName(const QString& sColumnName) const;
     void Attach(const RelationModel*, RelationRole);
     void Detach(const RelationModel*, RelationRole);
     void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);

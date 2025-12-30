@@ -111,6 +111,20 @@ QRectF TableController::GetBoundingRect() const
     }
     return rUnitedRect;
 }
+TableModel* TableController::GetTable(int iTableID)
+{
+    auto iterupTable = std::find_if(m_vecupTables.begin(), m_vecupTables.end(), [iTableID](const auto& upTable){
+        return upTable->GetID() == iTableID;
+    });
+    return (iterupTable != m_vecupTables.end()) ? iterupTable->get() : nullptr;
+}
+RelationModel* TableController::GetRelation(int iRelationID)
+{
+    auto iterupRelation = std::find_if(m_vecupRelations.begin(), m_vecupRelations.end(), [iRelationID](const auto& upRelation){
+        return upRelation->GetID() == iRelationID;
+    });
+    return (iterupRelation != m_vecupRelations.end()) ? iterupRelation->get() : nullptr;
+}
 bool TableController::IsNameDuplicated(int iChangedTableID, const QString& sNewName)const
 {
     return std::any_of(m_vecupTables.cbegin(), m_vecupTables.cend(), [iChangedTableID, sNewName](const auto& upTable){
@@ -185,20 +199,6 @@ QList<QObject*> TableController::GetRelationList()const
         } 
     }
     return lsRelations;
-}
-TableModel* TableController::GetTable(int iTableID)
-{
-    auto iterupTable = std::find_if(m_vecupTables.begin(), m_vecupTables.end(), [iTableID](const auto& upTable){
-        return upTable->GetID() == iTableID;
-    });
-    return (iterupTable != m_vecupTables.end()) ? iterupTable->get() : nullptr;
-}
-RelationModel* TableController::GetRelation(int iRelationID)
-{
-    auto iterupRelation = std::find_if(m_vecupRelations.begin(), m_vecupRelations.end(), [iRelationID](const auto& upRelation){
-        return upRelation->GetID() == iRelationID;
-    });
-    return (iterupRelation != m_vecupRelations.end()) ? iterupRelation->get() : nullptr;
 }
 void TableController::onDeleteTableRequested(int iDeletedTableID)
 {

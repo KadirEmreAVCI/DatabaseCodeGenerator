@@ -131,17 +131,6 @@ bool ColumnListModel::RemoveRelationBasedColumn(int iRelationID)
     qWarning("Attempted to remove a ColumnModel with a name that does not exist.");
     return false;
 }
-int ColumnListModel::GetColumnIdxByName(const QString& sColumnName) const
-{
-    for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
-    {
-        if(m_vecspColumns[i]->GetName() == sColumnName)
-        {
-            return i;
-        }
-    }
-    return -1; // Not found
-}
 int ColumnListModel::GetRelationBasedColumnIdx(int iRelationID)const
 {
     for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
@@ -162,18 +151,6 @@ void ColumnListModel::RenameRelationBasedColumnName(int iRelationID, const QStri
             m_vecspColumns[i]->SetName(sNewRelationBasedColumnName);
         }
     }
-}
-bool ColumnListModel::RemoveColumn(const QString& sColumnName)
-{
-    for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
-    {
-        if(m_vecspColumns[i]->GetName() == sColumnName)
-        {
-            return RemoveColumn(i);
-        }
-    }
-    qWarning("Attempted to remove a ColumnModel with a name that does not exist.");
-    return false;
 }
 bool ColumnListModel::IsRowIndexValid(int iRow) const
 {

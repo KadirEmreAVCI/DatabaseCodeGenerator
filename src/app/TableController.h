@@ -36,9 +36,9 @@ public slots:
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);
-    void AddRelation(int iSourceTableID, int iDestinationTableID);
     TableModel* GetTable(int iTableID);
     RelationModel* GetRelation(int iRelationID);
+    void AddRelation(int iSourceTableID, int iDestinationTableID);
     bool IsNameDuplicated(int iChangedTableID, const QString& sNewName)const;
     QString NormalizeTableName(const QString& sName) const;
     bool IsRelationExists(int iSourceTableID, int iDestinationTableID)const;

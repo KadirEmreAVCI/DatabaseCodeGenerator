@@ -32,9 +32,7 @@ public:
     void AddColumn(std::shared_ptr<ColumnModel> spColumnItem);
     void AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem);
     bool RemoveColumn(int iRow);
-    bool RemoveColumn(const QString& sColumnName);
     bool RemoveRelationBasedColumn(int iRelationID);
-    int GetColumnIdxByName(const QString& sColumnName) const;
     int GetRelationBasedColumnIdx(int iRelationID)const;
     void RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName);
 private:
