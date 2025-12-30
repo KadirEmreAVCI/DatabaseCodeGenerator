@@ -71,33 +71,6 @@ void ColumnListModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
         qWarning("Attempted to add a null ColumnModel.");
     }
 }
-void ColumnListModel::AddRelationBasedColumn(std::shared_ptr<ColumnModel> spColumnItem)
-{
-    if(spColumnItem != nullptr)
-    {
-        spColumnItem->setParent(this);
-        int iInsertionRow = m_vecspColumns.size();
-        if(!spColumnItem->GetIsEnabled())
-        {
-            const auto iterColumn = std::find_if_not(m_vecspColumns.begin(), m_vecspColumns.end(), [](const std::shared_ptr<ColumnModel> spColumn){
-                    return !spColumn->GetIsEnabled();
-                });
-            if (iterColumn != m_vecspColumns.end())
-            {
-                iInsertionRow = std::distance(m_vecspColumns.begin(), iterColumn);
-            }
-        }
-        beginInsertRows(QModelIndex(), iInsertionRow, iInsertionRow);
-        m_vecspColumns.insert(m_vecspColumns.begin() + iInsertionRow, spColumnItem);
-        endInsertRows();
-
-        emit countChanged();
-    }
-    else
-    {
-        qWarning("Attempted to add a null ColumnModel.");
-    }
-}
 bool ColumnListModel::RemoveColumn(int iRow)
 {
     if(IsRowIndexValid(iRow)) 
@@ -142,7 +115,7 @@ int ColumnListModel::GetRelationBasedColumnIdx(int iRelationID)const
     }
     return -1; // Not found
 }
-void ColumnListModel::RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName)
+void ColumnListModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName)
 {
     for(int i = 0; i < static_cast<int>(m_vecspColumns.size()); ++i)
     {

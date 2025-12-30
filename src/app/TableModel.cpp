@@ -121,13 +121,13 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
     const bool blIsRelationSource = true;
 
     auto spRelationColumn = std::make_shared<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsEnabled, blIsPrimaryKey, blIsRelationSource, iRelationID);
-    m_upColumnListModel->AddRelationBasedColumn(spRelationColumn);
+    m_upColumnListModel->AddColumn(spRelationColumn);
 }
 int TableModel::GetRelationBasedColumnIdx(int iRelationID)const
 {
     return m_upColumnListModel->GetRelationBasedColumnIdx(iRelationID);
 }
-void TableModel::RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName)
+void TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName)
 {
-    m_upColumnListModel->RenameRelationBasedColumnName(iRelationID, sNewRelationBasedColumnName);
+    m_upColumnListModel->RenameRelationBasedColumn(iRelationID, sNewRelationBasedColumnName);
 }

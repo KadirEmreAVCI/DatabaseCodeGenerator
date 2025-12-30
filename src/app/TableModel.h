@@ -31,7 +31,7 @@ public:
     void Detach(const RelationModel*, RelationRole);
     void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
     int GetRelationBasedColumnIdx(int iRelationID)const;
-    void RenameRelationBasedColumnName(int iRelationID, const QString& sNewRelationBasedColumnName);
+    void RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
 
     // Getters
     int GetID() const;

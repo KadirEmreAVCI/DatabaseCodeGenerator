@@ -48,7 +48,7 @@ void RelationModel::DestinationTableRenamed()const
 {
     if(m_pSourceTable && m_pDestinationTable)
     {
-        m_pSourceTable->RenameRelationBasedColumnName(m_iID, GetRelationBasedColumnName());
+        m_pSourceTable->RenameRelationBasedColumn(m_iID, GetRelationBasedColumnName());
     }
 }
 void RelationModel::SetID(int iID)
