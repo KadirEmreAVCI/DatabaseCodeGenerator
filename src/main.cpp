@@ -40,6 +40,9 @@ int main(int argc, char **argv)
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteRelationRequested,      &TableController::GetInstance(), &TableController::onDeleteRelationRequested);
 
     // Expose to QML
+    qmlRegisterUncreatableType<TableModel>("DatabaseCodeGenerator", 1, 0, "TableModel", "Created in C++");
+    qmlRegisterUncreatableType<ColumnModel>("DatabaseCodeGenerator", 1, 0, "ColumnModel", "Created in C++");
+    
     engine.rootContext()->setContextProperty("tableController", &TableController::GetInstance());
     engine.rootContext()->setContextProperty("uiCommandBus", &UiCommandBus::GetInstance());
     engine.loadFromModule("DatabaseCodeGenerator", "Main");

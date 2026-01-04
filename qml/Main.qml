@@ -309,7 +309,7 @@ Window {
                 x:           modelData.point.x
                 y:           modelData.point.y
                 tableName:   modelData.name
-                columnModel: modelData.columnListModel
+                columnModel: modelData.columns
 
                 onXChanged: { links.updateWorldBounds(); links.requestRedraw() }
                 onYChanged: { links.updateWorldBounds(); links.requestRedraw() }

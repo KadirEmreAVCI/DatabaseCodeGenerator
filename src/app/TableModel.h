@@ -7,7 +7,6 @@
 #include "Model.h"
 
 class ColumnModel;
-class ColumnListModel;
 class RelationModel;
 
 enum class RelationRole{
@@ -22,16 +21,19 @@ class TableModel : public Model{
     Q_PROPERTY(QPointF point READ GetPointF NOTIFY pointChanged)
     Q_PROPERTY(qreal width READ GetWidth NOTIFY widthChanged)
     Q_PROPERTY(qreal height READ GetHeight NOTIFY heightChanged)
-    Q_PROPERTY(ColumnListModel* columnListModel READ GetColumnListModel CONSTANT)
+    Q_PROPERTY(QList<QObject*> columns READ GetColumnList NOTIFY columnsChanged)
 public:
     TableModel(int iID, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200, QObject *parent = nullptr);
     virtual ~TableModel() override = default;
-    void AddColumn(std::shared_ptr<ColumnModel> spColumn);
+    void AddColumn(std::unique_ptr<ColumnModel> upColumn);
+    bool RemoveColumn(int iRow);
+    bool RenameColumn(int iRow, const QString& sNewName);
     void Attach(const RelationModel*, RelationRole);
     void Detach(const RelationModel*, RelationRole);
-    void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
     int GetRelationBasedColumnIdx(int iRelationID)const;
-    void RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
+    void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
+    bool RemoveRelationBasedColumn(int iRelationID);
+    bool RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
 
     // Getters
     int GetID() const;
@@ -39,7 +41,7 @@ public:
     QPointF GetPointF()const;
     qreal GetWidth()const;
     qreal GetHeight()const;
-    ColumnListModel* GetColumnListModel() const;
+    QList<QObject*> GetColumnList() const;
 
     // Setters
     void SetID(int);
@@ -48,12 +50,13 @@ public:
     void SetWidth(qreal);
     void SetHeight(qreal);
 private:
+    bool IsRowIndexValid(int iRow) const;
     int m_iID;
     QString m_sName;
     QPointF m_rPointF;
     qreal m_rWidth;
     qreal m_rHeight;
-    std::unique_ptr<ColumnListModel> m_upColumnListModel;   
+    std::vector<std::unique_ptr<ColumnModel>> m_vecupColumns;
     std::vector<const RelationModel*> m_vecOutgoingRelations;
     std::vector<const RelationModel*> m_vecIncomingRelations; 
 signals:
@@ -62,6 +65,7 @@ signals:
     void pointChanged();
     void widthChanged();
     void heightChanged();
+    void columnsChanged();
 };
 
 #endif // TABLEMODEL_H_

@@ -1,17 +1,82 @@
 #include "TableModel.h"
-#include "ColumnListModel.h"
 #include "ColumnModel.h"
 #include "RelationModel.h"
+#include <QDebug>
 
 TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
-    : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}, m_upColumnListModel{std::make_unique<ColumnListModel>(this)}
+    : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
 {
+    AddColumn(std::make_unique<ColumnModel>("ID", "INT", true, false));
 }
-void TableModel::AddColumn(std::shared_ptr<ColumnModel> spColumn)
+void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
 {
-    if (spColumn != nullptr && m_upColumnListModel != nullptr)
+    if (upColumn !=  nullptr)
     {
-        m_upColumnListModel->AddColumn(spColumn);
+        upColumn->setParent(this);
+        int insertionIndex = static_cast<int>(m_vecupColumns.size());
+        if (!upColumn->GetIsEnabled())
+        {
+            // Find first enabled column (same behavior as your QAbstractListModel version)
+            const auto it = std::find_if(m_vecupColumns.begin(), m_vecupColumns.end(),
+                [](const std::unique_ptr<ColumnModel>& pCol)
+                {
+                    return pCol && pCol->GetIsEnabled();
+                });
+
+            insertionIndex = static_cast<int>(std::distance(m_vecupColumns.begin(), it));
+        }
+        m_vecupColumns.insert(m_vecupColumns.begin() + insertionIndex, std::move(upColumn));
+        emit columnsChanged();
+    }
+    else
+    {
+        qWarning("Attempted to add a null ColumnModel.");
+    }
+}
+bool TableModel::RemoveColumn(int iRow)
+{
+    if (IsRowIndexValid(iRow))
+    {
+        // Take ownership out of the vector WITHOUT deleting immediately
+        ColumnModel* pColumn = m_vecupColumns[iRow].release();
+
+        // Structural change: remove from container
+        m_vecupColumns.erase(m_vecupColumns.begin() + iRow);
+
+        // Safe deletion for QML (delegates may still exist this frame)
+        if (pColumn)
+        {
+            pColumn->deleteLater();
+        }
+        emit columnsChanged();
+        return true;
+    }
+    else
+    {
+        qWarning("Attempted to remove a ColumnModel with an invalid row index.");
+        return false;
+    }
+}
+bool TableModel::RenameColumn(int iRow, const QString& sNewName)
+{
+    if (IsRowIndexValid(iRow))
+    {
+        ColumnModel* pColumn = m_vecupColumns[iRow].get();
+        if (pColumn != nullptr)
+        {
+            pColumn->SetName(sNewName);
+            return true;    
+        }
+        else
+        {
+            qWarning("ColumnModel at given row is null.");
+            return false;
+        }
+    }
+    else
+    {   
+        qWarning("Attempted to rename a ColumnModel with an invalid row index.");
+        return false;
     }
 }
 int TableModel::GetID() const
@@ -34,9 +99,18 @@ qreal TableModel::GetHeight()const
 {
     return m_rHeight;
 }
-ColumnListModel* TableModel::GetColumnListModel() const
+QList<QObject*> TableModel::GetColumnList() const
 {
-    return m_upColumnListModel.get();
+    QList<QObject*> lsColumn;
+    lsColumn.reserve(static_cast<int>(m_vecupColumns.size()));
+    for (const auto& upColumn : m_vecupColumns) 
+    {
+        if (upColumn != nullptr) 
+        {
+            lsColumn.append(upColumn.get());
+        } 
+    }
+    return lsColumn;
 }
 void TableModel::SetID(int iID)
 {
@@ -77,6 +151,10 @@ void TableModel::SetHeight(qreal rHeight)
 {
     m_rHeight = rHeight;
 }
+bool TableModel::IsRowIndexValid(int iRow) const
+{
+    return !(iRow < 0 || iRow >= static_cast<int>(m_vecupColumns.size()));
+}
 void TableModel::Attach(const RelationModel* pRelation, RelationRole eRelationRole)
 {
     if(pRelation != nullptr)
@@ -98,7 +176,7 @@ void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRo
     {
         if(eRelationRole == RelationRole::eOutgoing)
         {
-            if(m_upColumnListModel->RemoveRelationBasedColumn(pRelation->GetID()))
+            if(RemoveRelationBasedColumn(pRelation->GetID()))
             {
                 std::erase(m_vecOutgoingRelations, pRelation);
             }
@@ -113,20 +191,46 @@ void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRo
         }
     }
 }
+int TableModel::GetRelationBasedColumnIdx(int iRelationID) const
+{
+    for (int i = 0; i < static_cast<int>(m_vecupColumns.size()); ++i)
+    {
+        const ColumnModel* pColumn = m_vecupColumns[i].get();
+        if (pColumn && pColumn->GetIsRelationSource() && pColumn->GetRelationID() == iRelationID)
+        {
+            return i;
+        }
+    }
+    return -1; // Not found
+}
 void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName)
 {
     const QString sRelationColumnType = "INT"; 
     const bool blIsPrimaryKey = false;
     const bool blIsRelationSource = true;
-
-    auto spRelationColumn = std::make_shared<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsPrimaryKey, blIsRelationSource, iRelationID);
-    m_upColumnListModel->AddColumn(spRelationColumn);
+    AddColumn(std::make_unique<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsPrimaryKey, blIsRelationSource, iRelationID));
 }
-int TableModel::GetRelationBasedColumnIdx(int iRelationID)const
+bool TableModel::RemoveRelationBasedColumn(int iRelationID)
 {
-    return m_upColumnListModel->GetRelationBasedColumnIdx(iRelationID);
+    if(RemoveColumn(GetRelationBasedColumnIdx(iRelationID)))
+    {
+        return true;
+    }
+    else
+    {
+        qWarning("Attempted to remove a ColumnModel with a name that does not exist.");
+        return false;
+    }
 }
-void TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName)
+bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewName)
 {
-    m_upColumnListModel->RenameRelationBasedColumn(iRelationID, sNewRelationBasedColumnName);
+    if(RenameColumn(GetRelationBasedColumnIdx(iRelationID), sNewName))
+    {
+        return true;
+    }
+    else
+    {
+        qWarning("Attempted to rename a ColumnModel with a name that does not exist.");
+        return false;
+    }
 }

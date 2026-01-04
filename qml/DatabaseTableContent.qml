@@ -14,13 +14,15 @@ Rectangle {
     border.color: "gray"
     border.width: 1
 
+    // Keep these signals (we'll wire them later as you requested)
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
 
-    // 🔹 Controller will listen this and reorder ColumnListModel in C++
+    // Controller will listen this and reorder columns in C++
     signal moveColumnRequest(int fromRow, int toRow)
 
+    // Now externalModel is QList<QObject*> (ColumnModel* objects)
     required property var externalModel
 
     property bool confirmVisible: false
@@ -53,33 +55,32 @@ Rectangle {
             drag.axis: Drag.YAxis
 
             cursorShape: {
-                if (!model.isEnabled || !containsMouse)
+                if (!modelData.isEnabled || !containsMouse)
                     return Qt.ArrowCursor
                 return held ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             }
 
             onPressed: {
-                if (model.isEnabled) {
+                if (modelData.isEnabled) {
                     held = true
                     // remember where drag started & which column
-                    root.reorderFromIndex = model.index
-                    root.reorderToIndex = model.index
-                    root.reordername = model.name
+                    root.reorderFromIndex = index
+                    root.reorderToIndex = index
+                    root.reordername = modelData.name
                 }
             }
 
             onReleased: {
                 held = false
 
-                if (model.isEnabled && model.index >= 0)
-                    root.itemReleased(model.index)
+                if (modelData.isEnabled && index >= 0)
+                    root.itemReleased(index)
 
                 // show confirmation only if we actually moved to another index
-                if (model.isEnabled &&
+                if (modelData.isEnabled &&
                     root.reorderFromIndex >= 0 &&
                     root.reorderToIndex >= 0 &&
                     root.reorderFromIndex !== root.reorderToIndex) {
-
 
                     root.reorderConfirmVisible = true
                 } else {
@@ -114,7 +115,7 @@ Rectangle {
                 property color disabledColor: "#e6e6e6"
 
                 color: {
-                    if (!model.isEnabled) return disabledColor
+                    if (!modelData.isEnabled) return disabledColor
                     if (dragArea.held) return dragColor
                     if (dragArea.containsMouse) return hoverColor
                     return baseColor
@@ -137,20 +138,20 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
 
-                    name: model.name
-                    type: model.type
-                    isPrimaryKey: model.isPrimaryKey
-                    isRelationSource: model.isRelationSource
+                    name: modelData.name
+                    type: modelData.type
+                    isPrimaryKey: modelData.isPrimaryKey
+                    isRelationSource: modelData.isRelationSource
 
-                    opacity: model.isEnabled ? 1.0 : 0.4
+                    opacity: modelData.isEnabled ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: model.isEnabled
+                    deletable: modelData.isEnabled
 
                     onDeleteRequested: {
-                        if (model.index >= 0) {
-                            root.confirmRowIndex = model.index
-                            root.confirmname = model.name
+                        if (index >= 0) {
+                            root.confirmRowIndex = index
+                            root.confirmname = modelData.name
                             root.confirmVisible = true
                         }
                     }
@@ -162,7 +163,7 @@ Rectangle {
                 anchors.margins: 10
 
                 onEntered: (drag) => {
-                    if (!model.isEnabled) return
+                    if (!modelData.isEnabled) return
 
                     var from = drag.source.DelegateModel.itemsIndex
                     var to = dragArea.DelegateModel.itemsIndex
@@ -176,7 +177,8 @@ Rectangle {
 
                     // Always keep the latest target index
                     root.reorderToIndex = to
-                    // 🔹 Only visual reordering; C++ model is unchanged
+
+                    // Only visual reordering; C++ model is unchanged
                     visualModel.items.move(from, to)
                 }
             }
@@ -399,7 +401,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                // 🔹 Notify Controller: do real C++ reorder here
+                                // Notify Controller: do real C++ reorder here
                                 root.moveColumnRequest(root.reorderFromIndex,
                                                        root.reorderToIndex)
 
