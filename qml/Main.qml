@@ -22,6 +22,7 @@ Window {
         signal createNewRelationRequested(int sourceTableID, int destinationTableID)
         signal changeRelationshipRequested(int ID, string relationship)
         signal deleteRelationRequested(int ID)
+        signal createNewColumnRequested(int tableID, string name, string type, bool notNull, bool isPrimaryKey, bool autoIncrement, bool unique)
     }
 
     GridBackground {
@@ -304,6 +305,8 @@ Window {
 
                 canvas: zoomLayer
                 connectionsLayer: links
+
+                commandBus: mainWindow.commandBus
 
                 tableID:     modelData.ID
                 x:           modelData.point.x

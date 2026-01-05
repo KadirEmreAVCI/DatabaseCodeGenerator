@@ -12,6 +12,9 @@ Item {
     property string tableName: "Default Table"
     required property var columnModel
 
+    // Used to send UI commands to C++ (UiCommandBus or fallback bus)
+    required property var commandBus
+
     required property var canvas
     required property var connectionsLayer
 
@@ -86,6 +89,43 @@ Item {
         wrapper.editingName = false
     }
 
+    // --------------------------
+    // Add Column Dialog Helpers
+    // --------------------------
+    function openAddColumnDialog() {
+        columnNameField.text = ""
+        typeCombo.currentIndex = 0
+
+        notNullCheck.checked = false
+        uniqueCheck.checked = false
+
+        createColumnDialog.errorText = ""
+        createColumnDialog.open()
+        columnNameField.forceActiveFocus()
+    }
+
+    function commitNewColumn() {
+        const name = columnNameField.text.trim()
+        const type = typeCombo.currentText
+        const defaultValue = defaultValueField.text.trim()
+
+        if (name.length === 0) {
+            createColumnDialog.errorText = qsTr("Column name cannot be empty.")
+            return
+        }
+
+        commandBus.createNewColumnRequested(
+            wrapper.tableID,
+            name,
+            type,
+            notNullCheck.checked,
+            uniqueCheck.checked,
+            defaultValue    // 👈 NEW
+        )
+
+        createColumnDialog.close()
+    }
+
     Connections {
         target: canvas
         function onWorkspaceClicked() {
@@ -94,9 +134,7 @@ Item {
     }
 
     //
-    // NOTE:
-    // This is controller-to-view feedback. We keep it for now to avoid breaking behavior.
-    // Later, we can move this feedback to UiCommandBus (or a UiEventBus) too.
+    // Controller -> View feedback (name reject)
     //
     Connections {
         target: tableController
@@ -170,6 +208,163 @@ Item {
                     deleteTableDialog.close()
                 }
                 onRejected: deleteTableDialog.close()
+            }
+        }
+    }
+
+    Dialog {
+        id: createColumnDialog
+        title: qsTr("New Column")
+        modal: true
+        width: 420
+        parent: Overlay.overlay
+
+        property string errorText: ""
+
+        Overlay.modal: Rectangle {
+            color: "#80000000"
+        }
+
+        function centerOnOverlay() {
+            if (!parent) return
+            x = Math.round((parent.width - width) / 2)
+            y = Math.round((parent.height - height) / 2)
+        }
+
+        onOpened: {
+            centerOnOverlay()
+            errorText = ""
+        }
+
+        Connections {
+            target: createColumnDialog.parent
+            function onWidthChanged()  { if (createColumnDialog.visible) createColumnDialog.centerOnOverlay() }
+            function onHeightChanged() { if (createColumnDialog.visible) createColumnDialog.centerOnOverlay() }
+        }
+
+        contentItem: Item {
+            implicitWidth: createColumnDialog.width
+            implicitHeight: contentLayout.implicitHeight + 32
+
+            ColumnLayout {
+                id: contentLayout
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 10
+
+                // ───────── Table Info ─────────
+                Rectangle {
+                    Layout.fillWidth: true
+                    radius: 8
+                    color: "#f5f7fb"
+                    border.color: "#d9e2f2"
+                    border.width: 1
+                    implicitHeight: infoRow.implicitHeight + 14
+
+                    RowLayout {
+                        id: infoRow
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 6
+
+                        Text { text: "ℹ️"; font.pixelSize: 16 }
+
+                        Text {
+                            text: qsTr("Table Info:")
+                            font.bold: true
+                            color: "#1f3b57"
+                        }
+
+                        Text {
+                            text: wrapper.tableName
+                            color: "#2b2b2b"
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+
+                // ───────── Name ─────────
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Text { text: qsTr("Name"); font.bold: true; color: "#1f3b57" }
+
+                    TextField {
+                        id: columnNameField
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Column name")
+                        selectByMouse: true
+                        onTextChanged: createColumnDialog.errorText = ""
+                        Keys.onReturnPressed: commitNewColumn()
+                    }
+                }
+
+                // ───────── Type ─────────
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Text { text: qsTr("Type"); font.bold: true; color: "#1f3b57" }
+
+                    ComboBox {
+                        id: typeCombo
+                        Layout.fillWidth: true
+                        model: ["INTEGER", "TEXT", "BLOB", "REAL", "NUMERIC"]
+                    }
+                }
+
+                // ───────── Constraints ─────────
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Text { text: qsTr("Constraints"); font.bold: true; color: "#1f3b57" }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 14
+
+                        CheckBox { id: notNullCheck; text: qsTr("Not Null") }
+                        CheckBox { id: uniqueCheck;  text: qsTr("Unique") }
+                    }
+                }
+
+                // ───────── Default Value (NEW) ─────────
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Text {
+                        text: qsTr("Default Value")
+                        font.bold: true
+                        color: "#1f3b57"
+                    }
+
+                    TextField {
+                        id: defaultValueField
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("Optional (e.g. 0, 'text', CURRENT_TIMESTAMP)")
+                    }
+                }
+
+                // ───────── Error ─────────
+                Text {
+                    Layout.fillWidth: true
+                    visible: createColumnDialog.errorText.length > 0
+                    color: "red"
+                    wrapMode: Text.WordWrap
+                    text: createColumnDialog.errorText
+                }
+
+                // ───────── Buttons ─────────
+                DialogButtonBox {
+                    Layout.fillWidth: true
+                    standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
+                    onAccepted: commitNewColumn()
+                    onRejected: createColumnDialog.close()
+                }
             }
         }
     }
@@ -253,9 +448,6 @@ Item {
             onHeightChanged: requestPaint()
         }
 
-        //
-        // Hold area highlight (preview drop target OR hover)
-        //
         Canvas {
             id: handleHighlightCanvas
             anchors.fill: parent
@@ -287,18 +479,16 @@ Item {
                     ctx.closePath()
                 }
 
-                // Overlay fill
                 ctx.save()
                 tracePath()
-                ctx.fillStyle = "rgba(45, 140, 255, 0.12)" // Canvas fillStyle is JS/CSS string OK
+                ctx.fillStyle = "rgba(45, 140, 255, 0.12)"
                 ctx.fill()
                 ctx.restore()
 
-                // Accent stroke
                 ctx.save()
                 tracePath()
                 ctx.lineWidth = 2
-                ctx.strokeStyle = "rgba(45, 140, 255, 0.95)" // Canvas strokeStyle is JS/CSS string OK
+                ctx.strokeStyle = "rgba(45, 140, 255, 0.95)"
                 ctx.lineJoin = "round"
                 ctx.stroke()
                 ctx.restore()
@@ -333,9 +523,6 @@ Item {
             }
         }
 
-        //
-        // Center circle (relation creation ONLY)
-        //
         Rectangle {
             id: centerRing
             anchors.centerIn: parent
@@ -426,22 +613,17 @@ Item {
                         + table_content.height
                         + border.width
 
-        //
-        // ONE single (generic) decoration canvas:
-        // - Draws outer boundary stroke around entire tableRect
-        // - Fills ONLY header area (top region), NOT DatabaseTableContent
-        //
         Canvas {
             id: tableDecorationCanvas
             anchors.fill: parent
             antialiasing: true
             z: 500
             visible: wrapper.isPreviewDropTarget || wrapper.isHoverHighlight
-            enabled: false   // don't block mouse
+            enabled: false
 
             readonly property real strokeW: 3
-            readonly property color strokeColor: Qt.rgba(0.176, 0.549, 1.0, 0.95)     // #2d8cff @ 0.95
-            readonly property color headerFillColor: Qt.rgba(0.176, 0.549, 1.0, 0.08) // light fill
+            readonly property color strokeColor: Qt.rgba(0.176, 0.549, 1.0, 0.95)
+            readonly property color headerFillColor: Qt.rgba(0.176, 0.549, 1.0, 0.08)
 
             onVisibleChanged: { if (visible) requestPaint() }
             onWidthChanged: requestPaint()
@@ -463,7 +645,6 @@ Item {
             }
 
             function headerFillPath(ctx, x, y, w, headerH, r) {
-                // Top rounded corners, straight bottom edge at headerH
                 var rr = Math.max(0, Math.min(r, w / 2))
                 ctx.beginPath()
                 ctx.moveTo(x + rr, y)
@@ -492,17 +673,14 @@ Item {
                 var hh = h - sw
                 var r = Math.max(0, tableRect.radius - half)
 
-                // Fill should cover header + separator (same visual block)
                 var headerFillH = table_header.height + separator.height
 
-                // 1) Header fill only
                 ctx.save()
                 headerFillPath(ctx, x, y, ww, headerFillH, r)
                 ctx.fillStyle = tableDecorationCanvas.headerFillColor
                 ctx.fill()
                 ctx.restore()
 
-                // 2) Outer boundary stroke around whole table
                 ctx.save()
                 roundedRectPath(ctx, x, y, ww, hh, r)
                 ctx.lineWidth = sw
@@ -659,6 +837,8 @@ Item {
                     right: parent.right
                 }
                 externalModel: wrapper.columnModel
+
+                onAddRequested: openAddColumnDialog()
             }
         }
 

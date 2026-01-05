@@ -26,6 +26,11 @@ signals:
     void createNewRelationRequested(int sourceTableID, int destinationTableID);
     void deleteRelationRequested(int ID);
     void changeRelationshipRequested(int ID, const QString& relationship);
+
+    // Column related commands
+    signals:
+    void createNewColumnRequested(int tableID, const QString& name, const QString& type, bool notNull, bool isPrimaryKey, bool autoIncrement, bool unique);
+
 };
 
 #endif // UICOMMANDBUS_H_
