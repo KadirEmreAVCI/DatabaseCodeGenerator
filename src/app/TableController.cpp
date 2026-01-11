@@ -1,6 +1,7 @@
 #include "TableController.h"
 #include "TableModel.h"
 #include "RelationModel.h"
+#include "ColumnModel.h"
 
 // Standard Library
 #include <algorithm>
@@ -85,6 +86,17 @@ void TableController::onCreateNewTableRequested(const QPointF& rPointF)
     }
     while(IsNameDuplicated(m_iNextTableID, sTempNewName));
     AddTable(rPointF, sTempNewName);
+}
+void TableController::onCreateNewColumnRequested(int iTableID, const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique)
+{
+    if(auto pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        pTable->AddColumn(std::make_unique<ColumnModel>(sName, sType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, false));
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
 }
 QRectF TableController::GetBoundingRect() const
 {

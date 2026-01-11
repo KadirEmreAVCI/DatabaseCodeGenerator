@@ -33,6 +33,8 @@ public slots:
     void onChangeTableNameRequested(int iTableID, const QString& sNewName);
     void onTablePositionChangeRequested(int iTableID, const QPointF& rPointF);
     void onCreateNewTableRequested(const QPointF& rPointF);
+
+    void onCreateNewColumnRequested(int iTableID, const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);

@@ -29,7 +29,8 @@ public:
     void Detach(const RelationModel*, RelationRole);
     int GetRelationBasedColumnIdx(int iRelationID)const;
     bool RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
-
+    void AddColumn(std::unique_ptr<ColumnModel> upColumn);
+    
     // Getters
     int GetID() const;
     QString GetName() const;
@@ -45,7 +46,7 @@ public:
     void SetWidth(qreal);
     void SetHeight(qreal);
 private:
-    void AddColumn(std::unique_ptr<ColumnModel> upColumn);
+    
     bool RemoveColumn(int iRow);
     bool RenameColumn(int iRow, const QString& sNewName);
     bool IsRowIndexValid(int iRow) const;
