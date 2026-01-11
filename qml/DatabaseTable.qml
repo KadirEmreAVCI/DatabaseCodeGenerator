@@ -35,6 +35,16 @@ Item {
     signal deleteTableRequested(int tableID)
     signal changeTableNameRequested(int tableID, string newName)
     signal tablePositionChangeRequested(int tableID, point newPos)
+
+    // Requests (UI -> Controller)  (kept like previous commands)
+    // Mirrors commandBus signature (7 params). UI currently sends pk=false, autoinc=false.
+    signal createNewColumnRequested(int tableID,
+                                   string name,
+                                   string type,
+                                   bool notNull,
+                                   bool isPrimaryKey,
+                                   bool autoIncrement,
+                                   bool unique)
     // -------------------------------------------------------------------------
 
     // True only when this table is a valid drop target for the preview
@@ -102,28 +112,6 @@ Item {
         createColumnDialog.errorText = ""
         createColumnDialog.open()
         columnNameField.forceActiveFocus()
-    }
-
-    function commitNewColumn() {
-        const name = columnNameField.text.trim()
-        const type = typeCombo.currentText
-        const defaultValue = defaultValueField.text.trim()
-
-        if (name.length === 0) {
-            createColumnDialog.errorText = qsTr("Column name cannot be empty.")
-            return
-        }
-
-        commandBus.createNewColumnRequested(
-            wrapper.tableID,
-            name,
-            type,
-            notNullCheck.checked,
-            uniqueCheck.checked,
-            defaultValue    // 👈 NEW
-        )
-
-        createColumnDialog.close()
     }
 
     Connections {
@@ -242,6 +230,80 @@ Item {
             function onHeightChanged() { if (createColumnDialog.visible) createColumnDialog.centerOnOverlay() }
         }
 
+        // --------------------------
+        // Validation Helpers (ONLY inside dialog)
+        // --------------------------
+        function normalizeColumnName(s) {
+            return (s || "").trim().toLowerCase()
+        }
+
+        function columnNameExists(candidateName) {
+            var candidate = normalizeColumnName(candidateName)
+            if (candidate.length === 0)
+                return false
+
+            // columnModel is expected to behave like a list of ColumnModel QObjects
+            if (!wrapper.columnModel || wrapper.columnModel.length === undefined)
+                return false
+
+            for (var i = 0; i < wrapper.columnModel.length; ++i) {
+                var col = wrapper.columnModel[i]
+                if (!col || col.name === undefined)
+                    continue
+
+                if (normalizeColumnName(col.name) === candidate)
+                    return true
+            }
+            return false
+        }
+
+        function tryCommitNewColumn() {
+            const name = columnNameField.text.trim()
+            const type = typeCombo.currentText
+
+            // UI currently does not expose PK/autoincrement. Send false/false.
+            const isPrimaryKey = false
+            const autoIncrement = false
+
+            // 1) Empty name
+            if (name.length === 0) {
+                createColumnDialog.errorText = qsTr("Column name cannot be empty.")
+                columnNameField.forceActiveFocus()
+                return
+            }
+
+            // 2) Duplicate name
+            if (columnNameExists(name)) {
+                createColumnDialog.errorText =
+                        qsTr("A column named \"%1\" already exists in this table.").arg(name)
+                columnNameField.forceActiveFocus()
+                columnNameField.selectAll()
+                return
+            }
+
+            // Send to C++ via commandBus
+            if (!commandBus || typeof commandBus.createNewColumnRequested !== "function") {
+                createColumnDialog.errorText = qsTr("Internal error: command bus is not available.")
+                return
+            }
+
+            commandBus.createNewColumnRequested(
+                wrapper.tableID,
+                name,
+                type,
+                notNullCheck.checked,
+                isPrimaryKey,
+                autoIncrement,
+                uniqueCheck.checked
+            )
+
+            // Optional: also emit wrapper request (harmless if unused)
+            createNewColumnRequested(wrapper.tableID, name, type,
+                                     notNullCheck.checked, isPrimaryKey, autoIncrement, uniqueCheck.checked)
+
+            createColumnDialog.close()
+        }
+
         contentItem: Item {
             implicitWidth: createColumnDialog.width
             implicitHeight: contentLayout.implicitHeight + 32
@@ -297,7 +359,7 @@ Item {
                         placeholderText: qsTr("Column name")
                         selectByMouse: true
                         onTextChanged: createColumnDialog.errorText = ""
-                        Keys.onReturnPressed: commitNewColumn()
+                        Keys.onReturnPressed: createColumnDialog.tryCommitNewColumn()
                     }
                 }
 
@@ -331,24 +393,6 @@ Item {
                     }
                 }
 
-                // ───────── Default Value (NEW) ─────────
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 4
-
-                    Text {
-                        text: qsTr("Default Value")
-                        font.bold: true
-                        color: "#1f3b57"
-                    }
-
-                    TextField {
-                        id: defaultValueField
-                        Layout.fillWidth: true
-                        placeholderText: qsTr("Optional (e.g. 0, 'text', CURRENT_TIMESTAMP)")
-                    }
-                }
-
                 // ───────── Error ─────────
                 Text {
                     Layout.fillWidth: true
@@ -362,7 +406,7 @@ Item {
                 DialogButtonBox {
                     Layout.fillWidth: true
                     standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
-                    onAccepted: commitNewColumn()
+                    onAccepted: createColumnDialog.tryCommitNewColumn()
                     onRejected: createColumnDialog.close()
                 }
             }
@@ -582,7 +626,7 @@ Item {
                                                            circleMouse.height / 2)
                     connectionsLayer.startRelationPreview(wrapper.tableID, startWorld)
                 } else {
-                    console.warn("connectionsLayer is not available in QML context")
+                    // no-op
                 }
             }
 
