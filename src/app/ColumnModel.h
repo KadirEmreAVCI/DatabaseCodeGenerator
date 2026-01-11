@@ -11,7 +11,7 @@ class ColumnModel : public Model{
     Q_PROPERTY(bool isPrimaryKey READ GetIsPrimaryKey NOTIFY isPrimaryKeyChanged)
     Q_PROPERTY(bool isRelationSource READ GetIsRelationSource NOTIFY isRelationSourceChanged)
 public:
-    ColumnModel(const QString& sName, const QString& sType, bool blIsPrimaryKey, bool blIsRelationSource, int iRelationID = -1, QObject *parent = nullptr);
+    ColumnModel(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique, bool blIsRelationSource, int iRelationID = -1, QObject *parent = nullptr);
     virtual ~ColumnModel()override = default;
 
     // Getters

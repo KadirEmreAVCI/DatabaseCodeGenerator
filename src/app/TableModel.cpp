@@ -6,7 +6,14 @@
 TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
     : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
 {
-    AddColumn(std::make_unique<ColumnModel>("ID", "INT", true, false));
+    const QString sColumnName = "ID";
+    const QString sColumnType = "INT"; 
+    const bool blNotNull = true;
+    const bool blIsPrimaryKey = true;
+    const bool blAutoIncrement = true;
+    const bool blUnique = true;
+    const bool blIsRelationSource = false;
+    AddColumn(std::make_unique<ColumnModel>(sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
 }
 void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
 {
@@ -206,9 +213,19 @@ int TableModel::GetRelationBasedColumnIdx(int iRelationID) const
 void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName)
 {
     const QString sRelationColumnType = "INT"; 
+    const bool blNotNull = true;
     const bool blIsPrimaryKey = false;
+    const bool blAutoIncrement = false;
+    const bool blUnique = false;
     const bool blIsRelationSource = true;
-    AddColumn(std::make_unique<ColumnModel>(sRelationBasedColumnName, sRelationColumnType, blIsPrimaryKey, blIsRelationSource, iRelationID));
+    AddColumn(std::make_unique<ColumnModel>(sRelationBasedColumnName, 
+                                            sRelationColumnType, 
+                                            blNotNull, 
+                                            blIsPrimaryKey, 
+                                            blAutoIncrement, 
+                                            blUnique, 
+                                            blIsRelationSource, 
+                                            iRelationID));
 }
 bool TableModel::RemoveRelationBasedColumn(int iRelationID)
 {

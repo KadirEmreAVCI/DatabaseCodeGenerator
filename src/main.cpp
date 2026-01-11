@@ -38,6 +38,7 @@ int main(int argc, char **argv)
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewRelationRequested,   &TableController::GetInstance(), &TableController::onCreateNewRelationRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::changeRelationshipRequested,  &TableController::GetInstance(), &TableController::onChangeRelationshipRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteRelationRequested,      &TableController::GetInstance(), &TableController::onDeleteRelationRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewColumnRequested,     &TableController::GetInstance(), &TableController::onCreateNewColumnRequested);
 
     // Expose to QML
     qmlRegisterUncreatableType<TableModel>("DatabaseCodeGenerator", 1, 0, "TableModel", "Created in C++");

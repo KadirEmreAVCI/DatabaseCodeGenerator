@@ -1,6 +1,6 @@
 #include "ColumnModel.h"
 
-ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blIsPrimaryKey, bool blIsRelationSource, int iRelationID, QObject *parent)
+ColumnModel::ColumnModel(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique, bool blIsRelationSource, int iRelationID, QObject *parent)
     : m_sName{sName}, 
     m_sType(sType), 
     m_blIsEnabled(!(blIsPrimaryKey || blIsRelationSource)), 

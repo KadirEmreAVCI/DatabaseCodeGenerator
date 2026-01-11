@@ -25,16 +25,12 @@ class TableModel : public Model{
 public:
     TableModel(int iID, const QString& sName = "", const QPointF& rPointF = {}, qreal rWidth = 300, qreal rHeight = 200, QObject *parent = nullptr);
     virtual ~TableModel() override = default;
-    void AddColumn(std::unique_ptr<ColumnModel> upColumn);
-    bool RemoveColumn(int iRow);
-    bool RenameColumn(int iRow, const QString& sNewName);
     void Attach(const RelationModel*, RelationRole);
     void Detach(const RelationModel*, RelationRole);
     int GetRelationBasedColumnIdx(int iRelationID)const;
-    void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
-    bool RemoveRelationBasedColumn(int iRelationID);
     bool RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
-
+    void AddColumn(std::unique_ptr<ColumnModel> upColumn);
+    
     // Getters
     int GetID() const;
     QString GetName() const;
@@ -50,7 +46,12 @@ public:
     void SetWidth(qreal);
     void SetHeight(qreal);
 private:
+    
+    bool RemoveColumn(int iRow);
+    bool RenameColumn(int iRow, const QString& sNewName);
     bool IsRowIndexValid(int iRow) const;
+    void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
+    bool RemoveRelationBasedColumn(int iRelationID);
     int m_iID;
     QString m_sName;
     QPointF m_rPointF;
