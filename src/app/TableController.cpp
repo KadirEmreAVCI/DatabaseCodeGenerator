@@ -91,7 +91,7 @@ void TableController::onCreateNewColumnRequested(int iTableID, const QString& sN
 {
     if(auto pTable = GetTable(iTableID); pTable != nullptr)
     {
-        pTable->AddColumn(std::make_unique<ColumnModel>(sName, sType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, false));
+        pTable->OnCreateNewColumnRequested(sName, sType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique);
     }
     else
     {

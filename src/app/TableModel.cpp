@@ -4,7 +4,7 @@
 #include <QDebug>
 
 TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
-    : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
+    : Model(iID, parent), m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
 {
     const QString sColumnName = "ID";
     const QString sColumnType = "INT"; 
@@ -13,7 +13,7 @@ TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qr
     const bool blAutoIncrement = true;
     const bool blUnique = true;
     const bool blIsRelationSource = false;
-    AddColumn(std::make_unique<ColumnModel>(sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++, sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
 }
 void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
 {
@@ -86,10 +86,6 @@ bool TableModel::RenameColumn(int iRow, const QString& sNewName)
         return false;
     }
 }
-int TableModel::GetID() const
-{
-    return m_iID;
-}
 QString TableModel::GetName() const
 {
     return m_sName;
@@ -118,14 +114,6 @@ QList<QObject*> TableModel::GetColumnList() const
         } 
     }
     return lsColumn;
-}
-void TableModel::SetID(int iID)
-{
-    if(m_iID != iID)
-    {
-        m_iID = iID;
-        emit idChanged();
-    }
 }
 void TableModel::SetName(const QString &sName)
 {
@@ -218,7 +206,8 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
     const bool blAutoIncrement = false;
     const bool blUnique = false;
     const bool blIsRelationSource = true;
-    AddColumn(std::make_unique<ColumnModel>(sRelationBasedColumnName, 
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
+                                            sRelationBasedColumnName, 
                                             sRelationColumnType, 
                                             blNotNull, 
                                             blIsPrimaryKey, 
@@ -250,4 +239,16 @@ bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewN
         qWarning("Attempted to rename a ColumnModel with a name that does not exist.");
         return false;
     }
+}
+void TableModel::OnCreateNewColumnRequested(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique)
+{
+    const bool blIsRelationSource = false;
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
+                                            sName,
+                                            sType,
+                                            blNotNull,
+                                            blIsPrimaryKey,
+                                            blAutoIncrement,
+                                            blUnique,
+                                            blIsRelationSource));
 }
