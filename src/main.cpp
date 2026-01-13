@@ -39,6 +39,8 @@ int main(int argc, char **argv)
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::changeRelationshipRequested,  &TableController::GetInstance(), &TableController::onChangeRelationshipRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteRelationRequested,      &TableController::GetInstance(), &TableController::onDeleteRelationRequested);
     QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::createNewColumnRequested,     &TableController::GetInstance(), &TableController::onCreateNewColumnRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::deleteColumnRequested,        &TableController::GetInstance(), &TableController::onDeleteColumnRequested);
+    QObject::connect(&UiCommandBus::GetInstance(), &UiCommandBus::reorderColumnRequested,       &TableController::GetInstance(), &TableController::onReorderColumnRequested);
 
     // Expose to QML
     qmlRegisterUncreatableType<TableModel>("DatabaseCodeGenerator", 1, 0, "TableModel", "Created in C++");

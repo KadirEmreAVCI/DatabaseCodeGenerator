@@ -2,6 +2,7 @@
 #include "ColumnModel.h"
 #include "RelationModel.h"
 #include <QDebug>
+#include <QTimer>
 
 TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
     : Model(iID, parent), m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
@@ -24,9 +25,7 @@ void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
         if (!upColumn->GetIsEnabled())
         {
             // Find first enabled column (same behavior as your QAbstractListModel version)
-            const auto it = std::find_if(m_vecupColumns.begin(), m_vecupColumns.end(),
-                [](const std::unique_ptr<ColumnModel>& pCol)
-                {
+            const auto it = std::find_if(m_vecupColumns.begin(), m_vecupColumns.end(), [](const std::unique_ptr<ColumnModel>& pCol){
                     return pCol && pCol->GetIsEnabled();
                 });
 
@@ -44,16 +43,11 @@ bool TableModel::RemoveColumn(int iRow)
 {
     if (IsRowIndexValid(iRow))
     {
-        // Take ownership out of the vector WITHOUT deleting immediately
         ColumnModel* pColumn = m_vecupColumns[iRow].release();
-
-        // Structural change: remove from container
         m_vecupColumns.erase(m_vecupColumns.begin() + iRow);
-
-        // Safe deletion for QML (delegates may still exist this frame)
         if (pColumn)
         {
-            pColumn->deleteLater();
+            QTimer::singleShot(0, pColumn, &QObject::deleteLater);  // In order to delay deletion by 2 ticks, otherwise program crashes.
         }
         emit columnsChanged();
         return true;
@@ -186,14 +180,14 @@ void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRo
         }
     }
 }
-int TableModel::GetRelationBasedColumnIdx(int iRelationID) const
+int TableModel::GetColumnRowIdxByRelationID(int iRelationID) const
 {
-    for (int i = 0; i < static_cast<int>(m_vecupColumns.size()); ++i)
+    for (int iRowIdx = 0; iRowIdx < static_cast<int>(m_vecupColumns.size()); ++iRowIdx)
     {
-        const ColumnModel* pColumn = m_vecupColumns[i].get();
+        const ColumnModel* pColumn = m_vecupColumns[iRowIdx].get();
         if (pColumn && pColumn->GetIsRelationSource() && pColumn->GetRelationID() == iRelationID)
         {
-            return i;
+            return iRowIdx;
         }
     }
     return -1; // Not found
@@ -218,7 +212,7 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
 }
 bool TableModel::RemoveRelationBasedColumn(int iRelationID)
 {
-    if(RemoveColumn(GetRelationBasedColumnIdx(iRelationID)))
+    if(RemoveColumn(GetColumnRowIdxByRelationID(iRelationID)))
     {
         return true;
     }
@@ -228,9 +222,21 @@ bool TableModel::RemoveRelationBasedColumn(int iRelationID)
         return false;
     }
 }
+int TableModel::GetColumnRowIdxByID(int iColumnID)
+{
+    for (int iRowIdx = 0; iRowIdx < static_cast<int>(m_vecupColumns.size()); ++iRowIdx)
+    {
+        const ColumnModel* pColumn = m_vecupColumns[iRowIdx].get();
+        if (pColumn && pColumn->GetID() == iColumnID)
+        {
+            return iRowIdx;
+        }
+    }
+    return -1; // Not found
+}
 bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewName)
 {
-    if(RenameColumn(GetRelationBasedColumnIdx(iRelationID), sNewName))
+    if(RenameColumn(GetColumnRowIdxByRelationID(iRelationID), sNewName))
     {
         return true;
     }
@@ -251,4 +257,15 @@ void TableModel::OnCreateNewColumnRequested(const QString& sName, const QString&
                                             blAutoIncrement,
                                             blUnique,
                                             blIsRelationSource));
+}
+void TableModel::OnDeleteColumnRequested(int iDeletedColumnID)
+{
+    if(!RemoveColumn(GetColumnRowIdxByID(iDeletedColumnID)))
+    {
+        qWarning() << "TableModel::OnDeleteColumnRequested Column could not be deleted, ID = " << iDeletedColumnID;
+    }
+}
+void TableModel::OnReorderColumnRequested(int iFromColumnID, int iToColumnID)
+{
+    
 }

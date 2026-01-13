@@ -26,10 +26,12 @@ public:
     virtual ~TableModel() override = default;
     void Attach(const RelationModel*, RelationRole);
     void Detach(const RelationModel*, RelationRole);
-    int GetRelationBasedColumnIdx(int iRelationID)const;
+    int GetColumnRowIdxByRelationID(int iRelationID)const;
     bool RenameRelationBasedColumn(int iRelationID, const QString& sNewRelationBasedColumnName);
     void OnCreateNewColumnRequested(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique);
-    
+    void OnDeleteColumnRequested(int iDeletedColumnID);
+    void OnReorderColumnRequested(int iFromColumnID, int iToColumnID);
+
     // Getters
     QString GetName() const;
     QPointF GetPointF()const;
@@ -49,6 +51,7 @@ private:
     bool IsRowIndexValid(int iRow) const;
     void AddRelationBasedColumn(int iRelationID, const QString& sRelationBasedColumnName);
     bool RemoveRelationBasedColumn(int iRelationID);
+    int GetColumnRowIdxByID(int iColumnID);
 
     QString m_sName;
     QPointF m_rPointF;

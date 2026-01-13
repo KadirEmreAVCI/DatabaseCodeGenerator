@@ -26,7 +26,7 @@ int RelationModel::GetDestinationTableID()const
 }
 int RelationModel::GetSourceRowIdx()const
 {
-    return m_pSourceTable->GetRelationBasedColumnIdx(m_iID);
+    return m_pSourceTable->GetColumnRowIdxByRelationID(m_iID);
 }
 int RelationModel::GetSourceTableID()const
 {

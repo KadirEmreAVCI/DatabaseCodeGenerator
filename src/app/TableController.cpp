@@ -98,6 +98,28 @@ void TableController::onCreateNewColumnRequested(int iTableID, const QString& sN
         qDebug() << "Error: Table ID not found.";
     }
 }
+void TableController::onDeleteColumnRequested(int iTableID, int iColumnID)
+{
+    if(auto pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        pTable->OnDeleteColumnRequested(iColumnID);
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
+void TableController::onReorderColumnRequested(int iTableID, int iFromColumnID, int iToColumnID)
+{
+    if(auto pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        pTable->OnReorderColumnRequested(iFromColumnID, iToColumnID);
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
 QRectF TableController::GetBoundingRect() const
 {
     QRectF rUnitedRect{};

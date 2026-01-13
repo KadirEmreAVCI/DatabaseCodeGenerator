@@ -1,9 +1,8 @@
-// DatabaseTableContent.qml
+// DatabaseTableContent.qml (final - no debug logs; safe toast; no MessageDialog)
 import QtQuick
 import QtQuick.Controls
 import DatabaseCodeGenerator 1.0
 import QtQml.Models
-import QtQuick.Dialogs
 
 Rectangle {
     id: root
@@ -14,25 +13,115 @@ Rectangle {
     border.color: "gray"
     border.width: 1
 
-    // Keep these signals (we'll wire them later as you requested)
+    // ------------------------------------------------------------------
+    // Inputs
+    // ------------------------------------------------------------------
+    required property var externalModel          // QList<QObject*> (ColumnModel*)
+    required property var commandBus             // uiCommandBus or fallback bus
+    required property int tableID                // needed to identify which table owns the column list
+
+    // ------------------------------------------------------------------
+    // Legacy signals (kept for compatibility; no longer required for column ops)
+    // ------------------------------------------------------------------
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
-
-    // Controller will listen this and reorder columns in C++
     signal moveColumnRequest(int fromRow, int toRow)
 
-    // Now externalModel is QList<QObject*> (ColumnModel* objects)
-    required property var externalModel
-
+    // ------------------------------------------------------------------
+    // Confirmation state - delete
+    // ------------------------------------------------------------------
     property bool confirmVisible: false
     property int confirmRowIndex: -1
+    property int confirmColumnId: -1
     property string confirmname: ""
 
+    // ------------------------------------------------------------------
+    // Confirmation state - reorder
+    // ------------------------------------------------------------------
     property bool reorderConfirmVisible: false
     property int reorderFromIndex: -1
     property int reorderToIndex: -1
+    property int reorderFromColumnId: -1
+    property int reorderToColumnId: -1
     property string reordername: ""
+
+    // ------------------------------------------------------------------
+    // Toast / Info banner (safe replacement for MessageDialog)
+    // ------------------------------------------------------------------
+    property bool toastVisible: false
+    property string toastText: ""
+
+    function showToast(msg) {
+        toastText = msg
+        toastVisible = true
+        toastTimer.restart()
+    }
+
+    Timer {
+        id: toastTimer
+        interval: 1200
+        repeat: false
+        onTriggered: {
+            root.toastVisible = false
+            root.toastText = ""
+        }
+    }
+
+    Rectangle {
+        id: toast
+        visible: root.toastVisible
+        z: 2000
+        radius: 6
+        color: "#ffffff"
+        border.color: "#3399ff"
+        border.width: 1
+        opacity: visible ? 1.0 : 0.0
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 6
+
+        height: 34
+
+        Behavior on opacity { NumberAnimation { duration: 120 } }
+
+        Text {
+            anchors.centerIn: parent
+            text: root.toastText
+            font.pixelSize: 12
+            color: "#115599"
+            elide: Text.ElideRight
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Helper: get stable ColumnID from C++ (Model::ID)
+    // ------------------------------------------------------------------
+    function getColumnId(md) {
+        if (!md) return -1
+        if (md.ID !== undefined && md.ID !== null)
+            return md.ID
+        return -1
+    }
+
+    // Reset transient UI state when model instance changes
+    onExternalModelChanged: {
+        confirmVisible = false
+        confirmRowIndex = -1
+        confirmColumnId = -1
+        confirmname = ""
+
+        reorderConfirmVisible = false
+        reorderFromIndex = -1
+        reorderToIndex = -1
+        reorderFromColumnId = -1
+        reorderToColumnId = -1
+        reordername = ""
+    }
 
     // ------------------------------------------------------------------
     // Drag Delegate
@@ -46,8 +135,8 @@ Rectangle {
             property bool held: false
 
             anchors {
-                left: parent?.left
-                right: parent?.right
+                left: parent ? parent.left : undefined
+                right: parent ? parent.right : undefined
             }
             height: content.height
 
@@ -55,28 +144,34 @@ Rectangle {
             drag.axis: Drag.YAxis
 
             cursorShape: {
-                if (!modelData.isEnabled || !containsMouse)
-                    return Qt.ArrowCursor
+                if (!modelData) return Qt.ArrowCursor
+                if (!modelData.isEnabled || !containsMouse) return Qt.ArrowCursor
                 return held ? Qt.ClosedHandCursor : Qt.OpenHandCursor
             }
 
             onPressed: {
+                if (!modelData)
+                    return
+
                 if (modelData.isEnabled) {
                     held = true
-                    // remember where drag started & which column
                     root.reorderFromIndex = index
                     root.reorderToIndex = index
                     root.reordername = modelData.name
+                    root.reorderFromColumnId = root.getColumnId(modelData)
+                    root.reorderToColumnId = root.reorderFromColumnId
                 }
             }
 
             onReleased: {
                 held = false
 
+                if (!modelData)
+                    return
+
                 if (modelData.isEnabled && index >= 0)
                     root.itemReleased(index)
 
-                // show confirmation only if we actually moved to another index
                 if (modelData.isEnabled &&
                     root.reorderFromIndex >= 0 &&
                     root.reorderToIndex >= 0 &&
@@ -84,14 +179,15 @@ Rectangle {
 
                     root.reorderConfirmVisible = true
                 } else {
-                    // reset if there was no movement
                     root.reorderFromIndex = -1
                     root.reorderToIndex = -1
+                    root.reorderFromColumnId = -1
+                    root.reorderToColumnId = -1
                     root.reordername = ""
+                    root.reorderConfirmVisible = false
                 }
             }
 
-            // content rect
             Rectangle {
                 id: content
                 Drag.active: dragArea.held
@@ -115,6 +211,7 @@ Rectangle {
                 property color disabledColor: "#e6e6e6"
 
                 color: {
+                    if (!modelData) return disabledColor
                     if (!modelData.isEnabled) return disabledColor
                     if (dragArea.held) return dragColor
                     if (dragArea.containsMouse) return hoverColor
@@ -138,19 +235,23 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
 
-                    name: modelData.name
-                    type: modelData.type
-                    isPrimaryKey: modelData.isPrimaryKey
-                    isRelationSource: modelData.isRelationSource
+                    name: modelData ? modelData.name : ""
+                    type: modelData ? modelData.type : ""
+                    isPrimaryKey: modelData ? modelData.isPrimaryKey : false
+                    isRelationSource: modelData ? modelData.isRelationSource : false
 
-                    opacity: modelData.isEnabled ? 1.0 : 0.4
+                    opacity: (modelData && modelData.isEnabled) ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
                     dragging: dragArea.held
-                    deletable: modelData.isEnabled
+                    deletable: modelData ? modelData.isEnabled : false
 
                     onDeleteRequested: {
+                        if (!modelData)
+                            return
+
                         if (index >= 0) {
                             root.confirmRowIndex = index
+                            root.confirmColumnId = root.getColumnId(modelData)
                             root.confirmname = modelData.name
                             root.confirmVisible = true
                         }
@@ -163,22 +264,22 @@ Rectangle {
                 anchors.margins: 10
 
                 onEntered: (drag) => {
+                    if (!modelData) return
                     if (!modelData.isEnabled) return
+                    if (!drag || !drag.source || !drag.source.DelegateModel) return
 
                     var from = drag.source.DelegateModel.itemsIndex
                     var to = dragArea.DelegateModel.itemsIndex
+                    if (from === undefined || to === undefined) return
+                    if (from === to) return
 
-                    if (from === to)
-                        return
-
-                    // Remember the very first origin index if not set yet
                     if (root.reorderFromIndex < 0)
                         root.reorderFromIndex = from
 
-                    // Always keep the latest target index
                     root.reorderToIndex = to
+                    root.reorderToColumnId = root.getColumnId(modelData)
 
-                    // Only visual reordering; C++ model is unchanged
+                    // Only visual reordering; C++ model is unchanged until Apply
                     visualModel.items.move(from, to)
                 }
             }
@@ -207,15 +308,12 @@ Rectangle {
     function rowEdgePosition(rowIndex, side, targetItem) {
         const item = view.itemAtIndex(rowIndex)
         if (!item) return Qt.point(0, 0)
-
         const p = item.mapToItem(root, 0, item.height / 2)
         const edgeX = (side === "left") ? 0 : root.width
         return root.mapToItem(targetItem, edgeX, p.y)
     }
 
-    // ---
-    // Add Button
-    // ---
+    // --- Add Button
     Rectangle {
         id: addButton
         width: parent.width
@@ -294,10 +392,10 @@ Rectangle {
                             onClicked: {
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
+                                root.confirmColumnId = -1
                                 root.confirmname = ""
                             }
                         }
-
                         Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
@@ -308,12 +406,17 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.confirmRowIndex >= 0) {
-                                    root.deleteRequested(root.confirmRowIndex)
-                                    deletionInfoDialog.open()
+                                if (root.confirmRowIndex >= 0 && root.confirmColumnId >= 0) {
+                                    root.commandBus.deleteColumnRequested(root.tableID, root.confirmColumnId)
+                                    root.showToast("Column deleted successfully.")
+                                } else {
+                                    if (root.confirmRowIndex >= 0)
+                                        root.deleteRequested(root.confirmRowIndex)
                                 }
+
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
+                                root.confirmColumnId = -1
                                 root.confirmname = ""
                             }
                         }
@@ -326,12 +429,6 @@ Rectangle {
                 }
             }
         }
-    }
-
-    MessageDialog {
-        id: deletionInfoDialog
-        title: "Column Deleted"
-        text: "The column has been deleted successfully."
     }
 
     // -----------------------------------------------------
@@ -367,7 +464,6 @@ Rectangle {
                     spacing: 12
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    // Cancel
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#f0f0f0"; border.color: "#b0b0b0"
@@ -375,25 +471,23 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                // Optional: revert visual move if there was one
                                 if (root.reorderFromIndex >= 0 &&
                                     root.reorderToIndex >= 0 &&
                                     root.reorderFromIndex !== root.reorderToIndex) {
-                                    visualModel.items.move(root.reorderToIndex,
-                                                           root.reorderFromIndex)
+                                    visualModel.items.move(root.reorderToIndex, root.reorderFromIndex)
                                 }
 
                                 root.reorderConfirmVisible = false
                                 root.reorderFromIndex = -1
                                 root.reorderToIndex = -1
+                                root.reorderFromColumnId = -1
+                                root.reorderToColumnId = -1
                                 root.reordername = ""
                             }
                         }
-
                         Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
-                    // Apply
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#ddf4ff"; border.color: "#3399ff"
@@ -401,15 +495,21 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                // Notify Controller: do real C++ reorder here
-                                root.moveColumnRequest(root.reorderFromIndex,
-                                                       root.reorderToIndex)
-
-                                reorderInfoDialog.open()
+                                if (root.reorderFromColumnId >= 0 && root.reorderToColumnId >= 0) {
+                                    root.commandBus.reorderColumnRequested(root.tableID,
+                                                                          root.reorderFromColumnId,
+                                                                          root.reorderToColumnId)
+                                    root.showToast("Column order updated.")
+                                } else {
+                                    if (root.reorderFromIndex >= 0 && root.reorderToIndex >= 0)
+                                        root.moveColumnRequest(root.reorderFromIndex, root.reorderToIndex)
+                                }
 
                                 root.reorderConfirmVisible = false
                                 root.reorderFromIndex = -1
                                 root.reorderToIndex = -1
+                                root.reorderFromColumnId = -1
+                                root.reorderToColumnId = -1
                                 root.reordername = ""
                             }
                         }
@@ -422,11 +522,5 @@ Rectangle {
                 }
             }
         }
-    }
-
-    MessageDialog {
-        id: reorderInfoDialog
-        title: "Order Updated"
-        text: "Column order has been updated."
     }
 }
