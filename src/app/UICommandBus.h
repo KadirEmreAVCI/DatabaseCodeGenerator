@@ -30,7 +30,8 @@ signals:
     // Column related commands
     signals:
     void createNewColumnRequested(int tableID, const QString& name, const QString& type, bool notNull, bool isPrimaryKey, bool autoIncrement, bool unique);
-
+    void deleteColumnRequested(int tableID, int columnID);
+    void reorderColumnRequested(int tableID, int fromColumnID, int toColumnID);
 };
 
 #endif // UICOMMANDBUS_H_

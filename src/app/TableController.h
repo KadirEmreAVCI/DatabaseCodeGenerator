@@ -35,6 +35,8 @@ public slots:
     void onCreateNewTableRequested(const QPointF& rPointF);
 
     void onCreateNewColumnRequested(int iTableID, const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique);
+    void onDeleteColumnRequested(int iTableID, int iColumnID);
+    void onReorderColumnRequested(int iTableID, int iFromColumnID, int iToColumnID);
     QRectF GetBoundingRect() const;
 private:
     TableController(QObject *parent = nullptr);

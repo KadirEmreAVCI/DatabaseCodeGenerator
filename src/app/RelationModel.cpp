@@ -3,15 +3,11 @@
 #include <iostream>
 #include <QDebug>
 
-RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
+// RelationModel::RelationModel(QObject* pParent) : Model{pParent}{}
 
 RelationModel::RelationModel(int iID, TableModel* pDestinationTable, TableModel* pSourceTable, const QString& sRelationship, QObject* pParent)
-    : m_iID{iID}, m_sRelationship{sRelationship}, m_pDestinationTable{pDestinationTable}, m_pSourceTable{pSourceTable}, Model{pParent}
+    : m_sRelationship{sRelationship}, m_pDestinationTable{pDestinationTable}, m_pSourceTable{pSourceTable}, Model{iID, pParent}
 {}
-int RelationModel::GetID() const
-{
-    return m_iID;
-}
 TableModel* RelationModel::GetDestinationTable()const
 {
     return m_pDestinationTable;
@@ -30,7 +26,7 @@ int RelationModel::GetDestinationTableID()const
 }
 int RelationModel::GetSourceRowIdx()const
 {
-    return m_pSourceTable->GetRelationBasedColumnIdx(m_iID);
+    return m_pSourceTable->GetColumnRowIdxByRelationID(m_iID);
 }
 int RelationModel::GetSourceTableID()const
 {
@@ -50,11 +46,6 @@ void RelationModel::DestinationTableRenamed()const
     {
         m_pSourceTable->RenameRelationBasedColumn(m_iID, GetRelationBasedColumnName());
     }
-}
-void RelationModel::SetID(int iID)
-{
-    m_iID = iID;  
-    emit idChanged();
 }
 void RelationModel::SetDestinationTable(TableModel* pDestinationTable)
 {

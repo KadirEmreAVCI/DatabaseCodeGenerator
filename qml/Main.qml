@@ -23,6 +23,8 @@ Window {
         signal changeRelationshipRequested(int ID, string relationship)
         signal deleteRelationRequested(int ID)
         signal createNewColumnRequested(int tableID, string name, string type, bool notNull, bool isPrimaryKey, bool autoIncrement, bool unique)
+        signal deleteColumnRequested(int tableID, int columnID)
+        signal reorderColumnRequested(int tableID, int fromColumnID, int toColumnID)
     }
 
     GridBackground {

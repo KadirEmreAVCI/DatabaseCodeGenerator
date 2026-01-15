@@ -91,7 +91,29 @@ void TableController::onCreateNewColumnRequested(int iTableID, const QString& sN
 {
     if(auto pTable = GetTable(iTableID); pTable != nullptr)
     {
-        pTable->AddColumn(std::make_unique<ColumnModel>(sName, sType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, false));
+        pTable->OnCreateNewColumnRequested(sName, sType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique);
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
+void TableController::onDeleteColumnRequested(int iTableID, int iColumnID)
+{
+    if(auto pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        pTable->OnDeleteColumnRequested(iColumnID);
+    }
+    else
+    {
+        qDebug() << "Error: Table ID not found.";
+    }
+}
+void TableController::onReorderColumnRequested(int iTableID, int iFromColumnID, int iToColumnID)
+{
+    if(auto pTable = GetTable(iTableID); pTable != nullptr)
+    {
+        pTable->OnReorderColumnRequested(iFromColumnID, iToColumnID);
     }
     else
     {

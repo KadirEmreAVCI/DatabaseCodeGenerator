@@ -2,9 +2,10 @@
 #include "ColumnModel.h"
 #include "RelationModel.h"
 #include <QDebug>
+#include <QTimer>
 
 TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qreal rWidth, qreal rHeight, QObject *parent) 
-    : Model(parent), m_iID{iID}, m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
+    : Model(iID, parent), m_sName{sName}, m_rPointF{rPointF}, m_rWidth{rWidth}, m_rHeight{rHeight}
 {
     const QString sColumnName = "ID";
     const QString sColumnType = "INT"; 
@@ -13,7 +14,7 @@ TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qr
     const bool blAutoIncrement = true;
     const bool blUnique = true;
     const bool blIsRelationSource = false;
-    AddColumn(std::make_unique<ColumnModel>(sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++, sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
 }
 void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
 {
@@ -24,9 +25,7 @@ void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
         if (!upColumn->GetIsEnabled())
         {
             // Find first enabled column (same behavior as your QAbstractListModel version)
-            const auto it = std::find_if(m_vecupColumns.begin(), m_vecupColumns.end(),
-                [](const std::unique_ptr<ColumnModel>& pCol)
-                {
+            const auto it = std::find_if(m_vecupColumns.begin(), m_vecupColumns.end(), [](const std::unique_ptr<ColumnModel>& pCol){
                     return pCol && pCol->GetIsEnabled();
                 });
 
@@ -44,16 +43,11 @@ bool TableModel::RemoveColumn(int iRow)
 {
     if (IsRowIndexValid(iRow))
     {
-        // Take ownership out of the vector WITHOUT deleting immediately
         ColumnModel* pColumn = m_vecupColumns[iRow].release();
-
-        // Structural change: remove from container
         m_vecupColumns.erase(m_vecupColumns.begin() + iRow);
-
-        // Safe deletion for QML (delegates may still exist this frame)
         if (pColumn)
         {
-            pColumn->deleteLater();
+            QTimer::singleShot(0, pColumn, &QObject::deleteLater);  // In order to delay deletion by 2 ticks, otherwise program crashes.
         }
         emit columnsChanged();
         return true;
@@ -86,10 +80,6 @@ bool TableModel::RenameColumn(int iRow, const QString& sNewName)
         return false;
     }
 }
-int TableModel::GetID() const
-{
-    return m_iID;
-}
 QString TableModel::GetName() const
 {
     return m_sName;
@@ -118,14 +108,6 @@ QList<QObject*> TableModel::GetColumnList() const
         } 
     }
     return lsColumn;
-}
-void TableModel::SetID(int iID)
-{
-    if(m_iID != iID)
-    {
-        m_iID = iID;
-        emit idChanged();
-    }
 }
 void TableModel::SetName(const QString &sName)
 {
@@ -198,14 +180,14 @@ void TableModel::Detach(const RelationModel* pRelation, RelationRole eRelationRo
         }
     }
 }
-int TableModel::GetRelationBasedColumnIdx(int iRelationID) const
+int TableModel::GetColumnRowIdxByRelationID(int iRelationID) const
 {
-    for (int i = 0; i < static_cast<int>(m_vecupColumns.size()); ++i)
+    for (int iRowIdx = 0; iRowIdx < static_cast<int>(m_vecupColumns.size()); ++iRowIdx)
     {
-        const ColumnModel* pColumn = m_vecupColumns[i].get();
+        const ColumnModel* pColumn = m_vecupColumns[iRowIdx].get();
         if (pColumn && pColumn->GetIsRelationSource() && pColumn->GetRelationID() == iRelationID)
         {
-            return i;
+            return iRowIdx;
         }
     }
     return -1; // Not found
@@ -218,7 +200,8 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
     const bool blAutoIncrement = false;
     const bool blUnique = false;
     const bool blIsRelationSource = true;
-    AddColumn(std::make_unique<ColumnModel>(sRelationBasedColumnName, 
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
+                                            sRelationBasedColumnName, 
                                             sRelationColumnType, 
                                             blNotNull, 
                                             blIsPrimaryKey, 
@@ -229,7 +212,7 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
 }
 bool TableModel::RemoveRelationBasedColumn(int iRelationID)
 {
-    if(RemoveColumn(GetRelationBasedColumnIdx(iRelationID)))
+    if(RemoveColumn(GetColumnRowIdxByRelationID(iRelationID)))
     {
         return true;
     }
@@ -239,9 +222,21 @@ bool TableModel::RemoveRelationBasedColumn(int iRelationID)
         return false;
     }
 }
+int TableModel::GetColumnRowIdxByID(int iColumnID)
+{
+    for (int iRowIdx = 0; iRowIdx < static_cast<int>(m_vecupColumns.size()); ++iRowIdx)
+    {
+        const ColumnModel* pColumn = m_vecupColumns[iRowIdx].get();
+        if (pColumn && pColumn->GetID() == iColumnID)
+        {
+            return iRowIdx;
+        }
+    }
+    return -1; // Not found
+}
 bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewName)
 {
-    if(RenameColumn(GetRelationBasedColumnIdx(iRelationID), sNewName))
+    if(RenameColumn(GetColumnRowIdxByRelationID(iRelationID), sNewName))
     {
         return true;
     }
@@ -249,5 +244,56 @@ bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewN
     {
         qWarning("Attempted to rename a ColumnModel with a name that does not exist.");
         return false;
+    }
+}
+void TableModel::OnCreateNewColumnRequested(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique)
+{
+    const bool blIsRelationSource = false;
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
+                                            sName,
+                                            sType,
+                                            blNotNull,
+                                            blIsPrimaryKey,
+                                            blAutoIncrement,
+                                            blUnique,
+                                            blIsRelationSource));
+}
+void TableModel::OnDeleteColumnRequested(int iDeletedColumnID)
+{
+    if(!RemoveColumn(GetColumnRowIdxByID(iDeletedColumnID)))
+    {
+        qWarning() << "TableModel::OnDeleteColumnRequested Column could not be deleted, ID = " << iDeletedColumnID;
+    }
+}
+void TableModel::OnReorderColumnRequested(int iFromColumnID, int iToColumnID)
+{
+    if(iFromColumnID != iToColumnID && iFromColumnID >= 0 && iToColumnID >= 0)
+    {
+        const int iFromIdx = GetColumnRowIdxByID(iFromColumnID);
+        const int iToIdx = GetColumnRowIdxByID(iToColumnID);
+        if(iFromIdx != iToIdx && iFromIdx >= 0 && iToIdx >= 0)
+        {
+            const auto& upFrom = m_vecupColumns[iFromIdx];
+            const auto& upTo = m_vecupColumns[iToIdx];
+            if(upFrom && upFrom->GetIsEnabled() && upTo && upTo->GetIsEnabled())
+            {
+                std::unique_ptr<ColumnModel> upMovingColumn = std::move(m_vecupColumns[iFromIdx]);
+                m_vecupColumns.erase(m_vecupColumns.begin() + iFromIdx);
+                m_vecupColumns.insert(m_vecupColumns.begin() + iToIdx, std::move(upMovingColumn));
+                emit columnsChanged();
+            }
+            else
+            {
+                qWarning() << "TableModel::OnReorderColumnRequested denied.";
+            }
+        }
+        else
+        {
+            qWarning() << "TableModel::OnReorderColumnRequested invalid columns indexes!";
+        }
+    }
+    else
+    {
+        qWarning() << "TableModel::OnReorderColumnRequested invalid column IDs!";
     }
 }

@@ -881,6 +881,8 @@ Item {
                     right: parent.right
                 }
                 externalModel: wrapper.columnModel
+                commandBus: wrapper.commandBus
+                tableID: wrapper.tableID
 
                 onAddRequested: openAddColumnDialog()
             }
