@@ -267,5 +267,33 @@ void TableModel::OnDeleteColumnRequested(int iDeletedColumnID)
 }
 void TableModel::OnReorderColumnRequested(int iFromColumnID, int iToColumnID)
 {
-    
+    if(iFromColumnID != iToColumnID && iFromColumnID >= 0 && iToColumnID >= 0)
+    {
+        const int iFromIdx = GetColumnRowIdxByID(iFromColumnID);
+        const int iToIdx = GetColumnRowIdxByID(iToColumnID);
+        if(iFromIdx != iToIdx && iFromIdx >= 0 && iToIdx >= 0)
+        {
+            const auto& upFrom = m_vecupColumns[iFromIdx];
+            const auto& upTo = m_vecupColumns[iToIdx];
+            if(upFrom && upFrom->GetIsEnabled() && upTo && upTo->GetIsEnabled())
+            {
+                std::unique_ptr<ColumnModel> upMovingColumn = std::move(m_vecupColumns[iFromIdx]);
+                m_vecupColumns.erase(m_vecupColumns.begin() + iFromIdx);
+                m_vecupColumns.insert(m_vecupColumns.begin() + iToIdx, std::move(upMovingColumn));
+                emit columnsChanged();
+            }
+            else
+            {
+                qWarning() << "TableModel::OnReorderColumnRequested denied.";
+            }
+        }
+        else
+        {
+            qWarning() << "TableModel::OnReorderColumnRequested invalid columns indexes!";
+        }
+    }
+    else
+    {
+        qWarning() << "TableModel::OnReorderColumnRequested invalid column IDs!";
+    }
 }

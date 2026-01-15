@@ -1,4 +1,4 @@
-// DatabaseTableContent.qml (final - no debug logs; safe toast; no MessageDialog)
+// DatabaseTableContent.qml (previous design preserved + NO debug logs + NO MessageDialog; safe toast + deferred C++ calls)
 import QtQuick
 import QtQuick.Controls
 import DatabaseCodeGenerator 1.0
@@ -18,10 +18,10 @@ Rectangle {
     // ------------------------------------------------------------------
     required property var externalModel          // QList<QObject*> (ColumnModel*)
     required property var commandBus             // uiCommandBus or fallback bus
-    required property int tableID                // needed to identify which table owns the column list
+    required property int tableID                // owning table id
 
     // ------------------------------------------------------------------
-    // Legacy signals (kept for compatibility; no longer required for column ops)
+    // Legacy signals (kept for compatibility)
     // ------------------------------------------------------------------
     signal addRequested()
     signal deleteRequested(int rowIndex)
@@ -47,7 +47,7 @@ Rectangle {
     property string reordername: ""
 
     // ------------------------------------------------------------------
-    // Toast / Info banner (safe replacement for MessageDialog)
+    // Toast / Info banner
     // ------------------------------------------------------------------
     property bool toastVisible: false
     property string toastText: ""
@@ -86,7 +86,6 @@ Rectangle {
         anchors.bottomMargin: 6
 
         height: 34
-
         Behavior on opacity { NumberAnimation { duration: 120 } }
 
         Text {
@@ -108,7 +107,7 @@ Rectangle {
         return -1
     }
 
-    // Reset transient UI state when model instance changes
+    // Model değiştiğinde UI state reset
     onExternalModelChanged: {
         confirmVisible = false
         confirmRowIndex = -1
@@ -124,7 +123,7 @@ Rectangle {
     }
 
     // ------------------------------------------------------------------
-    // Drag Delegate
+    // Drag Delegate (preview reorder in QML only)
     // ------------------------------------------------------------------
     Component {
         id: dragDelegate
@@ -150,8 +149,7 @@ Rectangle {
             }
 
             onPressed: {
-                if (!modelData)
-                    return
+                if (!modelData) return
 
                 if (modelData.isEnabled) {
                     held = true
@@ -165,9 +163,7 @@ Rectangle {
 
             onReleased: {
                 held = false
-
-                if (!modelData)
-                    return
+                if (!modelData) return
 
                 if (modelData.isEnabled && index >= 0)
                     root.itemReleased(index)
@@ -176,7 +172,6 @@ Rectangle {
                     root.reorderFromIndex >= 0 &&
                     root.reorderToIndex >= 0 &&
                     root.reorderFromIndex !== root.reorderToIndex) {
-
                     root.reorderConfirmVisible = true
                 } else {
                     root.reorderFromIndex = -1
@@ -246,9 +241,7 @@ Rectangle {
                     deletable: modelData ? modelData.isEnabled : false
 
                     onDeleteRequested: {
-                        if (!modelData)
-                            return
-
+                        if (!modelData) return
                         if (index >= 0) {
                             root.confirmRowIndex = index
                             root.confirmColumnId = root.getColumnId(modelData)
@@ -279,7 +272,7 @@ Rectangle {
                     root.reorderToIndex = to
                     root.reorderToColumnId = root.getColumnId(modelData)
 
-                    // Only visual reordering; C++ model is unchanged until Apply
+                    // Preview only
                     visualModel.items.move(from, to)
                 }
             }
@@ -406,18 +399,27 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.confirmRowIndex >= 0 && root.confirmColumnId >= 0) {
-                                    root.commandBus.deleteColumnRequested(root.tableID, root.confirmColumnId)
-                                    root.showToast("Column deleted successfully.")
-                                } else {
-                                    if (root.confirmRowIndex >= 0)
-                                        root.deleteRequested(root.confirmRowIndex)
-                                }
+                                // snapshot first, clear UI state, then defer C++ call
+                                var tId = root.tableID
+                                var colId = root.confirmColumnId
+                                var rowIdx = root.confirmRowIndex
 
                                 root.confirmVisible = false
                                 root.confirmRowIndex = -1
                                 root.confirmColumnId = -1
                                 root.confirmname = ""
+
+                                if (rowIdx >= 0 && colId >= 0) {
+                                    Qt.callLater(function() {
+                                        if (root.commandBus && typeof root.commandBus.deleteColumnRequested === "function") {
+                                            root.commandBus.deleteColumnRequested(tId, colId)
+                                        }
+                                    })
+                                    root.showToast("Column deleted successfully.")
+                                } else {
+                                    if (rowIdx >= 0)
+                                        root.deleteRequested(rowIdx)
+                                }
                             }
                         }
 
@@ -433,6 +435,8 @@ Rectangle {
 
     // -----------------------------------------------------
     // REORDER CONFIRMATION
+    //  - No info message after reorder (per your request)
+    //  - Only sends request to C++ (deferred) and closes dialog
     // -----------------------------------------------------
     Rectangle {
         id: reorderOverlay
@@ -464,6 +468,7 @@ Rectangle {
                     spacing: 12
                     anchors.horizontalCenter: parent.horizontalCenter
 
+                    // Cancel: revert visual move (row-based)
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#f0f0f0"; border.color: "#b0b0b0"
@@ -488,6 +493,7 @@ Rectangle {
                         Text { anchors.centerIn: parent; text: "Cancel"; font.pixelSize: 12 }
                     }
 
+                    // Apply: send request to C++ (deferred). NO toast/info.
                     Rectangle {
                         width: 80; height: 28; radius: 4
                         color: "#ddf4ff"; border.color: "#3399ff"
@@ -495,22 +501,35 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.reorderFromColumnId >= 0 && root.reorderToColumnId >= 0) {
-                                    root.commandBus.reorderColumnRequested(root.tableID,
-                                                                          root.reorderFromColumnId,
-                                                                          root.reorderToColumnId)
-                                    root.showToast("Column order updated.")
-                                } else {
-                                    if (root.reorderFromIndex >= 0 && root.reorderToIndex >= 0)
-                                        root.moveColumnRequest(root.reorderFromIndex, root.reorderToIndex)
-                                }
+                                // snapshot IDs first
+                                var tId = root.tableID
+                                var fromId = root.reorderFromColumnId
+                                var toId = root.reorderToColumnId
 
+                                // close UI first
                                 root.reorderConfirmVisible = false
                                 root.reorderFromIndex = -1
                                 root.reorderToIndex = -1
                                 root.reorderFromColumnId = -1
                                 root.reorderToColumnId = -1
                                 root.reordername = ""
+
+                                // defer C++ call
+                                if (fromId >= 0 && toId >= 0) {
+                                    Qt.callLater(function() {
+                                        if (root.commandBus && typeof root.commandBus.reorderColumnRequested === "function") {
+                                            root.commandBus.reorderColumnRequested(tId, fromId, toId)
+                                        }
+                                    })
+                                } else {
+                                    // legacy fallback
+                                    var fromRow = root.reorderFromIndex
+                                    var toRow = root.reorderToIndex
+                                    Qt.callLater(function() {
+                                        if (fromRow >= 0 && toRow >= 0)
+                                            root.moveColumnRequest(fromRow, toRow)
+                                    })
+                                }
                             }
                         }
 
