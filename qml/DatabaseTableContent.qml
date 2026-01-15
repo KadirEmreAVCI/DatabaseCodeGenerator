@@ -1,4 +1,4 @@
-// DatabaseTableContent.qml (previous design preserved + NO debug logs + NO MessageDialog; safe toast + deferred C++ calls)
+// DatabaseTableContent.qml
 import QtQuick
 import QtQuick.Controls
 import DatabaseCodeGenerator 1.0
@@ -19,10 +19,6 @@ Rectangle {
     required property var externalModel          // QList<QObject*> (ColumnModel*)
     required property var commandBus             // uiCommandBus or fallback bus
     required property int tableID                // owning table id
-
-    // ------------------------------------------------------------------
-    // Legacy signals (kept for compatibility)
-    // ------------------------------------------------------------------
     signal addRequested()
     signal deleteRequested(int rowIndex)
     signal itemReleased(int rowIndex)
@@ -107,7 +103,6 @@ Rectangle {
         return -1
     }
 
-    // Model değiştiğinde UI state reset
     onExternalModelChanged: {
         confirmVisible = false
         confirmRowIndex = -1
