@@ -9,12 +9,10 @@ class UiCommandBus final : public QObject
 {
     Q_OBJECT
 public:
-    static UiCommandBus& GetInstance();
+    UiCommandBus(QObject* parent = nullptr);
     UiCommandBus(const UiCommandBus&) = delete;
     UiCommandBus& operator=(const UiCommandBus&) = delete;
     ~UiCommandBus() = default;
-private:
-    explicit UiCommandBus(QObject* parent = nullptr);
 signals:
     // Table related commands
     void createNewTableRequested(const QPointF& pos);
@@ -28,7 +26,6 @@ signals:
     void changeRelationshipRequested(int ID, const QString& relationship);
 
     // Column related commands
-    signals:
     void createNewColumnRequested(int tableID, const QString& name, const QString& type, bool notNull, bool isPrimaryKey, bool autoIncrement, bool unique);
     void deleteColumnRequested(int tableID, int columnID);
     void reorderColumnRequested(int tableID, int fromColumnID, int toColumnID);
