@@ -8,15 +8,8 @@
 #include <iostream>
 #include <QDebug>
 
-TableController& TableController::GetInstance()
-{
-    static TableController instance;
-    return instance;
-}
-TableController::TableController(QObject *parent)
-    : QObject{parent}
-{
-}
+TableController::TableController(QObject *parent) : QObject{parent}
+{}
 void TableController::AddTable(const QPointF& rPointF, const QString& sTableName)
 {
     m_vecupTables.push_back(std::make_unique<TableModel>(m_iNextTableID++, sTableName, rPointF));

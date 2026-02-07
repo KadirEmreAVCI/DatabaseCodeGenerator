@@ -14,7 +14,7 @@ class TableController : public QObject {
     Q_PROPERTY(QList<QObject*> tables READ GetTableList NOTIFY tablesChanged)
     Q_PROPERTY(QList<QObject*> relations READ GetRelationList NOTIFY relationsChanged)
 public:
-    static TableController& GetInstance();
+    TableController(QObject *parent = nullptr);
     TableController(const TableController&) = delete;
     TableController& operator=(const TableController&) = delete;
     ~TableController() = default;
@@ -39,7 +39,6 @@ public slots:
     void onReorderColumnRequested(int iTableID, int iFromColumnID, int iToColumnID);
     QRectF GetBoundingRect() const;
 private:
-    TableController(QObject *parent = nullptr);
     TableModel* GetTable(int iTableID);
     RelationModel* GetRelation(int iRelationID);
     void AddRelation(int iSourceTableID, int iDestinationTableID);
