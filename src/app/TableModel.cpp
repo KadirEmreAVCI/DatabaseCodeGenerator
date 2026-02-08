@@ -13,8 +13,8 @@ TableModel::TableModel(int iID, const QString& sName, const QPointF& rPointF, qr
     const bool blIsPrimaryKey = true;
     const bool blAutoIncrement = true;
     const bool blUnique = true;
-    const bool blIsRelationSource = false;
-    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++, sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsRelationSource));
+    const bool blIsForeignKey = false;
+    AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++, sColumnName, sColumnType, blNotNull, blIsPrimaryKey, blAutoIncrement, blUnique, blIsForeignKey));
 }
 void TableModel::AddColumn(std::unique_ptr<ColumnModel> upColumn)
 {
@@ -185,7 +185,7 @@ int TableModel::GetColumnRowIdxByRelationID(int iRelationID) const
     for (int iRowIdx = 0; iRowIdx < static_cast<int>(m_vecupColumns.size()); ++iRowIdx)
     {
         const ColumnModel* pColumn = m_vecupColumns[iRowIdx].get();
-        if (pColumn && pColumn->GetIsRelationSource() && pColumn->GetRelationID() == iRelationID)
+        if (pColumn && pColumn->GetIsForeignKey() && pColumn->GetRelationID() == iRelationID)
         {
             return iRowIdx;
         }
@@ -199,7 +199,7 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
     const bool blIsPrimaryKey = false;
     const bool blAutoIncrement = false;
     const bool blUnique = false;
-    const bool blIsRelationSource = true;
+    const bool blIsForeignKey = true;
     AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
                                             sRelationBasedColumnName, 
                                             sRelationColumnType, 
@@ -207,7 +207,7 @@ void TableModel::AddRelationBasedColumn(int iRelationID, const QString& sRelatio
                                             blIsPrimaryKey, 
                                             blAutoIncrement, 
                                             blUnique, 
-                                            blIsRelationSource, 
+                                            blIsForeignKey, 
                                             iRelationID));
 }
 bool TableModel::RemoveRelationBasedColumn(int iRelationID)
@@ -248,7 +248,7 @@ bool TableModel::RenameRelationBasedColumn(int iRelationID, const QString& sNewN
 }
 void TableModel::OnCreateNewColumnRequested(const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique)
 {
-    const bool blIsRelationSource = false;
+    const bool blIsForeignKey = false;
     AddColumn(std::make_unique<ColumnModel>(m_uiNextColumnID++,
                                             sName,
                                             sType,
@@ -256,7 +256,7 @@ void TableModel::OnCreateNewColumnRequested(const QString& sName, const QString&
                                             blIsPrimaryKey,
                                             blAutoIncrement,
                                             blUnique,
-                                            blIsRelationSource));
+                                            blIsForeignKey));   
 }
 void TableModel::OnDeleteColumnRequested(int iDeletedColumnID)
 {

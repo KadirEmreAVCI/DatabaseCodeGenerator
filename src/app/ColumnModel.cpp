@@ -1,11 +1,11 @@
 #include "ColumnModel.h"
 
-ColumnModel::ColumnModel(int iID, const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique, bool blIsRelationSource, int iRelationID, QObject *parent)
+ColumnModel::ColumnModel(int iID, const QString& sName, const QString& sType, bool blNotNull, bool blIsPrimaryKey, bool blAutoIncrement, bool blUnique, bool blIsForeignKey, int iRelationID, QObject *parent)
     : m_sName{sName}, 
     m_sType(sType), 
-    m_blIsEnabled(!(blIsPrimaryKey || blIsRelationSource)), 
+    m_blIsEnabled(!(blIsPrimaryKey || blIsForeignKey)), 
     m_blIsPrimaryKey(blIsPrimaryKey), 
-    m_blIsRelationSource(blIsRelationSource), 
+    m_blIsForeignKey(blIsForeignKey), 
     m_iRelationID{iRelationID},
     Model(iID, parent)
 {}   
@@ -25,9 +25,9 @@ bool ColumnModel::GetIsPrimaryKey() const
 {
     return m_blIsPrimaryKey;
 }
-bool ColumnModel::GetIsRelationSource() const
+bool ColumnModel::GetIsForeignKey() const
 {
-    return m_blIsRelationSource;
+    return m_blIsForeignKey;
 }
 int ColumnModel::GetRelationID()const
 {
@@ -65,11 +65,11 @@ void ColumnModel::SetIsPrimaryKey(bool blIsPrimaryKey)
         emit isPrimaryKeyChanged();
     }
 }
-void ColumnModel::SetIsRelationSource(bool blIsRelationSource)
+void ColumnModel::SetIsForeignKey(bool blIsForeignKey)
 {
-    if (m_blIsRelationSource != blIsRelationSource) 
+    if (m_blIsForeignKey != blIsForeignKey) 
     {
-        m_blIsRelationSource = blIsRelationSource;
-        emit isRelationSourceChanged();
+        m_blIsForeignKey = blIsForeignKey;
+        emit isForeignKeyChanged();
     }
 }
