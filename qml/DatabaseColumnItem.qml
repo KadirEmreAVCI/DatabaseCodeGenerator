@@ -21,7 +21,7 @@ Rectangle {
 
     // Classification flags
     property bool isPrimaryKey: false
-    property bool isRelationSource: false   // e.g. FK source
+    property bool isForeignKey: false
     // ordinary row = both flags false
 
     // Hover / delete / drag behaviour (set from delegate)
@@ -52,7 +52,7 @@ Rectangle {
             text: {
                 if (isPrimaryKey)
                     return "🔑"
-                if (isRelationSource)
+                if (isForeignKey)
                     return "🔗"
                 return "🔹"   // ordinary row
             }

@@ -228,7 +228,7 @@ Rectangle {
                     name: modelData ? modelData.name : ""
                     type: modelData ? modelData.type : ""
                     isPrimaryKey: modelData ? modelData.isPrimaryKey : false
-                    isRelationSource: modelData ? modelData.isRelationSource : false
+                    isForeignKey: modelData ? modelData.isForeignKey : false
 
                     opacity: (modelData && modelData.isEnabled) ? 1.0 : 0.4
                     hovered: dragArea.containsMouse
